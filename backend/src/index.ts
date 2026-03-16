@@ -1,13 +1,21 @@
 import { Hono } from 'hono'
 import type { Env } from './types'
 import { initJWT } from './utils/jwt'
+import { initEmailChecker } from './utils/validation'
 import { corsMiddleware } from './middleware/cors'
 import { normalRateLimit } from './middleware/rateLimit'
 import { handleError, formatErrorResponse, logError } from './utils/errorHandler'
+import { BLOCKLIST_DOMAINS, ALLOWLIST_DOMAINS } from './data/blocklist'
 import authRouter from './routes/auth'
 import postsRouter from './routes/posts'
 import commentsRouter from './routes/comments'
 import categoriesRouter from './routes/categories'
+
+// 初始化一次性邮箱检查器
+initEmailChecker(
+  [...BLOCKLIST_DOMAINS],
+  [...ALLOWLIST_DOMAINS]
+)
 
 const app = new Hono<{ Bindings: Env }>()
 

@@ -3,7 +3,7 @@ import type { Env, Variables } from '../types'
 import { UserService } from '../services/userService'
 import { authMiddleware } from '../middleware/auth'
 import { strictAuthRateLimit } from '../middleware/rateLimit'
-import { validatePassword, validateEmail, validateUsername } from '../utils/validation'
+import { validatePassword, validateEmail, validateUsername, validateDisposableEmail } from '../utils/validation'
 import { createError, handleError, formatErrorResponse } from '../utils/errorHandler'
 
 const authRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -26,6 +26,12 @@ authRouter.post('/register', strictAuthRateLimit, async (c) => {
     const emailValidation = validateEmail(email)
     if (!emailValidation.isValid) {
       throw createError.validationError(emailValidation.errors.join(', '))
+    }
+
+    // 验证一次性邮箱
+    const disposableValidation = validateDisposableEmail(email)
+    if (!disposableValidation.isValid) {
+      throw createError.validationError(disposableValidation.errors.join(', '))
     }
 
     // 验证密码

@@ -3,6 +3,150 @@ export interface ValidationResult {
   errors: string[]
 }
 
+/**
+ * 一次性邮箱黑名单检查器
+ */
+export class DisposableEmailChecker {
+  private blocklist: Set<string>
+  private allowlist: Set<string>
+
+  constructor(blocklist: string[] = [], allowlist: string[] = []) {
+    this.blocklist = new Set(blocklist.map(d => d.toLowerCase().trim()))
+    this.allowlist = new Set(allowlist.map(d => d.toLowerCase().trim()))
+  }
+
+  /**
+   * 检查邮箱是否为一次性邮箱
+   * @param email 邮箱地址
+   * @returns 如果是一次性邮箱返回 true，否则返回 false
+   */
+  isDisposableEmail(email: string): boolean {
+    const domain = this.extractDomain(email)
+    if (!domain) return false
+
+    // 首先检查是否在允许名单中
+    if (this.isInAllowlist(domain)) {
+      return false
+    }
+
+    // 检查是否在黑名单中
+    return this.isInBlocklist(domain)
+  }
+
+  /**
+   * 提取邮箱域名
+   */
+  private extractDomain(email: string): string | null {
+    const match = email.match(/@([^@]+)$/)
+    return match ? match[1].toLowerCase() : null
+  }
+
+  /**
+   * 检查域名是否在允许名单中
+   */
+  private isInAllowlist(domain: string): boolean {
+    const domainParts = domain.split('.')
+    // 检查域名及其所有父域名
+    for (let i = 0; i < domainParts.length - 1; i++) {
+      const checkDomain = domainParts.slice(i).join('.')
+      if (this.allowlist.has(checkDomain)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * 检查域名是否在黑名单中
+   */
+  private isInBlocklist(domain: string): boolean {
+    const domainParts = domain.split('.')
+    // 检查域名及其所有父域名（跳过顶级域名）
+    for (let i = 0; i < domainParts.length - 1; i++) {
+      const checkDomain = domainParts.slice(i).join('.')
+      if (this.blocklist.has(checkDomain)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * 添加域名到黑名单
+   */
+  addToBlocklist(domains: string[]): void {
+    domains.forEach(d => this.blocklist.add(d.toLowerCase().trim()))
+  }
+
+  /**
+   * 添加域名到允许名单
+   */
+  addToAllowlist(domains: string[]): void {
+    domains.forEach(d => this.allowlist.add(d.toLowerCase().trim()))
+  }
+
+  /**
+   * 获取黑名单大小
+   */
+  getBlocklistSize(): number {
+    return this.blocklist.size
+  }
+
+  /**
+   * 获取允许名单大小
+   */
+  getAllowlistSize(): number {
+    return this.allowlist.size
+  }
+}
+
+// 全局检查器实例（需要在应用启动时初始化）
+let globalEmailChecker: DisposableEmailChecker | null = null
+
+/**
+ * 初始化全局邮箱检查器
+ */
+export function initEmailChecker(blocklist: string[], allowlist: string[] = []): void {
+  globalEmailChecker = new DisposableEmailChecker(blocklist, allowlist)
+}
+
+/**
+ * 检查邮箱是否为一次性邮箱
+ * @param email 邮箱地址
+ * @returns 如果是一次性邮箱返回 true，否则返回 false
+ */
+export function isDisposableEmail(email: string): boolean {
+  if (!globalEmailChecker) {
+    console.warn('Email checker not initialized. Please call initEmailChecker first.')
+    return false
+  }
+  return globalEmailChecker.isDisposableEmail(email)
+}
+
+/**
+ * 添加验证邮箱是否为一次性邮箱的结果到 ValidationResult
+ */
+export function validateDisposableEmail(email: string): ValidationResult {
+  if (!globalEmailChecker) {
+    return {
+      isValid: true,
+      errors: []
+    }
+  }
+
+  if (globalEmailChecker.isDisposableEmail(email)) {
+    return {
+      isValid: false,
+      errors: ['不允许使用一次性邮箱注册，请使用您的永久邮箱地址']
+    }
+  }
+
+  return {
+    isValid: true,
+    errors: []
+  }
+}
+
 export function validatePassword(password: string): ValidationResult {
   const errors: string[] = []
 
