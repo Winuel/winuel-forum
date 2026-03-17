@@ -19,20 +19,14 @@ initEmailChecker(
 
 const app = new Hono<{ Bindings: Env }>()
 
-// Set global environment
+// Set global environment and initialize JWT
 app.use('*', async (c, next) => {
   if (c.env.ENVIRONMENT) {
     ;(globalThis as any).ENVIRONMENT = c.env.ENVIRONMENT
   }
-  await next()
-})
-
-// Initialize JWT with environment variable
-app.use('*', async (c, next) => {
-  if (!c.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is not set')
+  if (c.env.JWT_SECRET) {
+    initJWT(c.env.JWT_SECRET)
   }
-  initJWT(c.env.JWT_SECRET)
   await next()
 })
 
