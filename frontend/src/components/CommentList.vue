@@ -8,7 +8,9 @@
 
     <div v-else class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        请 <router-link to="/login" class="text-primary-500 hover:text-primary-600 font-medium">登录</router-link>
+        请 <router-link to="/login" class="text-primary-500 hover:text-primary-600 font-medium">
+          登录
+        </router-link>
         后参与讨论
       </p>
     </div>
@@ -22,7 +24,9 @@
     </div>
 
     <div v-if="postStore.comments.length === 0" class="text-center py-8">
-      <p class="text-gray-500 dark:text-gray-400">暂无评论</p>
+      <p class="text-gray-500 dark:text-gray-400">
+        暂无评论
+      </p>
     </div>
   </div>
 </template>

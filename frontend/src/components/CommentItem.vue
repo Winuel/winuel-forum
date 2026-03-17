@@ -58,7 +58,7 @@
 import { ref } from 'vue'
 import type { Comment } from '../stores/post'
 
-const props = defineProps<{
+defineProps<{
   comment: Comment
 }>()
 

@@ -11,6 +11,8 @@ const ALLOWED_ORIGINS = {
   production: [
     // TODO: 添加生产环境的域名
     'https://cloudlink.lemonhub.workers.dev',
+    'https://winuel.pages.dev',
+    'https://www.winuel.com',
   ],
 }
 

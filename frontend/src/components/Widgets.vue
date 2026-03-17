@@ -52,7 +52,9 @@
             <router-link :to="`/user/${user.username}`" class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 transition-colors block truncate">
               {{ user.username }}
             </router-link>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ user.postsCount }} 篇帖子</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ user.postsCount }} 篇帖子
+            </p>
           </div>
         </div>
       </div>
@@ -61,8 +63,12 @@
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-600 p-6 text-white shadow-lg shadow-primary-500/30">
       <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
       <div class="relative">
-        <h3 class="text-lg font-display font-bold mb-2">加入云纽</h3>
-        <p class="text-sm text-primary-100 mb-4 leading-relaxed">分享你的想法，与社区成员交流互动</p>
+        <h3 class="text-lg font-display font-bold mb-2">
+          加入云纽
+        </h3>
+        <p class="text-sm text-primary-100 mb-4 leading-relaxed">
+          分享你的想法，与社区成员交流互动
+        </p>
         <router-link
           to="/register"
           class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-white text-primary-600 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-300"

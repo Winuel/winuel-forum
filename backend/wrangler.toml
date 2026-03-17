@@ -4,7 +4,7 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
 # 注意：JWT_SECRET 应该使用 secrets 而不是 vars
 # 使用命令: wrangler secret put JWT_SECRET
 

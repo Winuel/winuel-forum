@@ -12,7 +12,10 @@
         >
           <div class="flex items-start gap-3">
             <div :class="['flex-shrink-0', iconStyles[notification.type]]">
-              <component :is="iconComponents[notification.type]" class="w-5 h-5" />
+              <component
+                :is="iconComponents[notification.type]"
+                class="w-5 h-5"
+              />
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="text-sm font-medium text-gray-900 dark:text-white">
@@ -23,11 +26,21 @@
               </p>
             </div>
             <button
-              @click="uiStore.removeNotification(notification.id!)"
               class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              @click="uiStore.removeNotification(notification.id!)"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>

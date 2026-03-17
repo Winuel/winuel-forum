@@ -3,12 +3,18 @@
     <Header />
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex gap-6 lg:gap-8">
-        <aside v-if="uiStore.sidebarOpen" class="w-64 flex-shrink-0 hidden lg:block">
+        <aside
+          v-if="uiStore.sidebarOpen"
+          class="w-64 flex-shrink-0 hidden lg:block"
+        >
           <Sidebar />
         </aside>
         <main class="flex-1 min-w-0">
           <router-view v-slot="{ Component }">
-            <transition name="page" mode="out-in">
+            <transition
+              name="page"
+              mode="out-in"
+            >
               <component :is="Component" />
             </transition>
           </router-view>

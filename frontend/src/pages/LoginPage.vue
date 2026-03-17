@@ -12,8 +12,12 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h1 class="text-3xl font-display font-bold text-gradient mb-2">欢迎回来</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400">登录您的云纽账户</p>
+            <h1 class="text-3xl font-display font-bold text-gradient mb-2">
+              欢迎回来
+            </h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              登录您的云纽账户
+            </p>
           </div>
 
           <form @submit.prevent="handleSubmit" class="space-y-5">
@@ -115,7 +119,7 @@ async function handleSubmit() {
         message: error.message || '请检查邮箱和密码',
       })
     }
-  } catch (error) {
+  } catch {
     uiStore.addNotification({
       type: 'error',
       title: '登录失败',

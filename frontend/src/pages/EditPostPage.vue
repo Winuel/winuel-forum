@@ -1,11 +1,19 @@
 <template>
   <div class="max-w-3xl mx-auto">
     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">编辑帖子</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        编辑帖子
+      </h1>
 
-      <form @submit.prevent="handleSubmit" class="space-y-6">
+      <form
+        class="space-y-6"
+        @submit.prevent="handleSubmit"
+      >
         <div>
-          <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            for="title"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             标题
           </label>
           <input
@@ -15,11 +23,14 @@
             required
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             placeholder="请输入帖子标题"
-          />
+          >
         </div>
 
         <div>
-          <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            for="category"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             分类
           </label>
           <select
@@ -28,15 +39,24 @@
             required
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
-            <option value="">请选择分类</option>
-            <option v-for="category in categories" :key="category.id" :value="category.id">
+            <option value="">
+              请选择分类
+            </option>
+            <option
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.id"
+            >
               {{ category.name }}
             </option>
           </select>
         </div>
 
         <div>
-          <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            for="content"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             内容
           </label>
           <textarea
@@ -46,11 +66,14 @@
             rows="10"
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
             placeholder="请输入帖子内容（支持 Markdown）"
-          ></textarea>
+          />
         </div>
 
         <div>
-          <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            for="tags"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             标签（用逗号分隔）
           </label>
           <input
@@ -59,7 +82,7 @@
             type="text"
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             placeholder="例如：Vue, TypeScript, 前端"
-          />
+          >
         </div>
 
         <div class="flex gap-3">
@@ -159,7 +182,7 @@ async function handleSubmit() {
         message: error.message || '保存失败，请稍后重试',
       })
     }
-  } catch (error) {
+  } catch {
     uiStore.addNotification({
       type: 'error',
       title: '保存失败',

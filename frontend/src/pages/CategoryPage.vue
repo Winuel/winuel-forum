@@ -1,8 +1,12 @@
 <template>
   <div>
     <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ categoryName }}</h1>
-      <p class="text-gray-600 dark:text-gray-400">浏览该分类下的所有帖子</p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        {{ categoryName }}
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400">
+        浏览该分类下的所有帖子
+      </p>
     </div>
 
     <div v-if="loading" class="text-center py-8">
@@ -18,7 +22,9 @@
     </div>
 
     <div v-if="!loading && posts.length === 0" class="text-center py-12">
-      <p class="text-gray-500 dark:text-gray-400">该分类下暂无帖子</p>
+      <p class="text-gray-500 dark:text-gray-400">
+        该分类下暂无帖子
+      </p>
     </div>
   </div>
 </template>
