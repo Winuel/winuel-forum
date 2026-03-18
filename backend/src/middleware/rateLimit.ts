@@ -68,9 +68,14 @@ export function createRateLimit(config: RateLimitConfig = DEFAULT_CONFIG) {
       }
 
       // 更新 KV 中的计数器
-      await c.env.KV.put(key, JSON.stringify(info), {
-        expirationTtl: Math.ceil(windowMs / 1000)
-      })
+      try {
+        await c.env.KV.put(key, JSON.stringify(info), {
+          expirationTtl: Math.ceil(windowMs / 1000)
+        })
+      } catch (kvError) {
+        // KV写入失败时记录日志但不阻止请求
+        console.error('Failed to update rate limit in KV:', kvError)
+      }
 
       // 设置响应头
       c.header('X-RateLimit-Limit', maxRequests.toString())
@@ -79,7 +84,7 @@ export function createRateLimit(config: RateLimitConfig = DEFAULT_CONFIG) {
 
       await next()
     } catch (error) {
-      // 如果速率限制服务失败，允许请求通过
+      // 如果速率限制服务失败，记录日志并允许请求通过
       console.error('Rate limit error:', error)
       await next()
     }
@@ -88,7 +93,7 @@ export function createRateLimit(config: RateLimitConfig = DEFAULT_CONFIG) {
 
 // 预定义的速率限制配置
 export const strictRateLimit = createRateLimit({
-  maxRequests: 10,
+  maxRequests: 20,
   windowMs: 60 * 1000, // 1 minute
   message: '请求过于频繁，请1分钟后再试'
 })
@@ -100,7 +105,7 @@ export const normalRateLimit = createRateLimit({
 })
 
 export const strictAuthRateLimit = createRateLimit({
-  maxRequests: 5,
+  maxRequests: 10,
   windowMs: 60 * 1000, // 1 minute
   message: '登录尝试过于频繁，请1分钟后再试'
 })

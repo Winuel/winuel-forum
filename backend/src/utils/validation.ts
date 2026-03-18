@@ -104,47 +104,125 @@ export class DisposableEmailChecker {
 let globalEmailChecker: DisposableEmailChecker | null = null
 
 /**
+
  * 初始化全局邮箱检查器
+
  */
+
 export function initEmailChecker(blocklist: string[], allowlist: string[] = []): void {
-  globalEmailChecker = new DisposableEmailChecker(blocklist, allowlist)
+
+  try {
+
+    globalEmailChecker = new DisposableEmailChecker(blocklist, allowlist)
+
+    console.log(`Email checker initialized with ${blocklist.length} blocked domains and ${allowlist.length} allowed domains`)
+
+  } catch (error) {
+
+    console.error('Failed to initialize email checker:', error)
+
+    // 即使初始化失败，也不抛出错误，继续运行
+
+  }
+
 }
 
+
+
 /**
+
  * 检查邮箱是否为一次性邮箱
+
  * @param email 邮箱地址
+
  * @returns 如果是一次性邮箱返回 true，否则返回 false
+
  */
+
 export function isDisposableEmail(email: string): boolean {
+
   if (!globalEmailChecker) {
+
     console.warn('Email checker not initialized. Please call initEmailChecker first.')
+
     return false
+
   }
-  return globalEmailChecker.isDisposableEmail(email)
+
+  try {
+
+    return globalEmailChecker.isDisposableEmail(email)
+
+  } catch (error) {
+
+    console.error('Error checking disposable email:', error)
+
+    return false
+
+  }
+
 }
 
+
+
+
+
 /**
+
  * 添加验证邮箱是否为一次性邮箱的结果到 ValidationResult
+
  */
+
 export function validateDisposableEmail(email: string): ValidationResult {
+
   if (!globalEmailChecker) {
+
+    console.warn('Email checker not initialized. Skipping disposable email check.')
+
     return {
+
       isValid: true,
+
       errors: []
+
     }
+
   }
 
-  if (globalEmailChecker.isDisposableEmail(email)) {
-    return {
-      isValid: false,
-      errors: ['不允许使用一次性邮箱注册，请使用您的永久邮箱地址']
+
+
+  try {
+
+    if (globalEmailChecker.isDisposableEmail(email)) {
+
+      return {
+
+        isValid: false,
+
+        errors: ['不允许使用一次性邮箱注册，请使用您的永久邮箱地址']
+
+      }
+
     }
+
+  } catch (error) {
+
+    console.error('Error validating disposable email:', error)
+
+    // 验证失败时，为了安全起见，允许通过
+
   }
+
+
 
   return {
+
     isValid: true,
+
     errors: []
+
   }
+
 }
 
 export function validatePassword(password: string): ValidationResult {

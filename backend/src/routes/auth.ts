@@ -50,6 +50,7 @@ authRouter.post('/register', strictAuthRateLimit, async (c) => {
     const result = await userService.create({ username, email, password })
     return c.json(result)
   } catch (error: any) {
+    console.error('Registration error:', error)
     const errorInfo = handleError(error)
     const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 500
     return c.json(formatErrorResponse(errorInfo), statusCode)

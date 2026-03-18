@@ -4,14 +4,21 @@ import type { JWTPayload } from '../db/models'
 let JWT_SECRET: Uint8Array | null = null
 
 export function initJWT(secret: string): void {
-  JWT_SECRET = new TextEncoder().encode(secret)
-  if (!JWT_SECRET || JWT_SECRET.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters long')
+  try {
+    if (!secret || secret.length < 32) {
+      console.error('JWT_SECRET must be at least 32 characters long, got:', secret.length)
+      throw new Error('JWT_SECRET must be at least 32 characters long')
+    }
+    JWT_SECRET = new TextEncoder().encode(secret)
+  } catch (error) {
+    console.error('Failed to initialize JWT:', error)
+    throw error
   }
 }
 
 function getSecret(): Uint8Array {
   if (!JWT_SECRET) {
+    console.error('JWT not initialized. Call initJWT() first')
     throw new Error('JWT not initialized. Call initJWT() first')
   }
   return JWT_SECRET
