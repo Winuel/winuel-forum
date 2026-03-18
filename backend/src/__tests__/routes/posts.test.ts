@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import postsRouter from '../../routes/posts'
 import { createMockD1Database } from '../helpers/db'
-import { initJWT } from '../../utils/jwt'
+import { initJWT, generateToken } from '../../utils/jwt'
 
 describe('Posts Router', () => {
   let app: Hono
@@ -29,9 +29,10 @@ describe('Posts Router', () => {
     app.route('/api/posts', postsRouter)
   })
 
-  const createAuthHeader = (userId: string) => {
+  const createAuthHeader = async (userId: string, username: string = 'testuser', role: string = 'user') => {
+    const token = await generateToken({ userId, username, role })
     return {
-      'Authorization': `Bearer ${userId}`,
+      'Authorization': `Bearer ${token}`,
     }
   }
 
@@ -224,11 +225,12 @@ describe('Posts Router', () => {
       mockDb.tables.set('tags', [])
       mockDb.tables.set('post_tags', [])
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...createAuthHeader('1'),
+          ...authHeader,
         },
         body: JSON.stringify(postData),
       })
@@ -243,11 +245,12 @@ describe('Posts Router', () => {
         title: 'New Post',
       }
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...createAuthHeader('1'),
+          ...authHeader,
         },
         body: JSON.stringify(postData),
       })
@@ -282,11 +285,12 @@ describe('Posts Router', () => {
         categoryId: '1',
       }
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/1', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...createAuthHeader('1'),
+          ...authHeader,
         },
         body: JSON.stringify(updateData),
       })
@@ -306,11 +310,12 @@ describe('Posts Router', () => {
         categoryId: '1',
       }
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/999', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...createAuthHeader('1'),
+          ...authHeader,
         },
         body: JSON.stringify(updateData),
       })
@@ -343,11 +348,12 @@ describe('Posts Router', () => {
         categoryId: '1',
       }
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/1', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...createAuthHeader('1'),
+          ...authHeader,
         },
         body: JSON.stringify(updateData),
       })
@@ -376,9 +382,10 @@ describe('Posts Router', () => {
       mockDb.tables = new Map()
       mockDb.tables.set('posts', [mockPost])
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/1', {
         method: 'DELETE',
-        headers: createAuthHeader('1'),
+        headers: authHeader,
       })
 
       expect(res.status).toBe(200)
@@ -390,9 +397,10 @@ describe('Posts Router', () => {
       mockDb.tables = new Map()
       mockDb.tables.set('posts', [])
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/999', {
         method: 'DELETE',
-        headers: createAuthHeader('1'),
+        headers: authHeader,
       })
 
       expect(res.status).toBe(404)
@@ -417,9 +425,10 @@ describe('Posts Router', () => {
       mockDb.tables = new Map()
       mockDb.tables.set('posts', [mockPost])
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/1', {
         method: 'DELETE',
-        headers: createAuthHeader('1'),
+        headers: authHeader,
       })
 
       expect(res.status).toBe(403)
@@ -454,9 +463,10 @@ describe('Posts Router', () => {
       mockDb.tables.set('likes', [])
       mockDb.tables.set('notifications', [])
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/1/like', {
         method: 'POST',
-        headers: createAuthHeader('1'),
+        headers: authHeader,
       })
 
       expect(res.status).toBe(200)
@@ -489,9 +499,10 @@ describe('Posts Router', () => {
       mockDb.tables.set('posts', [mockPost])
       mockDb.tables.set('likes', [mockLike])
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/1/like', {
         method: 'POST',
-        headers: createAuthHeader('1'),
+        headers: authHeader,
       })
 
       expect(res.status).toBe(400)
@@ -512,9 +523,10 @@ describe('Posts Router', () => {
       mockDb.tables = new Map()
       mockDb.tables.set('likes', [mockLike])
 
+      const authHeader = await createAuthHeader('1')
       const res = await app.request('/api/posts/1/like', {
         method: 'DELETE',
-        headers: createAuthHeader('1'),
+        headers: authHeader,
       })
 
       expect(res.status).toBe(200)

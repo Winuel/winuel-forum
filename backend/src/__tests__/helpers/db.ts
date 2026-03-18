@@ -16,46 +16,76 @@ export function createMockD1Database(): D1Database {
         if (sql.includes('COUNT(*) as count')) {
           let count = filteredRows.length
           
-          if (sql.includes('WHERE category_id = ?')) {
-            count = filteredRows.filter((r: any) => r.category_id === params[0]).length
-          } else if (sql.includes('WHERE author_id = ?')) {
-            count = filteredRows.filter((r: any) => r.author_id === params[0]).length
+          if (sql.includes('WHERE category_id = ?') || sql.includes('AND category_id = ?')) {
+            const categoryIdIndex = sql.indexOf('category_id = ?')
+            const paramIndex = getParamIndex(sql, categoryIdIndex)
+            count = filteredRows.filter((r: any) => r.category_id === params[paramIndex]).length
+          } else if (sql.includes('WHERE author_id = ?') || sql.includes('AND author_id = ?')) {
+            const authorIdIndex = sql.indexOf('author_id = ?')
+            const paramIndex = getParamIndex(sql, authorIdIndex)
+            count = filteredRows.filter((r: any) => r.author_id === params[paramIndex]).length
+          } else if (sql.includes('WHERE user_id = ?')) {
+            const userIdIndex = sql.indexOf('user_id = ?')
+            const paramIndex = getParamIndex(sql, userIdIndex)
+            count = filteredRows.filter((r: any) => r.user_id === params[paramIndex]).length
+            if (sql.includes('AND is_read = 0')) {
+              count = filteredRows.filter((r: any) => r.user_id === params[paramIndex] && !r.is_read).length
+            }
           }
           
           return [{ count }]
         }
 
         if (operation === 'SELECT') {
-          // WHERE conditions
-          if (sql.includes('WHERE email = ?')) {
-            filteredRows = rows.filter((r: any) => r.email === params[0])
+          // WHERE conditions (support both WHERE and AND)
+          if (sql.includes('WHERE email = ?') || sql.includes('AND email = ?')) {
+            const emailIndex = sql.indexOf('email = ?')
+            const paramIndex = getParamIndex(sql, emailIndex)
+            filteredRows = filteredRows.filter((r: any) => r.email === params[paramIndex])
           }
-          if (sql.includes('WHERE username = ?')) {
-            filteredRows = rows.filter((r: any) => r.username === params[0])
+          if (sql.includes('WHERE username = ?') || sql.includes('AND username = ?')) {
+            const usernameIndex = sql.indexOf('username = ?')
+            const paramIndex = getParamIndex(sql, usernameIndex)
+            filteredRows = filteredRows.filter((r: any) => r.username === params[paramIndex])
           }
-          if (sql.includes('WHERE id = ?')) {
-            filteredRows = rows.filter((r: any) => r.id === params[0])
+          if (sql.includes('WHERE id = ?') || sql.includes('AND id = ?')) {
+            const idIndex = sql.indexOf('id = ?')
+            const paramIndex = getParamIndex(sql, idIndex)
+            filteredRows = filteredRows.filter((r: any) => r.id === params[paramIndex])
           }
-          if (sql.includes('WHERE user_id = ?')) {
-            filteredRows = rows.filter((r: any) => r.user_id === params[0])
-            if (sql.includes('is_read = 0') || sql.includes('is_read = ?')) {
-              filteredRows = filteredRows.filter((r: any) => !r.is_read)
-            }
+          if (sql.includes('WHERE user_id = ?') || sql.includes('AND user_id = ?')) {
+            const userIdIndex = sql.indexOf('user_id = ?')
+            const paramIndex = getParamIndex(sql, userIdIndex)
+            filteredRows = filteredRows.filter((r: any) => r.user_id === params[paramIndex])
           }
-          if (sql.includes('WHERE post_id = ?')) {
-            filteredRows = rows.filter((r: any) => r.post_id === params[0])
+          if (sql.includes('AND is_read = 0')) {
+            filteredRows = filteredRows.filter((r: any) => !r.is_read)
           }
-          if (sql.includes('WHERE category_id = ?')) {
-            filteredRows = rows.filter((r: any) => r.category_id === params[0])
+          if (sql.includes('AND is_read = ?')) {
+            const readIndex = sql.indexOf('is_read = ?')
+            const paramIndex = getParamIndex(sql, readIndex)
+            filteredRows = filteredRows.filter((r: any) => r.is_read !== (params[paramIndex] === 1 || params[paramIndex] === true))
           }
-          if (sql.includes('WHERE author_id = ?')) {
-            filteredRows = rows.filter((r: any) => r.author_id === params[0])
+          if (sql.includes('WHERE post_id = ?') || sql.includes('AND post_id = ?')) {
+            const postIdIndex = sql.indexOf('post_id = ?')
+            const paramIndex = getParamIndex(sql, postIdIndex)
+            filteredRows = filteredRows.filter((r: any) => r.post_id === params[paramIndex])
+          }
+          if (sql.includes('WHERE category_id = ?') || sql.includes('AND category_id = ?')) {
+            const categoryIdIndex = sql.indexOf('category_id = ?')
+            const paramIndex = getParamIndex(sql, categoryIdIndex)
+            filteredRows = filteredRows.filter((r: any) => r.category_id === params[paramIndex])
+          }
+          if (sql.includes('WHERE author_id = ?') || sql.includes('AND author_id = ?')) {
+            const authorIdIndex = sql.indexOf('author_id = ?')
+            const paramIndex = getParamIndex(sql, authorIdIndex)
+            filteredRows = filteredRows.filter((r: any) => r.author_id === params[paramIndex])
           }
           if (sql.includes('WHERE target_type = ?') && sql.includes('AND target_id = ?')) {
-            filteredRows = rows.filter((r: any) => r.target_type === params[0] && r.target_id === params[1])
+            filteredRows = filteredRows.filter((r: any) => r.target_type === params[0] && r.target_id === params[1])
           }
           if (sql.includes('WHERE target_type = ?') && sql.includes('AND user_id = ?')) {
-            filteredRows = rows.filter((r: any) => r.target_type === params[0] && r.user_id === params[1])
+            filteredRows = filteredRows.filter((r: any) => r.target_type === params[0] && r.user_id === params[1])
           }
 
           // ORDER BY
@@ -126,18 +156,36 @@ export function createMockD1Database(): D1Database {
                 const currentRows = db.tables.get(tableName) || []
                 const updatedRows = currentRows.map((row: any) => {
                   // Check if this row should be updated
+                  let shouldUpdate = true
+                  
                   if (sql.includes('WHERE id = ?')) {
-                    if (row.id !== params[params.length - 1]) {
-                      return row
+                    const idIndex = sql.indexOf('id = ?')
+                    const idParamIndex = getParamIndex(sql, idIndex)
+                    if (row.id !== params[idParamIndex]) {
+                      shouldUpdate = false
                     }
-                  } else if (sql.includes('WHERE user_id = ?') && sql.includes('is_read = ?')) {
+                  }
+                  
+                  if (shouldUpdate && sql.includes('AND user_id = ?')) {
+                    const userIdIndex = sql.indexOf('AND user_id = ?')
+                    const userIdParamIndex = getParamIndex(sql, userIdIndex)
+                    if (row.user_id !== params[userIdParamIndex]) {
+                      shouldUpdate = false
+                    }
+                  }
+                  
+                  if (sql.includes('WHERE user_id = ?') && sql.includes('is_read = ?')) {
                     if (row.user_id !== params[0]) {
-                      return row
+                      shouldUpdate = false
                     }
                   } else if (sql.includes('WHERE user_id = ?') && sql.includes('is_read = 0')) {
                     if (row.user_id !== params[0] || row.is_read) {
-                      return row
+                      shouldUpdate = false
                     }
+                  }
+                  
+                  if (!shouldUpdate) {
+                    return row
                   }
 
                   // Apply updates
@@ -172,6 +220,12 @@ export function createMockD1Database(): D1Database {
                   }
                   if (sql.includes('comment_count = comment_count - 1')) {
                     updatedRow.comment_count = Math.max(0, (row.comment_count || 0) - 1)
+                  }
+                  if (sql.includes('is_read = 1')) {
+                    updatedRow.is_read = true
+                  }
+                  if (sql.includes('is_read = 0')) {
+                    updatedRow.is_read = false
                   }
                   if (sql.includes('is_read = ?')) {
                     const readIndex = sql.indexOf('is_read = ?')
