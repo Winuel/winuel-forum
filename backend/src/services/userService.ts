@@ -17,6 +17,12 @@ export class UserService {
   constructor(private db: D1Database) {}
 
   async create(input: CreateUserInput): Promise<{ user: Omit<User, 'password_hash'>; token: string }> {
+    // 检查邮箱是否已存在
+    const existingUser = await this.findByEmail(input.email)
+    if (existingUser) {
+      throw new Error('邮箱已被注册')
+    }
+
     const id = generateId()
     const password_hash = await hashPassword(input.password)
 

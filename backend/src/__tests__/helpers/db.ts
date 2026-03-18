@@ -12,6 +12,19 @@ export function createMockD1Database(): D1Database {
         const rows = db.tables.get(tableName) || []
         let filteredRows = [...rows]
 
+        // Handle COUNT queries
+        if (sql.includes('COUNT(*) as count')) {
+          let count = filteredRows.length
+          
+          if (sql.includes('WHERE category_id = ?')) {
+            count = filteredRows.filter((r: any) => r.category_id === params[0]).length
+          } else if (sql.includes('WHERE author_id = ?')) {
+            count = filteredRows.filter((r: any) => r.author_id === params[0]).length
+          }
+          
+          return [{ count }]
+        }
+
         if (operation === 'SELECT') {
           // WHERE conditions
           if (sql.includes('WHERE email = ?')) {
@@ -53,12 +66,31 @@ export function createMockD1Database(): D1Database {
             filteredRows.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           }
 
-          // LIMIT and OFFSET
-          const limitMatch = sql.match(/LIMIT\s+(\d+)/)
-          const offsetMatch = sql.match(/OFFSET\s+(\d+)/)
+          // LIMIT and OFFSET (support both fixed numbers and parameters)
+          const limitMatch = sql.match(/LIMIT\s+(\d+|\?)/)
+          const offsetMatch = sql.match(/OFFSET\s+(\d+|\?)/)
           if (limitMatch) {
-            const limit = parseInt(limitMatch[1])
-            const offset = offsetMatch ? parseInt(offsetMatch[1]) : 0
+            let limit: number
+            let offset = 0
+
+            if (limitMatch[1] === '?') {
+              // Get limit from params
+              const limitParamIndex = getParamIndex(sql, sql.indexOf('LIMIT'))
+              limit = parseInt(params[limitParamIndex])
+            } else {
+              limit = parseInt(limitMatch[1])
+            }
+
+            if (offsetMatch) {
+              if (offsetMatch[1] === '?') {
+                // Get offset from params
+                const offsetParamIndex = getParamIndex(sql, sql.indexOf('OFFSET'))
+                offset = parseInt(params[offsetParamIndex])
+              } else {
+                offset = parseInt(offsetMatch[1])
+              }
+            }
+
             filteredRows = filteredRows.slice(offset, offset + limit)
           }
 

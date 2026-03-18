@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { UserService } from '../../services/userService'
 import { createMockD1Database } from '../helpers/db'
 import { initJWT } from '../../utils/jwt'
+import { hashPassword } from '../../utils/crypto'
 
 describe('UserService', () => {
   let mockDb: any
@@ -15,18 +16,9 @@ describe('UserService', () => {
 
   describe('create', () => {
     it('should create a new user', async () => {
-      const mockUser = {
-        id: '1',
-        username: 'testuser',
-        email: 'test@example.com',
-        password_hash: 'hashed_password',
-        role: 'user',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-
+      // Clear any existing data
       mockDb.tables = new Map()
-      mockDb.tables.set('users', [mockUser])
+      mockDb.tables.set('users', [])
 
       const result = await userService.create({
         username: 'testuser',
@@ -66,11 +58,12 @@ describe('UserService', () => {
 
   describe('login', () => {
     it('should login with valid credentials', async () => {
+      const password_hash = await hashPassword('password123')
       const mockUser = {
         id: '1',
         username: 'testuser',
         email: 'test@example.com',
-        password_hash: '$2a$10$test_hash',
+        password_hash,
         role: 'user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -102,11 +95,12 @@ describe('UserService', () => {
     })
 
     it('should throw error with invalid password', async () => {
+      const password_hash = await hashPassword('password123')
       const mockUser = {
         id: '1',
         username: 'testuser',
         email: 'test@example.com',
-        password_hash: '$2a$10$test_hash',
+        password_hash,
         role: 'user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

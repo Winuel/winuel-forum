@@ -2,32 +2,35 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import notificationsRouter from '../../routes/notifications'
 import { createMockD1Database } from '../helpers/db'
-import { initJWT } from '../../utils/jwt'
+import { initJWT, generateToken } from '../../utils/jwt'
 import type { Env, Variables } from '../../types'
 
 describe('Notifications Router', () => {
   let app: Hono<{ Bindings: Env; Variables: Variables }>
   let mockDb: any
+  let authToken: string
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockDb = createMockD1Database()
     initJWT('test-secret-key-32-characters-long-key')
+
+    // Generate auth token
+    authToken = await generateToken({
+      userId: 'user1',
+      username: 'testuser',
+      role: 'user',
+    })
 
     app = new Hono<{ Bindings: Env; Variables: Variables }>()
     app.route('/api/notifications', notificationsRouter)
 
-    // Mock the env and user
+    // Mock the env
     app.use('*', async (c, next) => {
       if (!c.env) {
         c.env = {} as Env
       }
       c.env.DB = mockDb
       c.env.JWT_SECRET = 'test-secret-key-32-characters-long-key'
-      c.set('user', {
-        userId: 'user1',
-        username: 'testuser',
-        role: 'user',
-      })
       await next()
     })
   })
@@ -60,7 +63,11 @@ describe('Notifications Router', () => {
       mockDb.tables = new Map()
       mockDb.tables.set('notifications', mockNotifications)
 
-      const res = await app.request('/api/notifications?page=1&limit=20')
+      const res = await app.request('/api/notifications?page=1&limit=20', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      })
 
       expect(res.status).toBe(200)
       const json = await res.json() as { notifications: any[]; total: number; unread_count: number }
@@ -96,7 +103,11 @@ describe('Notifications Router', () => {
       mockDb.tables = new Map()
       mockDb.tables.set('notifications', mockNotifications)
 
-      const res = await app.request('/api/notifications?unreadOnly=true')
+      const res = await app.request('/api/notifications?unreadOnly=true', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      })
 
       expect(res.status).toBe(200)
       const json = await res.json() as { notifications: any[] }
@@ -133,7 +144,11 @@ describe('Notifications Router', () => {
       mockDb.tables = new Map()
       mockDb.tables.set('notifications', mockNotifications)
 
-      const res = await app.request('/api/notifications/unread-count')
+      const res = await app.request('/api/notifications/unread-count', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      })
 
       expect(res.status).toBe(200)
       const json = await res.json()
@@ -159,6 +174,9 @@ describe('Notifications Router', () => {
 
       const res = await app.request('/api/notifications/1/read', {
         method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
       })
 
       expect(res.status).toBe(200)
@@ -197,6 +215,9 @@ describe('Notifications Router', () => {
 
       const res = await app.request('/api/notifications/read-all', {
         method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
       })
 
       expect(res.status).toBe(200)
@@ -223,6 +244,9 @@ describe('Notifications Router', () => {
 
       const res = await app.request('/api/notifications/1', {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
       })
 
       expect(res.status).toBe(200)
@@ -261,6 +285,9 @@ describe('Notifications Router', () => {
 
       const res = await app.request('/api/notifications', {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
       })
 
       expect(res.status).toBe(200)
