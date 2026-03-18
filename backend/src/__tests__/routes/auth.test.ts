@@ -5,15 +5,21 @@ import { createMockD1Database } from '../helpers/db'
 import { initJWT } from '../../utils/jwt'
 import { strictAuthRateLimit } from '../../middleware/rateLimit'
 import { authMiddleware } from '../../middleware/auth'
+import { hashPassword } from '../../utils/crypto'
+import { initEmailChecker } from '../../utils/validation'
 import type { Env, Variables } from '../../types'
 
 describe('Auth Router', () => {
   let app: Hono<{ Bindings: Env; Variables: Variables }>
   let mockDb: any
+  let testPasswordHash: string
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockDb = createMockD1Database()
     initJWT('test-secret-key-32-characters-long-key')
+    testPasswordHash = await hashPassword('Password123!')
+    // Initialize disposable email checker with test blocklist
+    initEmailChecker(['tempmail.com'], [])
 
     app = new Hono<{ Bindings: Env; Variables: Variables }>()
     app.use('*', async (c, next) => {
@@ -67,8 +73,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('missing')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.message).toContain('缺少必要字段')
+      expect(json.error.code).toBe('MISSING_FIELD')
     })
 
     it('should return 400 for invalid username', async () => {
@@ -85,8 +92,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('validation')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.message).toContain('验证失败')
+      expect(json.error.code).toBe('VALIDATION_ERROR')
     })
 
     it('should return 400 for invalid email', async () => {
@@ -103,8 +111,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('validation')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.message).toContain('验证失败')
+      expect(json.error.code).toBe('VALIDATION_ERROR')
     })
 
     it('should return 400 for invalid password', async () => {
@@ -121,8 +130,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('validation')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.message).toContain('验证失败')
+      expect(json.error.code).toBe('VALIDATION_ERROR')
     })
 
     it('should return 400 for disposable email', async () => {
@@ -139,8 +149,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('validation')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.message).toContain('验证失败')
+      expect(json.error.code).toBe('VALIDATION_ERROR')
     })
 
     it('should return 409 when email already exists', async () => {
@@ -170,8 +181,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(409)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('exists')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.message).toContain('资源已存在')
+      expect(json.error.code).toBe('ALREADY_EXISTS')
     })
   })
 
@@ -181,7 +193,7 @@ describe('Auth Router', () => {
         id: '1',
         username: 'testuser',
         email: 'test@example.com',
-        password_hash: '$2a$10$abcdefghijklmnopqrstuvwxyz1234567890',
+        password_hash: testPasswordHash,
         role: 'user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -220,8 +232,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('missing')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.message).toContain('缺少必要字段')
+      expect(json.error.code).toBe('MISSING_FIELD')
     })
 
     it('should return 401 for invalid email', async () => {
@@ -240,8 +253,8 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(401)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('邮箱或密码错误')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.code).toBe('UNAUTHORIZED')
     })
 
     it('should return 401 for invalid password', async () => {
@@ -249,7 +262,7 @@ describe('Auth Router', () => {
         id: '1',
         username: 'testuser',
         email: 'test@example.com',
-        password_hash: '$2a$10$abcdefghijklmnopqrstuvwxyz1234567890',
+        password_hash: testPasswordHash,
         role: 'user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -270,8 +283,8 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(401)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('邮箱或密码错误')
+      const json = await res.json() as { success: boolean; error: { code: string; message: string } }
+      expect(json.error.code).toBe('UNAUTHORIZED')
     })
   })
 

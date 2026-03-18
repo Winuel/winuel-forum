@@ -1,6 +1,7 @@
 import type { User } from '../db/models'
 import { generateId, hashPassword, verifyPassword } from '../utils/crypto'
 import { generateToken } from '../utils/jwt'
+import { createError } from '../utils/errorHandler'
 
 export interface CreateUserInput {
   username: string
@@ -48,12 +49,12 @@ export class UserService {
     const result = await this.db.prepare('SELECT * FROM users WHERE email = ?').bind(input.email).first<User>()
 
     if (!result) {
-      throw new Error('邮箱或密码错误')
+      throw createError.unauthorized('邮箱或密码错误')
     }
 
     const isValid = await verifyPassword(input.password, result.password_hash)
     if (!isValid) {
-      throw new Error('邮箱或密码错误')
+      throw createError.unauthorized('邮箱或密码错误')
     }
 
     const token = await generateToken({
