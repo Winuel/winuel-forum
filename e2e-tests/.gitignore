@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Test results
+coverage/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Screenshots and videos
+screenshots/
+videos/
+
+# Debug files
+debug.log
+*.puppeteer
