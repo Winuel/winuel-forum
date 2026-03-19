@@ -3,6 +3,7 @@ import type { Env, Variables } from '../types'
 import { UserService } from '../services/userService'
 import { authMiddleware } from '../middleware/auth'
 import { strictAuthRateLimit } from '../middleware/rateLimit'
+import { csrfProtectionMiddleware } from '../middleware/csrf'
 import { validatePassword, validateEmail, validateUsername, validateDisposableEmail } from '../utils/validation'
 import { createError, handleError, formatErrorResponse } from '../utils/errorHandler'
 
@@ -93,7 +94,7 @@ authRouter.get('/me', authMiddleware, async (c) => {
   }
 })
 
-authRouter.post('/logout', authMiddleware, async (c) => {
+authRouter.post('/logout', authMiddleware, csrfProtectionMiddleware, async (c) => {
   return c.json({ message: '退出成功' })
 })
 

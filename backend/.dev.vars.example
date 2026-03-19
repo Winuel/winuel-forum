@@ -4,7 +4,7 @@
 
 # JWT 密钥（开发环境）
 # 生产环境请使用: wrangler secret put JWT_SECRET
-JWT_SECRET=your-jwt-secret-key-min-32-characters-long
+JWT_SECRET=Dev3lopm3ntS3cr3tK3y!Str0ngP@ssw0rd#2026
 
 # 运行环境
 ENVIRONMENT=development

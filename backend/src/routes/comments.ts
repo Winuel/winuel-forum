@@ -3,10 +3,11 @@ import type { Env, Variables } from '../types'
 import { PostService } from '../services/postService'
 import { NotificationService } from '../services/notificationService'
 import { authMiddleware } from '../middleware/auth'
+import { csrfProtectionMiddleware } from '../middleware/csrf'
 
 const commentsRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-commentsRouter.post('/', authMiddleware, async (c) => {
+commentsRouter.post('/', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const user = c.get('user')
     const { postId, content, parentId } = await c.req.json()
@@ -73,7 +74,7 @@ commentsRouter.post('/', authMiddleware, async (c) => {
   }
 })
 
-commentsRouter.put('/:id', authMiddleware, async (c) => {
+commentsRouter.put('/:id', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!!
     const user = c.get('user')
@@ -97,7 +98,7 @@ commentsRouter.put('/:id', authMiddleware, async (c) => {
   }
 })
 
-commentsRouter.delete('/:id', authMiddleware, async (c) => {
+commentsRouter.delete('/:id', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!
     const user = c.get('user')
@@ -120,7 +121,7 @@ commentsRouter.delete('/:id', authMiddleware, async (c) => {
   }
 })
 
-commentsRouter.post('/:id/like', authMiddleware, async (c) => {
+commentsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!
     const user = c.get('user')
@@ -170,7 +171,7 @@ commentsRouter.post('/:id/like', authMiddleware, async (c) => {
   }
 })
 
-commentsRouter.delete('/:id/like', authMiddleware, async (c) => {
+commentsRouter.delete('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!
     const user = c.get('user')

@@ -3,6 +3,7 @@ import type { Env, Variables } from '../types'
 import { PostService } from '../services/postService'
 import { NotificationService } from '../services/notificationService'
 import { authMiddleware } from '../middleware/auth'
+import { csrfProtectionMiddleware } from '../middleware/csrf'
 
 const postsRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -14,35 +15,9 @@ postsRouter.get('/', async (c) => {
     const authorId = c.req.query('authorId')
 
     const postService = new PostService(c.env.DB)
-    const result = await postService.findAll({ page, limit, category_id: categoryId, author_id: authorId })
+    const result = await postService.findAllWithDetails({ page, limit, category_id: categoryId, author_id: authorId })
 
-    // 为每个帖子添加作者信息和分类信息
-    const postsWithDetails = await Promise.all(
-      result.posts.map(async (post) => {
-        const author = await c.env.DB.prepare('SELECT id, username, avatar FROM users WHERE id = ?')
-          .bind(post.author_id)
-          .first()
-        const category = await c.env.DB.prepare('SELECT id, name FROM categories WHERE id = ?')
-          .bind(post.category_id)
-          .first()
-        const tags = await c.env.DB
-          .prepare(
-            'SELECT t.name FROM tags t JOIN post_tags pt ON t.id = pt.tag_id WHERE pt.post_id = ?'
-          )
-          .bind(post.id)
-          .all()
-
-        return {
-          ...post,
-          authorUsername: author?.username || '',
-          authorAvatar: author?.avatar,
-          categoryName: category?.name || '',
-          tags: tags.results?.map((t: any) => t.name) || [],
-        }
-      })
-    )
-
-    return c.json({ posts: postsWithDetails, total: result.total })
+    return c.json({ posts: result.posts, total: result.total })
   } catch (error: any) {
     return c.json({ error: error.message || '获取帖子列表失败' }, 500)
   }
@@ -55,35 +30,18 @@ postsRouter.get('/:id', async (c) => {
 
     await postService.incrementViewCount(id)
 
-    const post = await postService.findById(id)
+    const post = await postService.findByIdWithDetails(id)
     if (!post) {
       return c.json({ error: '帖子不存在' }, 404)
     }
 
-    const author = await c.env.DB.prepare('SELECT id, username, avatar FROM users WHERE id = ?')
-      .bind(post.author_id)
-      .first()
-    const category = await c.env.DB.prepare('SELECT id, name FROM categories WHERE id = ?')
-      .bind(post.category_id)
-      .first()
-    const tags = await c.env.DB
-      .prepare('SELECT t.name FROM tags t JOIN post_tags pt ON t.id = pt.tag_id WHERE pt.post_id = ?')
-      .bind(post.id)
-      .all()
-
-    return c.json({
-      ...post,
-      authorUsername: author?.username || '',
-      authorAvatar: author?.avatar,
-      categoryName: category?.name || '',
-      tags: tags.results?.map((t: any) => t.name) || [],
-    })
+    return c.json(post)
   } catch (error: any) {
     return c.json({ error: error.message || '获取帖子失败' }, 500)
   }
 })
 
-postsRouter.post('/', authMiddleware, async (c) => {
+postsRouter.post('/', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const user = c.get('user')
     const { title, content, categoryId, tags } = await c.req.json()
@@ -107,7 +65,7 @@ postsRouter.post('/', authMiddleware, async (c) => {
   }
 })
 
-postsRouter.put('/:id', authMiddleware, async (c) => {
+postsRouter.put('/:id', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!
     const user = c.get('user')
@@ -131,7 +89,7 @@ postsRouter.put('/:id', authMiddleware, async (c) => {
   }
 })
 
-postsRouter.delete('/:id', authMiddleware, async (c) => {
+postsRouter.delete('/:id', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!
     const user = c.get('user')
@@ -154,7 +112,7 @@ postsRouter.delete('/:id', authMiddleware, async (c) => {
   }
 })
 
-postsRouter.post('/:id/like', authMiddleware, async (c) => {
+postsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!
     const user = c.get('user')
@@ -202,7 +160,7 @@ postsRouter.post('/:id/like', authMiddleware, async (c) => {
   }
 })
 
-postsRouter.delete('/:id/like', authMiddleware, async (c) => {
+postsRouter.delete('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const id = c.req.param('id')!
     const user = c.get('user')
@@ -225,22 +183,9 @@ postsRouter.get('/:id/comments', async (c) => {
   try {
     const id = c.req.param('id')!
     const postService = new PostService(c.env.DB)
-    const comments = await postService.findCommentsByPostId(id)
+    const comments = await postService.findCommentsWithReplies(id)
 
-    const commentsWithAuthors = await Promise.all(
-      comments.map(async (comment) => {
-        const author = await c.env.DB.prepare('SELECT id, username, avatar FROM users WHERE id = ?')
-          .bind(comment.author_id)
-          .first()
-        return {
-          ...comment,
-          authorUsername: author?.username || '',
-          authorAvatar: author?.avatar,
-        }
-      })
-    )
-
-    return c.json(commentsWithAuthors)
+    return c.json(comments)
   } catch (error: any) {
     return c.json({ error: error.message || '获取评论失败' }, 500)
   }

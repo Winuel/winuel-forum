@@ -93,6 +93,166 @@ export class PostService {
     }
   }
 
+  async findAllWithDetails(options: {
+    page?: number
+    limit?: number
+    category_id?: string
+    author_id?: string
+  } = {}): Promise<{ posts: any[]; total: number }> {
+    const { page = 1, limit = 20, category_id, author_id } = options
+    const offset = (page - 1) * limit
+
+    // 使用 JOIN 查询一次性获取帖子、作者和分类信息
+    let query = `
+      SELECT 
+        p.*,
+        u.username as author_username,
+        u.avatar as author_avatar,
+        c.name as category_name
+      FROM posts p
+      LEFT JOIN users u ON p.author_id = u.id AND u.deleted_at IS NULL
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.deleted_at IS NULL
+    `
+    const params: any[] = []
+
+    if (category_id) {
+      query += ' AND p.category_id = ?'
+      params.push(category_id)
+    }
+
+    if (author_id) {
+      query += ' AND p.author_id = ?'
+      params.push(author_id)
+    }
+
+    query += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?'
+    params.push(limit, offset)
+
+    const postsResult = await this.db.prepare(query).bind(...params).all()
+
+    // 获取所有帖子ID
+    const postIds = postsResult.results?.map((p: any) => p.id) || []
+
+    // 一次性获取所有标签
+    let tagsMap: Record<string, string[]> = {}
+    if (postIds.length > 0) {
+      const placeholders = postIds.map(() => '?').join(',')
+      const tagsQuery = `
+        SELECT pt.post_id, t.name 
+        FROM post_tags pt
+        JOIN tags t ON pt.tag_id = t.id
+        WHERE pt.post_id IN (${placeholders})
+      `
+      const tagsResult = await this.db.prepare(tagsQuery).bind(...postIds).all()
+      
+      tagsResult.results?.forEach((tag: any) => {
+        if (!tagsMap[tag.post_id]) {
+          tagsMap[tag.post_id] = []
+        }
+        tagsMap[tag.post_id].push(tag.name)
+      })
+    }
+
+    // 组装结果
+    const posts = postsResult.results?.map((post: any) => ({
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      author_id: post.author_id,
+      category_id: post.category_id,
+      view_count: post.view_count,
+      like_count: post.like_count,
+      comment_count: post.comment_count,
+      created_at: post.created_at,
+      updated_at: post.updated_at,
+      author: {
+        id: post.author_id,
+        username: post.author_username,
+        avatar: post.author_avatar
+      },
+      category: {
+        id: post.category_id,
+        name: post.category_name
+      },
+      tags: tagsMap[post.id] || []
+    })) || []
+
+    // 计算总数
+    let countQuery = 'SELECT COUNT(*) as count FROM posts WHERE deleted_at IS NULL'
+    const countParams: any[] = []
+
+    if (category_id) {
+      countQuery += ' AND category_id = ?'
+      countParams.push(category_id)
+    }
+
+    if (author_id) {
+      countQuery += ' AND author_id = ?'
+      countParams.push(author_id)
+    }
+
+    const countResult = await this.db.prepare(countQuery).bind(...countParams).first<{ count: number }>()
+
+    return {
+      posts,
+      total: countResult?.count || 0,
+    }
+  }
+
+  async findByIdWithDetails(id: string): Promise<any | null> {
+    // 使用 JOIN 查询一次性获取帖子、作者、分类和标签信息
+    const query = `
+      SELECT 
+        p.*,
+        u.username as author_username,
+        u.avatar as author_avatar,
+        c.name as category_name
+      FROM posts p
+      LEFT JOIN users u ON p.author_id = u.id AND u.deleted_at IS NULL
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.id = ? AND p.deleted_at IS NULL
+    `
+    
+    const post = await this.db.prepare(query).bind(id).first()
+    
+    if (!post) {
+      return null
+    }
+
+    // 获取标签
+    const tagsQuery = `
+      SELECT t.name 
+      FROM post_tags pt
+      JOIN tags t ON pt.tag_id = t.id
+      WHERE pt.post_id = ?
+    `
+    const tagsResult = await this.db.prepare(tagsQuery).bind(id).all()
+    
+    return {
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      author_id: post.author_id,
+      category_id: post.category_id,
+      view_count: post.view_count,
+      like_count: post.like_count,
+      comment_count: post.comment_count,
+      created_at: post.created_at,
+      updated_at: post.updated_at,
+      author: {
+        id: post.author_id,
+        username: post.author_username,
+        avatar: post.author_avatar
+      },
+      category: {
+        id: post.category_id,
+        name: post.category_name
+      },
+      tags: tagsResult.results?.map((t: any) => t.name) || []
+    }
+  }
+
   async update(id: string, input: UpdatePostInput): Promise<Post | null> {
     const updates: string[] = []
     const params: any[] = []
@@ -172,6 +332,69 @@ export class PostService {
       .all<Comment>()
 
     return result.results || []
+  }
+
+  async findCommentsWithReplies(postId: string): Promise<any[]> {
+    // 获取所有评论，包括回复
+    const allComments = await this.db
+      .prepare(`
+        SELECT 
+          c.*,
+          u.username as author_username,
+          u.avatar as author_avatar,
+          pc.author_id as parent_author_id,
+          pu.username as parent_author_username
+        FROM comments c
+        LEFT JOIN users u ON c.author_id = u.id AND u.deleted_at IS NULL
+        LEFT JOIN comments pc ON c.parent_id = pc.id AND pc.deleted_at IS NULL
+        LEFT JOIN users pu ON pc.author_id = pu.id AND pu.deleted_at IS NULL
+        WHERE c.post_id = ? AND c.deleted_at IS NULL
+        ORDER BY c.created_at ASC
+      `)
+      .bind(postId)
+      .all()
+
+    if (!allComments.results || allComments.results.length === 0) {
+      return []
+    }
+
+    // 构建评论树
+    const commentMap: Record<string, any> = {}
+    const rootComments: any[] = []
+
+    // 第一遍：创建所有评论节点
+    allComments.results.forEach((comment: any) => {
+      commentMap[comment.id] = {
+        id: comment.id,
+        content: comment.content,
+        author_id: comment.author_id,
+        post_id: comment.post_id,
+        parent_id: comment.parent_id,
+        like_count: comment.like_count,
+        created_at: comment.created_at,
+        updated_at: comment.updated_at,
+        author: {
+          id: comment.author_id,
+          username: comment.author_username,
+          avatar: comment.author_avatar
+        },
+        parentAuthorUsername: comment.parent_author_username,
+        replies: []
+      }
+    })
+
+    // 第二遍：构建父子关系
+    Object.values(commentMap).forEach((comment: any) => {
+      if (comment.parent_id && commentMap[comment.parent_id]) {
+        // 这是一个回复，添加到父评论的回复列表
+        commentMap[comment.parent_id].replies.push(comment)
+      } else {
+        // 这是一个顶级评论
+        rootComments.push(comment)
+      }
+    })
+
+    return rootComments
   }
 
   async updateComment(id: string, content: string): Promise<Comment | null> {

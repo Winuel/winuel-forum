@@ -26,9 +26,11 @@ export interface Comment {
   authorAvatar?: string
   content: string
   parentId?: string
+  parentAuthorUsername?: string
   createdAt: string
   updatedAt: string
   likeCount: number
+  replies?: Comment[]
 }
 
 export const usePostStore = defineStore('post', () => {

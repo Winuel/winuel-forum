@@ -4,7 +4,7 @@
       评论 ({{ postStore.comments.length }})
     </h2>
 
-    <CommentForm v-if="userStore.isAuthenticated" :post-id="postId" />
+    <CommentForm v-if="userStore.isAuthenticated" :post-id="postId" @comment-success="handleCommentSuccess" />
 
     <div v-else class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
       <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -17,9 +17,11 @@
 
     <div class="space-y-4">
       <CommentItem
-        v-for="comment in postStore.comments"
+        v-for="comment in topLevelComments"
         :key="comment.id"
         :comment="comment"
+        :post-id="postId"
+        @reply-success="handleCommentSuccess"
       />
     </div>
 
@@ -44,4 +46,14 @@ const userStore = useUserStore()
 const postStore = usePostStore()
 
 const postId = computed(() => route.params.id as string)
+
+// 只显示顶级评论（没有 parent_id 的评论）
+const topLevelComments = computed(() => {
+  return postStore.comments.filter(comment => !comment.parentId)
+})
+
+function handleCommentSuccess() {
+  // 刷新评论列表
+  // postStore.fetchComments(postId.value)
+}
 </script>
