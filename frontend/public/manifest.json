@@ -1,1 +1,77 @@
-{"name": "云纽论坛", "short_name": "云纽", "description": "现代化的轻量级论坛系统，基于 Cloudflare Workers Serverless 平台构建", "start_url": "/", "display": "standalone", "background_color": "#ffffff", "theme_color": "#3b82f6", "orientation": "portrait-primary", "icons": [{"src": "/icons/icon-72x72.png", "sizes": "72x72", "type": "image/png", "purpose": "any maskable"}, {"src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any maskable"}, {"src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable"}, {"src": "/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "any maskable"}, {"src": "/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any maskable"}, {"src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"}, {"src": "/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any maskable"}, {"src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}], "categories": ["social", "forum"], "screenshots": [{"src": "/screenshot-wide.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide"}, {"src": "/screenshot-narrow.png", "sizes": "750x1334", "type": "image/png", "form_factor": "narrow"}], "shortcuts": [{"name": "创建帖子", "short_name": "发帖", "description": "快速创建新帖子", "url": "/post/create", "icons": [{"src": "/icons/icon-96x96.png", "sizes": "96x96"}]}, {"name": "浏览帖子", "short_name": "浏览", "description": "浏览最新帖子", "url": "/", "icons": [{"src": "/icons/icon-96x96.png", "sizes": "96x96"}]}, {"name": "设置", "short_name": "设置", "description": "打开设置页面", "url": "/settings", "icons": [{"src": "/icons/icon-96x96.png", "sizes": "96x96"}]}]}
+{
+  "name": "云纽论坛",
+  "short_name": "云纽",
+  "description": "现代化的轻量级论坛系统，基于 Cloudflare Workers Serverless 平台构建",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#863bff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["social", "forum"],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "创建帖子",
+      "short_name": "发帖",
+      "description": "快速创建新帖子",
+      "url": "/post/create",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "浏览帖子",
+      "short_name": "浏览",
+      "description": "浏览最新帖子",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "设置",
+      "short_name": "设置",
+      "description": "打开设置页面",
+      "url": "/settings",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any"
+        }
+      ]
+    }
+  ]
+}
