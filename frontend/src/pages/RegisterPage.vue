@@ -87,9 +87,9 @@
                 v-model="password"
                 type="password"
                 required
-                minlength="7"
+                minlength="8"
                 class="input-base transition-all duration-300 hover:border-primary-300 dark:hover:border-primary-500"
-                placeholder="大于6个字符，仅字母和数字"
+                placeholder="至少 8 个字符，仅字母和数字"
               >
             </div>
 

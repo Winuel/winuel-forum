@@ -228,9 +228,9 @@ export function validateDisposableEmail(email: string): ValidationResult {
 export function validatePassword(password: string): ValidationResult {
   const errors: string[] = []
 
-  // 最小长度检查（大于6位）
-  if (password.length <= 6) {
-    errors.push('密码长度必须大于6个字符')
+  // 最小长度检查（至少8位）
+  if (password.length < 8) {
+    errors.push('密码长度至少为8个字符')
   }
 
   // 最大长度检查
@@ -251,6 +251,18 @@ export function validatePassword(password: string): ValidationResult {
   // 检查是否只包含字母和数字
   if (!/^[a-zA-Z0-9]+$/.test(password)) {
     errors.push('密码只能包含字母和数字')
+  }
+
+  // 检查常见弱密码
+  const commonPasswords = [
+    'password', '12345678', 'qwerty', 'abc123',
+    'password123', '123456789', 'admin', 'letmein',
+    'welcome', 'monkey', 'dragon', 'master',
+    '12345678', '11111111', 'qwerty123', 'test1234',
+    '123456ab', '123abc12', 'password1', '1234qwer'
+  ]
+  if (commonPasswords.includes(password.toLowerCase())) {
+    errors.push('密码过于简单，请使用更复杂的密码')
   }
 
   return {
