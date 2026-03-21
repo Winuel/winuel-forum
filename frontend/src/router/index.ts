@@ -97,11 +97,6 @@ const router = createRouter({
           name: 'admin-audit-logs',
           component: () => import('../views/admin/AuditLogs.vue'),
         },
-        {
-          path: 'settings',
-          name: 'admin-settings',
-          component: () => import('../views/admin/Settings.vue'),
-        },
       ],
     },
     {
