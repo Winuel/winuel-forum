@@ -2,5 +2,6 @@
  * CloudLink 共享 UI 组件
  */
 
-// 导出共享组件
-// 目前为空，后续可以添加共享组件
+// 导出布局组件
+export { default as AdminLayout } from '../layouts/AdminLayout.vue'
+export type { UserStore, AdminLayoutProps } from '../layouts/AdminLayout.vue'
