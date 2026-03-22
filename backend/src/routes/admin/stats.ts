@@ -85,7 +85,7 @@ app.get('/api/admin/stats', requireModeratorOrAdmin, async (c) => {
         },
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch dashboard stats:', error)
     return c.json({
       success: false,
@@ -146,7 +146,7 @@ app.get('/api/admin/stats/recent-activity', requireModeratorOrAdmin, async (c) =
         comments: recentComments.results,
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch recent activity:', error)
     return c.json({
       success: false,
@@ -221,7 +221,7 @@ app.get('/api/admin/stats/trends', requireModeratorOrAdmin, async (c) => {
         comments: fillData(commentTrends.results, dates),
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch trends:', error)
     return c.json({
       success: false,
@@ -284,7 +284,7 @@ app.get('/api/admin/stats/popular', requireModeratorOrAdmin, async (c) => {
         activeUsers: activeUsers.results,
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch popular content:', error)
     return c.json({
       success: false,

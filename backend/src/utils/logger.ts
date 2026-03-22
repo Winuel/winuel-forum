@@ -133,4 +133,7 @@ let instance: Logger | null = null
 export const logger: Logger = new Logger()
 instance = logger
 
+// 导出 Logger 类以便访问静态方法
+export { Logger }
+
 export default logger

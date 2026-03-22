@@ -1,6 +1,6 @@
 import type { User } from '../db/models'
 import { generateId, hashPassword, verifyPassword } from '../utils/crypto'
-import { generateToken } from '../utils/jwt'
+import { generateToken, Audience } from '../utils/jwt'
 import { createError } from '../utils/errorHandler'
 
 export interface CreateUserInput {
@@ -39,7 +39,7 @@ export class UserService {
       userId: user.id,
       username: user.username,
       role: user.role,
-    })
+    }, Audience.USER)
 
     const { password_hash: _, ...userWithoutPassword } = user
     return { user: userWithoutPassword, token }
@@ -61,7 +61,37 @@ export class UserService {
       userId: result.id,
       username: result.username,
       role: result.role,
-    })
+    }, Audience.USER)
+
+    const { password_hash: _, ...userWithoutPassword } = result
+    return { user: userWithoutPassword, token }
+  }
+
+  /**
+   * 管理员登录 - 使用 ADMIN 受众
+   */
+  async adminLogin(input: LoginInput): Promise<{ user: Omit<User, 'password_hash'>; token: string }> {
+    const result = await this.db.prepare('SELECT id, username, email, password_hash, avatar, role FROM users WHERE email = ? AND deleted_at IS NULL').bind(input.email).first<User>()
+
+    if (!result) {
+      throw createError.unauthorized('邮箱或密码错误')
+    }
+
+    // 验证是否为管理员或审核员
+    if (result.role !== 'admin' && result.role !== 'moderator') {
+      throw createError.forbidden('无权访问管理员后台')
+    }
+
+    const isValid = await verifyPassword(input.password, result.password_hash)
+    if (!isValid) {
+      throw createError.unauthorized('邮箱或密码错误')
+    }
+
+    const token = await generateToken({
+      userId: result.id,
+      username: result.username,
+      role: result.role,
+    }, Audience.ADMIN)
 
     const { password_hash: _, ...userWithoutPassword } = result
     return { user: userWithoutPassword, token }

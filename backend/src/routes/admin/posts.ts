@@ -70,7 +70,7 @@ app.get('/api/admin/posts', requireModeratorOrAdmin, async (c) => {
         },
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch posts:', error)
     return c.json({
       success: false,
@@ -138,7 +138,7 @@ app.delete('/api/admin/posts/:id', requireModeratorOrAdmin, csrfProtectionMiddle
       success: true,
       message: '帖子已删除',
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to delete post:', error)
     return c.json({
       success: false,
@@ -188,7 +188,7 @@ app.post('/api/admin/posts/:id/restore', requireModeratorOrAdmin, csrfProtection
       success: true,
       message: '帖子已恢复',
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to restore post:', error)
     return c.json({
       success: false,
@@ -256,7 +256,7 @@ app.put('/api/admin/posts/:id/pin', requireModeratorOrAdmin, csrfProtectionMiddl
       message: pinned ? '帖子已置顶' : '帖子已取消置顶',
       data: { id, pinned },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to pin post:', error)
     return c.json({
       success: false,
@@ -285,7 +285,7 @@ app.get('/api/admin/posts/pinned', requireModeratorOrAdmin, async (c) => {
       success: true,
       data: pinnedPosts,
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch pinned posts:', error)
     return c.json({
       success: false,
@@ -333,7 +333,7 @@ app.put('/api/admin/posts/pinned/reorder', requireModeratorOrAdmin, csrfProtecti
       success: true,
       message: '置顶顺序已更新',
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to reorder pinned posts:', error)
     return c.json({
       success: false,

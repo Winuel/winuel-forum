@@ -63,7 +63,7 @@ app.get('/api/admin/comments', requireModeratorOrAdmin, async (c) => {
         },
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch comments:', error)
     return c.json({
       success: false,
@@ -114,7 +114,7 @@ app.delete('/api/admin/comments/:id', requireModeratorOrAdmin, csrfProtectionMid
       success: true,
       message: '评论已删除',
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to delete comment:', error)
     return c.json({
       success: false,
@@ -164,7 +164,7 @@ app.post('/api/admin/comments/:id/restore', requireModeratorOrAdmin, csrfProtect
       success: true,
       message: '评论已恢复',
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to restore comment:', error)
     return c.json({
       success: false,
@@ -216,7 +216,7 @@ app.post('/api/admin/comments/batch-delete', requireModeratorOrAdmin, csrfProtec
       success: true,
       message: `已删除 ${ids.length} 条评论`,
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to batch delete comments:', error)
     return c.json({
       success: false,

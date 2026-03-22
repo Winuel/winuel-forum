@@ -1,13 +1,14 @@
 import { Hono } from 'hono'
 import type { Env, Variables } from './types'
 import { initJWT } from './utils/jwt'
-import { Logger } from './utils/logger'
+import { logger } from './utils/logger'
 import { initEmailChecker } from './utils/validation'
 import { corsMiddleware } from './middleware/cors'
 import { httpsRedirect, hsts } from './middleware/https'
 import { auditLog } from './middleware/audit'
 import { csrfMiddleware, csrfProtectionMiddleware } from './middleware/csrf'
 import { normalRateLimit } from './middleware/rateLimit'
+import { userAuthMiddleware, adminAuthMiddleware } from './middleware/auth'
 import { handleError, formatErrorResponse, logError } from './utils/errorHandler'
 import { BLOCKLIST_DOMAINS, ALLOWLIST_DOMAINS } from './data/blocklist'
 import authRouter from './routes/auth'
@@ -40,7 +41,8 @@ app.use('*', async (c, next) => {
     try {
       initJWT(c.env.JWT_SECRET)
       ;(globalThis as any).JWT_SECRET_INITIALIZED = true
-      // 初始化 Logger
+      // 初始化 Logger - 使用静态方法
+      const { Logger } = await import('./utils/logger')
       Logger.init(c.env.ENVIRONMENT || 'production')
     } catch (error) {
       console.error('Failed to initialize JWT:', error)
@@ -75,7 +77,9 @@ app.route('/api/comments', commentsRouter)
 app.route('/api/categories', categoriesRouter)
 app.route('/api/notifications', notificationsRouter)
 
-// Admin routes
+// Admin routes - 使用管理员认证中间件
+// 需要为每个管理员路由添加认证中间件
+app.use('/api/admin/*', adminAuthMiddleware)
 app.route('/api/admin/users', adminUsersRouter)
 app.route('/api/admin/posts', adminPostsRouter)
 app.route('/api/admin/comments', adminCommentsRouter)

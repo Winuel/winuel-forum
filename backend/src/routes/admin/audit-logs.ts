@@ -92,7 +92,7 @@ app.get('/api/admin/audit-logs', requireAdmin, async (c) => {
         },
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch audit logs:', error)
     return c.json({
       success: false,
@@ -137,7 +137,7 @@ app.get('/api/admin/audit-logs/:id', requireAdmin, async (c) => {
         new_values: log.new_values ? JSON.parse(log.new_values as string) : null,
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch audit log details:', error)
     return c.json({
       success: false,
@@ -211,7 +211,7 @@ app.get('/api/admin/audit-logs/stats', requireAdmin, async (c) => {
         byUser: userStats.results,
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to fetch audit log stats:', error)
     return c.json({
       success: false,
@@ -297,7 +297,7 @@ app.get('/api/admin/audit-logs/export', requireAdmin, async (c) => {
         'Content-Disposition': `attachment; filename="audit-logs-${new Date().toISOString().split('T')[0]}.csv"`,
       },
     })
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error('Failed to export audit logs:', error)
     return c.json({
       success: false,

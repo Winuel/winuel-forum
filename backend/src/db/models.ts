@@ -87,3 +87,12 @@ export interface JWTPayload {
   username: string
   role: string
 }
+
+/**
+ * 带受众的 JWT Payload
+ */
+export interface TokenPayload extends JWTPayload {
+  aud: string
+  iat?: number
+  exp?: number
+}
