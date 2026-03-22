@@ -1,5 +1,6 @@
 import type { Context, Next } from 'hono'
 import type { Env, Variables } from '../types'
+import { DEPENDENCY_TOKENS } from '../utils/di'
 
 export enum Role {
   USER = 'user',
@@ -132,9 +133,22 @@ export function requirePermission(...permissions: Permission[]) {
       }, 401)
     }
     
+    const container = c.get('container')
+    if (!container) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: '服务容器未初始化',
+        },
+      }, 500)
+    }
+
+    const db = container.resolve<D1Database>(DEPENDENCY_TOKENS.DB)
+    
     try {
       // 获取用户信息
-      const user = await c.env.DB.prepare(
+      const user = await db.prepare(
         'SELECT id, username, role FROM users WHERE id = ? AND deleted_at IS NULL'
       ).bind(userId).first()
       
@@ -205,8 +219,21 @@ export function requireModeratorOrAdmin() {
       }, 401)
     }
     
+    const container = c.get('container')
+    if (!container) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: '服务容器未初始化',
+        },
+      }, 500)
+    }
+
+    const db = container.resolve<D1Database>(DEPENDENCY_TOKENS.DB)
+    
     try {
-      const user = await c.env.DB.prepare(
+      const user = await db.prepare(
         'SELECT id, username, role FROM users WHERE id = ? AND deleted_at IS NULL'
       ).bind(userId).first()
       

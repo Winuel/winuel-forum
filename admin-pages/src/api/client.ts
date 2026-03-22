@@ -1,186 +1,52 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'
+/**
+ * CloudLink 管理员后台 API 客户端
+ * 使用共享 API 包
+ */
 
-class ApiClient {
-  private baseURL: string
-  private csrfToken: string | null = null
-  private sessionId: string | null = null
+import { getApiClient } from '@cloudlink/shared-api'
+import type { ApiResponse } from '@cloudlink/shared-core'
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL
-  }
+export const apiClient = getApiClient()
 
-  private getHeaders(includeCsrf: boolean = false): HeadersInit {
-    const token = localStorage.getItem('auth_token')
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    }
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-
-    if (includeCsrf && this.csrfToken) {
-      headers['X-CSRF-Token'] = this.csrfToken
-    }
-
-    if (this.sessionId) {
-      headers['X-Session-ID'] = this.sessionId
-    }
-
-    return headers
-  }
-
-  private extractCsrfInfo(response: Response): void {
-    if (!response || !response.headers) {
-      return
-    }
-    
-    const csrfToken = response.headers.get('X-CSRF-Token')
-    const sessionId = response.headers.get('X-Session-ID')
-
-    if (csrfToken) {
-      this.csrfToken = csrfToken
-    }
-
-    if (sessionId) {
-      this.sessionId = sessionId
-    }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'GET',
-      headers: this.getHeaders(),
-      credentials: 'include'
-    })
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
-    }
-
-    // 提取 CSRF 信息
-    this.extractCsrfInfo(response)
-
-    return response.json()
-  }
-
-  async post<T>(endpoint: string, data: unknown): Promise<T> {
-    const requestData = typeof data === 'object' && data !== null 
-      ? { ...data, csrfToken: this.csrfToken }
-      : { csrfToken: this.csrfToken, data }
-      
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'POST',
-      headers: this.getHeaders(true),
-      body: JSON.stringify(requestData),
-      credentials: 'include'
-    })
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
-    }
-
-    // 提取 CSRF 信息
-    this.extractCsrfInfo(response)
-
-    return response.json()
-  }
-
-  async put<T>(endpoint: string, data: unknown): Promise<T> {
-    const requestData = typeof data === 'object' && data !== null 
-      ? { ...data, csrfToken: this.csrfToken }
-      : { csrfToken: this.csrfToken, data }
-      
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'PUT',
-      headers: this.getHeaders(true),
-      body: JSON.stringify(requestData),
-      credentials: 'include'
-    })
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
-    }
-
-    // 提取 CSRF 信息
-    this.extractCsrfInfo(response)
-
-    return response.json()
-  }
-
-  async patch<T>(endpoint: string, data?: unknown): Promise<T> {
-    let body: string | undefined
-    if (data !== undefined) {
-      const requestData = typeof data === 'object' && data !== null 
-        ? { ...data, csrfToken: this.csrfToken }
-        : { csrfToken: this.csrfToken, data }
-      body = JSON.stringify(requestData)
-    }
-    
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'PATCH',
-      headers: this.getHeaders(true),
-      body,
-      credentials: 'include'
-    })
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
-    }
-
-    // 提取 CSRF 信息
-    this.extractCsrfInfo(response)
-
-    return response.json()
-  }
-
-  async delete<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'DELETE',
-      headers: this.getHeaders(true),
-      credentials: 'include'
-    })
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
-    }
-
-    // 提取 CSRF 信息
-    this.extractCsrfInfo(response)
-
-    return response.json()
-  }
-
-  async upload<T>(endpoint: string, file: File): Promise<T> {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const headers: HeadersInit = {}
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-
-    if (this.sessionId) {
-      headers['X-Session-ID'] = this.sessionId
-    }
-
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'POST',
-      headers,
-      body: formData,
-      credentials: 'include'
-    })
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`)
-    }
-
-    // 提取 CSRF 信息
-    this.extractCsrfInfo(response)
-
-    return response.json()
-  }
+export async function get<T>(url: string): Promise<T> {
+  return apiClient.get<T>(url)
 }
 
-export const apiClient = new ApiClient(API_BASE_URL)
+export async function post<T>(url: string, data?: unknown): Promise<T> {
+  return apiClient.post<T>(url, data)
+}
+
+export async function put<T>(url: string, data?: unknown): Promise<T> {
+  return apiClient.put<T>(url, data)
+}
+
+export async function del<T>(url: string): Promise<T> {
+  return apiClient.delete<T>(url)
+}
+
+export async function patch<T>(url: string, data?: unknown): Promise<T> {
+  return apiClient.patch<T>(url, data)
+}
+
+// 文件上传方法
+export async function upload<T>(endpoint: string, file: File): Promise<T> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  // 使用 axios 上传文件
+  const axiosInstance = apiClient.getAxiosInstance()
+  const response = await axiosInstance.post<ApiResponse<T>>(endpoint, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+  if (!response.data.success) {
+    throw new Error(response.data.error?.message || '上传失败')
+  }
+
+  return response.data.data as T
+}
+
+export { getApiClient, ApiClient } from '@cloudlink/shared-api'
+export type { ApiError, ApiClientConfig } from '@cloudlink/shared-api'

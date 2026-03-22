@@ -39,6 +39,11 @@ const router = createRouter({
           name: 'audit-logs',
           component: () => import('../views/AuditLogs.vue'),
         },
+        {
+          path: 'plugins',
+          name: 'plugins',
+          component: () => import('../views/Plugins.vue'),
+        },
       ],
     },
   ],

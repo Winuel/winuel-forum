@@ -9,9 +9,11 @@ import { auditLog } from './middleware/audit'
 import { csrfMiddleware, csrfProtectionMiddleware } from './middleware/csrf'
 import { normalRateLimit } from './middleware/rateLimit'
 import { userAuthMiddleware, adminAuthMiddleware } from './middleware/auth'
+import { diMiddleware } from './middleware/di'
 import { handleError, formatErrorResponse, logError } from './utils/errorHandler'
 import { BLOCKLIST_DOMAINS, ALLOWLIST_DOMAINS } from './data/blocklist'
 import authRouter from './routes/auth'
+import oauthRouter from './routes/auth/oauth'
 import postsRouter from './routes/posts'
 import commentsRouter from './routes/comments'
 import categoriesRouter from './routes/categories'
@@ -23,6 +25,7 @@ import adminPostsRouter from './routes/admin/posts'
 import adminCommentsRouter from './routes/admin/comments'
 import adminAuditLogsRouter from './routes/admin/audit-logs'
 import adminStatsRouter from './routes/admin/stats'
+import adminPluginsRouter from './routes/admin/plugins'
 
 // Code attachment routes
 import attachmentsRouter from './routes/api/attachments'
@@ -58,6 +61,7 @@ app.use('*', async (c, next) => {
 
 app.use('*', normalRateLimit)
 app.use('*', corsMiddleware)
+app.use('*', diMiddleware)
 app.use('*', auditLog)
 app.use('*', httpsRedirect)
 app.use('*', hsts)
@@ -82,6 +86,7 @@ app.route('/api/categories', categoriesRouter)
 app.route('/api/notifications', notificationsRouter)
 app.route('/api/attachments', attachmentsRouter)
 app.route('/api/reviews', reviewsRouter)
+app.route('/api/auth/github', oauthRouter)
 
 // Admin routes - 使用管理员认证中间件
 // 需要为每个管理员路由添加认证中间件
@@ -91,6 +96,7 @@ app.route('/api/admin/posts', adminPostsRouter)
 app.route('/api/admin/comments', adminCommentsRouter)
 app.route('/api/admin/audit-logs', adminAuditLogsRouter)
 app.route('/api/admin/stats', adminStatsRouter)
+app.route('/api/admin/plugins', adminPluginsRouter)
 
 app.notFound((c) => {
   const error = handleError(new Error('Not Found'))

@@ -1,27 +1,24 @@
 /**
  * 代码审查API路由
+ * 使用依赖注入容器
  */
 
 import { Hono } from 'hono'
 import type { Env, Variables } from '../../types'
+import { DEPENDENCY_TOKENS } from '../../utils/di'
 import { authMiddleware } from '../../middleware/auth'
-import { CodeAttachmentModel, CodeReviewModel } from '../../models/codeAttachment'
 import { CodeAttachmentService } from '../../services/codeAttachmentService'
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-// 初始化服务中间件
-app.use('*', async (c, next) => {
-  const attachmentModel = new CodeAttachmentModel(c.env.DB)
-  const reviewModel = new CodeReviewModel(c.env.DB)
-  const service = new CodeAttachmentService(attachmentModel, reviewModel)
-  c.set('codeAttachmentService', service)
-  await next()
-})
-
 // 提交审查提议
 app.post('/submit', authMiddleware, async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const userId = c.get('user')?.userId
 
   if (!userId) {
@@ -70,7 +67,12 @@ app.post('/submit', authMiddleware, async (c) => {
 
 // 接受审查提议
 app.post('/:reviewId/accept', authMiddleware, async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const userId = c.get('user')?.userId
 
   if (!userId) {
@@ -118,7 +120,12 @@ app.post('/:reviewId/accept', authMiddleware, async (c) => {
 
 // 拒绝审查提议
 app.post('/:reviewId/reject', authMiddleware, async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const userId = c.get('user')?.userId
 
   if (!userId) {
@@ -163,7 +170,12 @@ app.post('/:reviewId/reject', authMiddleware, async (c) => {
 
 // 获取用户的审查提议
 app.get('/user/:userId', async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const { userId } = c.req.param()
 
   const result = await service.getUserReviews(userId)

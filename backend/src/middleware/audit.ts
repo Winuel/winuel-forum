@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from 'hono'
 import type { Env, Variables } from '../types'
+import { DEPENDENCY_TOKENS } from '../utils/di'
 import { AuditService } from '../services/auditService'
 
 /**
@@ -20,7 +21,14 @@ export const auditLog: MiddlewareHandler<{ Bindings: Env; Variables: Variables }
     return
   }
 
-  const auditService = new AuditService(c.env.DB)
+  const container = c.get('container')
+  if (!container) {
+    console.warn('Service container not initialized, skipping audit logging')
+    await next()
+    return
+  }
+
+  const auditService = container.resolve<AuditService>(DEPENDENCY_TOKENS.AUDIT_SERVICE)
 
   try {
     await next()
@@ -69,63 +77,5 @@ export const auditLog: MiddlewareHandler<{ Bindings: Env; Variables: Variables }
     }
 
     throw error
-  }
-}
-
-/**
- * 审计操作记录助手
- * 用于记录特定业务操作的审计日志
- */
-export class AuditHelper {
-  static async logOperation(
-    db: D1Database,
-    input: {
-      userId?: string
-      action: string
-      entityType: string
-      entityId: string
-      oldValues?: Record<string, any>
-      newValues?: Record<string, any>
-      ipAddress?: string
-      userAgent?: string
-    }
-  ): Promise<void> {
-    const auditService = new AuditService(db)
-    await auditService.create({
-      user_id: input.userId,
-      action: input.action,
-      entity_type: input.entityType,
-      entity_id: input.entityId,
-      old_values: input.oldValues,
-      new_values: input.newValues,
-      ip_address: input.ipAddress,
-      user_agent: input.userAgent,
-      status: 'success',
-    })
-  }
-
-  static async logError(
-    db: D1Database,
-    input: {
-      userId?: string
-      action: string
-      entityType: string
-      entityId: string
-      errorMessage: string
-      ipAddress?: string
-      userAgent?: string
-    }
-  ): Promise<void> {
-    const auditService = new AuditService(db)
-    await auditService.create({
-      user_id: input.userId,
-      action: input.action,
-      entity_type: input.entityType,
-      entity_id: input.entityId,
-      ip_address: input.ipAddress,
-      user_agent: input.userAgent,
-      status: 'failure',
-      error_message: input.errorMessage,
-    })
   }
 }
