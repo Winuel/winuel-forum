@@ -10,7 +10,9 @@ import { CategoryService } from '../services/categoryService'
 import { NotificationService } from '../services/notificationService'
 import { AuditService } from '../services/auditService'
 import { CodeAttachmentService } from '../services/codeAttachmentService'
+import { PluginService } from '../services/pluginService'
 import { CodeAttachmentModel, CodeReviewModel } from '../models/codeAttachment'
+import { PluginLoader } from '@cloudlink/plugin-system'
 
 export type Env = {
   DB: D1Database
@@ -68,6 +70,15 @@ export function initializeServices(env: Env): DIContainer {
     return new CodeAttachmentService(attachmentModel, reviewModel)
   })
 
+  container.registerTransient(DEPENDENCY_TOKENS.PLUGIN_SERVICE, (c) => {
+    const db = c.resolve<D1Database>(DEPENDENCY_TOKENS.DB)
+    const loader = new PluginLoader({
+      autoResolveDependencies: true,
+      strictVersionValidation: false
+    })
+    return new PluginService(db, loader)
+  })
+
   return container
 }
 
@@ -118,4 +129,11 @@ export function getAuditService(container: DIContainer): AuditService {
  */
 export function getCodeAttachmentService(container: DIContainer): CodeAttachmentService {
   return getService<CodeAttachmentService>(container, DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
+}
+
+/**
+ * 获取插件服务
+ */
+export function getPluginService(container: DIContainer): PluginService {
+  return getService<PluginService>(container, DEPENDENCY_TOKENS.PLUGIN_SERVICE)
 }

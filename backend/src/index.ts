@@ -24,6 +24,7 @@ import adminPostsRouter from './routes/admin/posts'
 import adminCommentsRouter from './routes/admin/comments'
 import adminAuditLogsRouter from './routes/admin/audit-logs'
 import adminStatsRouter from './routes/admin/stats'
+import adminPluginsRouter from './routes/admin/plugins'
 
 // Code attachment routes
 import attachmentsRouter from './routes/api/attachments'
@@ -93,6 +94,7 @@ app.route('/api/admin/posts', adminPostsRouter)
 app.route('/api/admin/comments', adminCommentsRouter)
 app.route('/api/admin/audit-logs', adminAuditLogsRouter)
 app.route('/api/admin/stats', adminStatsRouter)
+app.route('/api/admin/plugins', adminPluginsRouter)
 
 app.notFound((c) => {
   const error = handleError(new Error('Not Found'))
