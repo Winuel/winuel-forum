@@ -14,6 +14,9 @@ const ALLOWED_ORIGINS = {
     'https://www.winuel.com',
     // 备用前端部署域名（如果使用）
     'https://winuel.pages.dev',
+    // 管理员后台域名
+    'https://admin.winuel.com',
+    'https://winuel-admin.pages.dev',
   ],
 }
 
