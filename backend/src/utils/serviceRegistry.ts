@@ -9,6 +9,8 @@ import { PostService } from '../services/postService'
 import { CategoryService } from '../services/categoryService'
 import { NotificationService } from '../services/notificationService'
 import { AuditService } from '../services/auditService'
+import { CodeAttachmentService } from '../services/codeAttachmentService'
+import { CodeAttachmentModel, CodeReviewModel } from '../models/codeAttachment'
 
 export type Env = {
   DB: D1Database
@@ -59,6 +61,13 @@ export function initializeServices(env: Env): DIContainer {
     return new AuditService(db)
   })
 
+  container.registerTransient(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE, (c) => {
+    const db = c.resolve<D1Database>(DEPENDENCY_TOKENS.DB)
+    const attachmentModel = new CodeAttachmentModel(db)
+    const reviewModel = new CodeReviewModel(db)
+    return new CodeAttachmentService(attachmentModel, reviewModel)
+  })
+
   return container
 }
 
@@ -102,4 +111,11 @@ export function getNotificationService(container: DIContainer): NotificationServ
  */
 export function getAuditService(container: DIContainer): AuditService {
   return getService<AuditService>(container, DEPENDENCY_TOKENS.AUDIT_SERVICE)
+}
+
+/**
+ * 获取代码附件服务
+ */
+export function getCodeAttachmentService(container: DIContainer): CodeAttachmentService {
+  return getService<CodeAttachmentService>(container, DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
 }

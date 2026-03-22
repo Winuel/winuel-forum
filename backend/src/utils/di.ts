@@ -191,6 +191,7 @@ export const DEPENDENCY_TOKENS = {
   CATEGORY_SERVICE: 'CategoryService',
   NOTIFICATION_SERVICE: 'NotificationService',
   AUDIT_SERVICE: 'AuditService',
+  CODE_ATTACHMENT_SERVICE: 'CodeAttachmentService',
 } as const
 
 export type DependencyToken = typeof DEPENDENCY_TOKENS[keyof typeof DEPENDENCY_TOKENS]

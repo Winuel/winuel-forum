@@ -1,27 +1,24 @@
 /**
  * 代码附件API路由
+ * 使用依赖注入容器
  */
 
 import { Hono } from 'hono'
 import type { Env, Variables } from '../../types'
+import { DEPENDENCY_TOKENS } from '../../utils/di'
 import { authMiddleware } from '../../middleware/auth'
-import { CodeAttachmentModel, CodeReviewModel } from '../../models/codeAttachment'
 import { CodeAttachmentService } from '../../services/codeAttachmentService'
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
 
-// 初始化服务中间件
-app.use('*', async (c, next) => {
-  const attachmentModel = new CodeAttachmentModel(c.env.DB)
-  const reviewModel = new CodeReviewModel(c.env.DB)
-  const service = new CodeAttachmentService(attachmentModel, reviewModel)
-  c.set('codeAttachmentService', service)
-  await next()
-})
-
 // 上传代码附件
 app.post('/upload', authMiddleware, async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const userId = c.get('user')?.userId
 
   if (!userId) {
@@ -71,7 +68,12 @@ app.post('/upload', authMiddleware, async (c) => {
 
 // 获取代码附件详情
 app.get('/:id', async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const { id } = c.req.param()
 
   const result = await service.getAttachment(id)
@@ -91,7 +93,12 @@ app.get('/:id', async (c) => {
 
 // 获取帖子的所有代码附件
 app.get('/post/:postId', async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const { postId } = c.req.param()
 
   const result = await service.getPostAttachments(postId)
@@ -104,7 +111,12 @@ app.get('/post/:postId', async (c) => {
 
 // 删除代码附件
 app.delete('/:id', authMiddleware, async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const { id } = c.req.param()
   const userId = c.get('user')?.userId
 
@@ -138,7 +150,12 @@ app.delete('/:id', authMiddleware, async (c) => {
 
 // 获取版本历史
 app.get('/:id/versions', async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const { id } = c.req.param()
 
   const result = await service.getVersionHistory(id)
@@ -158,7 +175,12 @@ app.get('/:id/versions', async (c) => {
 
 // 获取审查提议
 app.get('/:id/reviews', async (c) => {
-  const service = c.get('codeAttachmentService') as CodeAttachmentService
+  const container = c.get('container')
+  if (!container) {
+    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+  }
+
+  const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const { id } = c.req.param()
 
   const result = await service.getReviews(id)
