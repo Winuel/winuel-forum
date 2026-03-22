@@ -130,7 +130,7 @@ const categories = ref([
 
 onMounted(async () => {
   try {
-    const post = await apiClient.get(`/api/posts/${route.params.id}`)
+    const post = await apiClient.get(`/api/posts/${route.params.id}`) as any
     title.value = post.title
     categoryId.value = post.categoryId
     content.value = post.content

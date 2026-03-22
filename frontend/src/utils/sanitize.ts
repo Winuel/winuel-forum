@@ -121,7 +121,7 @@ export function sanitizeJson(jsonString: string): string {
   try {
     const parsed = JSON.parse(jsonString)
     // 移除函数和特殊对象
-    const cleaned = JSON.parse(JSON.stringify(parsed, (key, value) => {
+    const cleaned = JSON.parse(JSON.stringify(parsed, (_key, value) => {
       // 移除函数
       if (typeof value === 'function') {
         return undefined

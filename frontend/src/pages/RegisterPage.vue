@@ -190,7 +190,7 @@ async function handleSubmit() {
       username: username.value,
       email: email.value,
       password: password.value,
-    })
+    }) as any
     userStore.setUser(data.user)
     userStore.setToken(data.token)
     uiStore.addNotification({

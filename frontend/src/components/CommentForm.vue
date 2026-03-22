@@ -48,7 +48,7 @@ async function handleSubmit() {
     const comment = await apiClient.post('/api/comments', {
       postId: props.postId,
       content: content.value,
-    })
+    }) as any
     postStore.addComment(comment)
     content.value = ''
   } catch (error) {

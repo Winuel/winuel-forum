@@ -101,7 +101,7 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-const formatFileSize = (contentLength: number): string => {
+const formatFileSize = (_contentLength: number): string => {
   const sizeInBytes = new Blob([props.attachment.content]).size
   const sizeInKB = sizeInBytes / 1024
   if (sizeInKB < 1) {

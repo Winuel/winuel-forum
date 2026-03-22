@@ -97,7 +97,7 @@ async function handleSubmit() {
     const data = await apiClient.post('/api/auth/login', {
       email: email.value,
       password: password.value,
-    })
+    }) as any
     userStore.setUser(data.user)
     userStore.setToken(data.token)
     uiStore.addNotification({

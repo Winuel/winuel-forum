@@ -118,7 +118,7 @@ const filteredPosts = computed(() => {
 onMounted(async () => {
   postStore.loading = true
   try {
-    const data = await apiClient.get('/api/posts')
+    const data = await apiClient.get('/api/posts') as any
     postStore.setPosts(data.posts || [])
   } catch (error) {
     // Error handling is managed by the error handler

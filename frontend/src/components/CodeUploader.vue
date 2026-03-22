@@ -121,7 +121,7 @@ const validateFileSize = (file: File): boolean => {
   return sizeInKB <= MAX_FILE_SIZE
 }
 
-const uploadFile = async (uploadFile: UploadedFile) => {
+const uploadFileFunc = async (uploadFile: UploadedFile) => {
   uploadFile.status = 'uploading'
   
   try {
@@ -133,16 +133,17 @@ const uploadFile = async (uploadFile: UploadedFile) => {
     })
     
     uploadFile.status = 'success'
-    uploadFile.attachment = response.data
+    const responseData = response as { data: CodeAttachment }
+    uploadFile.attachment = responseData.data
     
-    props.onUploadSuccess?.(response.data)
-    emit('upload-success', response.data)
+    props.onUploadSuccess?.(responseData.data)
+    emit('upload-success', responseData.data)
   } catch (error: any) {
     uploadFile.status = 'error'
     uploadFile.error = error.message || '上传失败'
     
-    props.onUploadError?.(uploadFile.error)
-    emit('upload-error', uploadFile.error)
+    props.onUploadError?.(uploadFile.error || '上传失败')
+    emit('upload-error', uploadFile.error || '上传失败')
   }
 }
 
@@ -174,8 +175,8 @@ const processFile = async (file: File) => {
       status: 'uploading'
     }
     
-    uploadedFiles.value.push(uploadFile)
-    await uploadFile(uploadFileObj)
+    uploadedFiles.value.push(uploadFileObj)
+    await uploadFileFunc(uploadFileObj)
   } catch (error) {
     uploadedFiles.value.push({
       file,
@@ -224,7 +225,7 @@ const handleFileSelect = async (e: Event) => {
 }
 
 const retryUpload = async (file: UploadedFile) => {
-  await uploadFile(file)
+  await uploadFileFunc(file)
 }
 
 const formatFileSize = (size: number): string => {

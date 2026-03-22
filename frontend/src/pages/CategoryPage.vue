@@ -44,7 +44,7 @@ const loading = ref(false)
 onMounted(async () => {
   loading.value = true
   try {
-    const data = await apiClient.get(`/api/posts?categoryId=${route.params.id}`)
+    const data = await apiClient.get(`/api/posts?categoryId=${route.params.id}`) as any
     posts.value = data.posts || []
     categoryName.value = '分类'
   } catch (error) {

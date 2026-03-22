@@ -66,7 +66,7 @@ onMounted(async () => {
     user.value = await apiClient.get(`/api/users/${route.params.username}`)
 
     if (user.value?.id) {
-      const data = await apiClient.get(`/api/posts?authorId=${user.value.id}`)
+      const data = await apiClient.get(`/api/posts?authorId=${user.value.id}`) as any
       posts.value = data.posts || []
     }
   } catch (error) {

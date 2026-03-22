@@ -120,7 +120,7 @@
                 :title="`用户: ${value}`"
               ></div>
               <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {{ new Date(trends.dates[index]).slice(5) }}
+                {{ new Date(trends.dates[index]).toLocaleDateString('zh-CN').slice(5) }}
               </span>
             </div>
           </div>

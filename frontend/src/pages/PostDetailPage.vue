@@ -142,11 +142,11 @@ onMounted(async () => {
   const postId = route.params.id as string
   postStore.loading = true
   try {
-    const post = await apiClient.get(`/api/posts/${postId}`)
-    postStore.setCurrentPost(post)
+    const post = await apiClient.get(`/api/posts/${postId}`) as any
+    postStore.setCurrentPost(post as any)
 
-    const comments = await apiClient.get(`/api/posts/${postId}/comments`)
-    postStore.setComments(comments)
+    const comments = await apiClient.get(`/api/posts/${postId}/comments`) as any[]
+    postStore.setComments(comments as any[])
 
     // Load code attachments
     try {
