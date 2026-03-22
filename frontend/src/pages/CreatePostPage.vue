@@ -85,6 +85,22 @@
           >
         </div>
 
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            代码附件
+          </label>
+          <CodeUploader
+            v-if="!postId"
+            :post-id="postId"
+            :max-file-size="512"
+            @upload-success="handleUploadSuccess"
+            @upload-error="handleUploadError"
+          />
+          <div v-else class="text-sm text-gray-500">
+            已创建帖子，无法再上传代码附件
+          </div>
+        </div>
+
         <div class="flex gap-3">
           <button
             type="submit"
@@ -110,6 +126,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUIStore } from '../stores/ui'
 import { apiClient } from '../api/client'
+import CodeUploader from '../components/CodeUploader.vue'
+import type { CodeAttachment } from '../types/code'
 
 const router = useRouter()
 const uiStore = useUIStore()
@@ -119,6 +137,8 @@ const categoryId = ref('')
 const content = ref('')
 const tagsInput = ref('')
 const loading = ref(false)
+const postId = ref('')
+const codeAttachments = ref<CodeAttachment[]>([])
 
 const categories = ref([
   { id: '1', name: '技术讨论' },
@@ -140,12 +160,16 @@ async function handleSubmit() {
       content: content.value,
       categoryId: categoryId.value,
       tags,
-    })
+    }) as { id: string }
+    
+    postId.value = post.id
+    
     uiStore.addNotification({
       type: 'success',
       title: '发布成功',
       message: '帖子已成功发布',
     })
+    
     router.push(`/post/${post.id}`)
   } catch (error: any) {
     uiStore.addNotification({
@@ -156,5 +180,22 @@ async function handleSubmit() {
   } finally {
     loading.value = false
   }
+}
+
+const handleUploadSuccess = (attachment: CodeAttachment) => {
+  codeAttachments.value.push(attachment)
+  uiStore.addNotification({
+    type: 'success',
+    title: '上传成功',
+    message: `代码文件 ${attachment.file_name} 已上传`,
+  })
+}
+
+const handleUploadError = (error: string) => {
+  uiStore.addNotification({
+    type: 'error',
+    title: '上传失败',
+    message: error,
+  })
 }
 </script>

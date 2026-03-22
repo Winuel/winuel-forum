@@ -17,6 +17,7 @@ export type Variables = {
   currentUser?: any
   userRole?: string
   container?: DIContainer
+  codeAttachmentService?: any
 }
 
 export type AppContext = {
