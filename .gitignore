@@ -52,6 +52,10 @@ Desktop.ini
 
 # External repositories
 /disposable-email-domains/
+/Sensitive-lexicon/
 
 # AI Assistant persona
 AI_ASSISTANT_PERSONA.md
+
+# Sensitive words library
+/backend/data/sensitive-words/

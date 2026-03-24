@@ -46,12 +46,12 @@ export class AuditService {
   }
 
   async findById(id: string): Promise<AuditLog | null> {
-    return this.db.prepare('SELECT * FROM audit_logs WHERE id = ?').bind(id).first<AuditLog>()
+    return this.db.prepare('SELECT id, user_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent, status, error_message, created_at FROM audit_logs WHERE id = ?').bind(id).first<AuditLog>()
   }
 
   async findByUserId(userId: string, limit: number = 100): Promise<AuditLog[]> {
     const result = await this.db
-      .prepare('SELECT * FROM audit_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?')
+      .prepare('SELECT id, user_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent, status, error_message, created_at FROM audit_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?')
       .bind(userId, limit)
       .all<AuditLog>()
 
@@ -60,7 +60,7 @@ export class AuditService {
 
   async findByEntity(entityType: string, entityId: string, limit: number = 100): Promise<AuditLog[]> {
     const result = await this.db
-      .prepare('SELECT * FROM audit_logs WHERE entity_type = ? AND entity_id = ? ORDER BY created_at DESC LIMIT ?')
+      .prepare('SELECT id, user_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent, status, error_message, created_at FROM audit_logs WHERE entity_type = ? AND entity_id = ? ORDER BY created_at DESC LIMIT ?')
       .bind(entityType, entityId, limit)
       .all<AuditLog>()
 
@@ -69,7 +69,7 @@ export class AuditService {
 
   async findByAction(action: string, limit: number = 100): Promise<AuditLog[]> {
     const result = await this.db
-      .prepare('SELECT * FROM audit_logs WHERE action = ? ORDER BY created_at DESC LIMIT ?')
+      .prepare('SELECT id, user_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent, status, error_message, created_at FROM audit_logs WHERE action = ? ORDER BY created_at DESC LIMIT ?')
       .bind(action, limit)
       .all<AuditLog>()
 
@@ -78,7 +78,7 @@ export class AuditService {
 
   async findRecent(limit: number = 100): Promise<AuditLog[]> {
     const result = await this.db
-      .prepare('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT ?')
+      .prepare('SELECT id, user_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent, status, error_message, created_at FROM audit_logs ORDER BY created_at DESC LIMIT ?')
       .bind(limit)
       .all<AuditLog>()
 
@@ -87,7 +87,7 @@ export class AuditService {
 
   async findByDateRange(startDate: string, endDate: string): Promise<AuditLog[]> {
     const result = await this.db
-      .prepare('SELECT * FROM audit_logs WHERE created_at >= ? AND created_at <= ? ORDER BY created_at DESC')
+      .prepare('SELECT id, user_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent, status, error_message, created_at FROM audit_logs WHERE created_at >= ? AND created_at <= ? ORDER BY created_at DESC')
       .bind(startDate, endDate)
       .all<AuditLog>()
 

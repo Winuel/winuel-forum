@@ -68,6 +68,38 @@ const router = createRouter({
       component: () => import('../pages/ContactPage.vue'),
     },
     {
+      path: '/admin',
+      component: () => import('../layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          component: () => import('../views/admin/Dashboard.vue'),
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('../views/admin/Users.vue'),
+        },
+        {
+          path: 'posts',
+          name: 'admin-posts',
+          component: () => import('../views/admin/Posts.vue'),
+        },
+        {
+          path: 'comments',
+          name: 'admin-comments',
+          component: () => import('../views/admin/Comments.vue'),
+        },
+        {
+          path: 'audit-logs',
+          name: 'admin-audit-logs',
+          component: () => import('../views/admin/AuditLogs.vue'),
+        },
+      ],
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../pages/NotFoundPage.vue'),
@@ -80,6 +112,8 @@ router.beforeEach((to, _from, next) => {
 
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresAdmin && userStore.user?.role !== 'admin' && userStore.user?.role !== 'moderator') {
+    next({ name: 'home' })
   } else {
     next()
   }

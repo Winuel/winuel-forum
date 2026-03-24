@@ -115,8 +115,6 @@ export function initEmailChecker(blocklist: string[], allowlist: string[] = []):
 
     globalEmailChecker = new DisposableEmailChecker(blocklist, allowlist)
 
-    console.log(`Email checker initialized with ${blocklist.length} blocked domains and ${allowlist.length} allowed domains`)
-
   } catch (error) {
 
     console.error('Failed to initialize email checker:', error)

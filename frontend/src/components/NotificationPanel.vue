@@ -84,7 +84,7 @@ async function loadNotifications() {
     notifications.value = response.notifications
     unreadCount.value = response.unread_count
   } catch (error) {
-    console.error('Failed to load notifications:', error)
+    // Error handling is managed by the UI store
   } finally {
     loading.value = false
   }
@@ -95,7 +95,7 @@ async function loadUnreadCount() {
     const response = await notificationsApi.getUnreadCount()
     unreadCount.value = response.unread_count
   } catch (error) {
-    console.error('Failed to load unread count:', error)
+    // Error handling is managed by the UI store
   }
 }
 
@@ -108,7 +108,7 @@ async function handleMarkAsRead(id: string) {
       unreadCount.value = Math.max(0, unreadCount.value - 1)
     }
   } catch (error) {
-    console.error('Failed to mark notification as read:', error)
+    // Error handling is managed by the UI store
   }
 }
 
@@ -120,7 +120,7 @@ async function markAllAsRead() {
     })
     unreadCount.value = 0
   } catch (error) {
-    console.error('Failed to mark all notifications as read:', error)
+    // Error handling is managed by the UI store
   }
 }
 
@@ -133,7 +133,7 @@ async function handleDelete(id: string) {
       unreadCount.value = Math.max(0, unreadCount.value - 1)
     }
   } catch (error) {
-    console.error('Failed to delete notification:', error)
+    // Error handling is managed by the UI store
   }
 }
 
@@ -147,7 +147,7 @@ async function deleteAll() {
     notifications.value = []
     unreadCount.value = 0
   } catch (error) {
-    console.error('Failed to delete all notifications:', error)
+    // Error handling is managed by the UI store
   }
 }
 

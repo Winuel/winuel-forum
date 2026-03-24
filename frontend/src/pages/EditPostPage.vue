@@ -109,6 +109,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUIStore } from '../stores/ui'
+import { apiClient } from '../api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -129,14 +130,13 @@ const categories = ref([
 
 onMounted(async () => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts/${route.params.id}`)
-    const post = await response.json()
+    const post = await apiClient.get(`/api/posts/${route.params.id}`) as any
     title.value = post.title
     categoryId.value = post.categoryId
     content.value = post.content
     tagsInput.value = post.tags.join(', ')
   } catch (error) {
-    console.error('Failed to fetch post:', error)
+    // Error handling is managed by the error handler
     uiStore.addNotification({
       type: 'error',
       title: '加载失败',
@@ -153,40 +153,23 @@ async function handleSubmit() {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0)
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts/${route.params.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-      },
-      body: JSON.stringify({
-        title: title.value,
-        content: content.value,
-        categoryId: categoryId.value,
-        tags,
-      }),
+    await apiClient.put(`/api/posts/${route.params.id}`, {
+      title: title.value,
+      content: content.value,
+      categoryId: categoryId.value,
+      tags,
     })
-
-    if (response.ok) {
-      uiStore.addNotification({
-        type: 'success',
-        title: '保存成功',
-        message: '帖子已成功更新',
-      })
-      router.push(`/post/${route.params.id}`)
-    } else {
-      const error = await response.json()
-      uiStore.addNotification({
-        type: 'error',
-        title: '保存失败',
-        message: error.message || '保存失败，请稍后重试',
-      })
-    }
-  } catch {
+    uiStore.addNotification({
+      type: 'success',
+      title: '保存成功',
+      message: '帖子已成功更新',
+    })
+    router.push(`/post/${route.params.id}`)
+  } catch (error: any) {
     uiStore.addNotification({
       type: 'error',
       title: '保存失败',
-      message: '网络错误，请稍后重试',
+      message: error?.message || '保存失败，请稍后重试',
     })
   } finally {
     loading.value = false

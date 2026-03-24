@@ -510,7 +510,7 @@ function loadSavedTheme() {
         uiStore.theme = 'light'
       }
     } catch (error) {
-      console.error('Failed to load saved theme:', error)
+      // Error handling is managed by the error handler
     }
   }
 }

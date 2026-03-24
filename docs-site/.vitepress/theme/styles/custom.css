@@ -1,0 +1,127 @@
+/* 自定义样式 */
+:root {
+  --vp-c-brand-1: #0ea5e9;
+  --vp-c-brand-2: #0284c7;
+  --vp-c-brand-3: #0369a1;
+  --vp-c-brand-soft: rgba(14, 165, 233, 0.1);
+}
+
+/* Hero 区域样式 */
+.VPHero {
+  background: linear-gradient(135deg, #0ea5e9 0%, #d946ef 100%);
+  color: white !important;
+  padding: 4rem 2rem;
+}
+
+.VPHero .name {
+  color: white !important;
+}
+
+.VPHero .text {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.VPHero .tagline {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.VPHero .actions {
+  margin-top: 2rem;
+}
+
+/* 特性卡片样式 */
+.VPFeature {
+  border: 1px solid var(--vp-c-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.VPFeature:hover {
+  border-color: var(--vp-c-brand-1);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.VPFeature .icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* 导航栏样式 */
+.VPNavBar {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid var(--vp-c-border);
+}
+
+/* 侧边栏样式 */
+.VPSidebar {
+  border-right: 1px solid var(--vp-c-border);
+}
+
+/* 代码块样式 */
+div[class*='language-'] {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .VPHero {
+    padding: 2rem 1rem;
+  }
+  
+  .VPFeature {
+    padding: 1rem;
+  }
+}
+
+/* 暗色模式适配 */
+.dark .VPHero {
+  background: linear-gradient(135deg, #0369a1 0%, #701a75 100%);
+}
+
+.dark .VPFeature {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.VPFeature {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.VPFeature:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.VPFeature:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.VPFeature:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.VPFeature:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.VPFeature:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.VPFeature:nth-child(6) {
+  animation-delay: 0.6s;
+}

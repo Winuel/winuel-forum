@@ -51,6 +51,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import PostCard from '../components/PostCard.vue'
+import { apiClient } from '../api/client'
 import type { Post } from '../stores/post'
 import type { User } from '../stores/user'
 
@@ -62,16 +63,14 @@ const loading = ref(false)
 onMounted(async () => {
   loading.value = true
   try {
-    const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/users/${route.params.username}`)
-    user.value = await userResponse.json()
+    user.value = await apiClient.get(`/api/users/${route.params.username}`)
 
     if (user.value?.id) {
-      const postsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts?authorId=${user.value.id}`)
-      const data = await postsResponse.json()
+      const data = await apiClient.get(`/api/posts?authorId=${user.value.id}`) as any
       posts.value = data.posts || []
     }
   } catch (error) {
-    console.error('Failed to fetch user data:', error)
+    // Error handling is managed by the error handler
   } finally {
     loading.value = false
   }

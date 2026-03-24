@@ -26,7 +26,7 @@ export class NotificationService {
   }
 
   async findById(id: string): Promise<Notification | null> {
-    return this.db.prepare('SELECT * FROM notifications WHERE id = ?').bind(id).first<Notification>()
+    return this.db.prepare('SELECT id, user_id, type, title, message, link, is_read, created_at FROM notifications WHERE id = ?').bind(id).first<Notification>()
   }
 
   async findByUserId(
@@ -40,7 +40,7 @@ export class NotificationService {
     const { page = 1, limit = 20, unread_only } = options
     const offset = (page - 1) * limit
 
-    let query = 'SELECT * FROM notifications WHERE user_id = ?'
+    let query = 'SELECT id, user_id, type, title, message, link, is_read, created_at FROM notifications WHERE user_id = ?'
     const params: any[] = [userId]
 
     if (unread_only) {

@@ -16,10 +16,14 @@ describe('Auth Router', () => {
 
   beforeEach(async () => {
     mockDb = createMockD1Database()
-    initJWT('test-secret-key-32-characters-long-key')
+    initJWT('A1b2C3d4!E5f6G7h8@I9j0K1l2#M3n4O5p6')
     testPasswordHash = await hashPassword('Password123!')
     // Initialize disposable email checker with test blocklist
     initEmailChecker(['tempmail.com'], [])
+    // Mock email service to be unavailable in tests
+    ;(globalThis as any).emailService = {
+      isAvailable: () => false
+    }
 
     app = new Hono<{ Bindings: Env; Variables: Variables }>()
     app.use('*', async (c, next) => {
@@ -44,6 +48,7 @@ describe('Auth Router', () => {
         username: 'testuser',
         email: 'test@example.com',
         password: 'Password123!',
+        verificationCode: '123456',
       }
 
       const res = await app.request('/api/auth/register', {
@@ -83,6 +88,7 @@ describe('Auth Router', () => {
         username: 'a',
         email: 'test@example.com',
         password: 'Password123!',
+        verificationCode: '123456',
       }
 
       const res = await app.request('/api/auth/register', {
@@ -102,6 +108,7 @@ describe('Auth Router', () => {
         username: 'testuser',
         email: 'invalid-email',
         password: 'Password123!',
+        verificationCode: '123456',
       }
 
       const res = await app.request('/api/auth/register', {
@@ -121,6 +128,7 @@ describe('Auth Router', () => {
         username: 'testuser',
         email: 'test@example.com',
         password: 'weak',
+        verificationCode: '123456',
       }
 
       const res = await app.request('/api/auth/register', {
@@ -140,6 +148,7 @@ describe('Auth Router', () => {
         username: 'testuser',
         email: 'test@tempmail.com',
         password: 'Password123!',
+        verificationCode: '123456',
       }
 
       const res = await app.request('/api/auth/register', {
@@ -172,6 +181,7 @@ describe('Auth Router', () => {
         username: 'newuser',
         email: 'test@example.com',
         password: 'Password123!',
+        verificationCode: '123456',
       }
 
       const res = await app.request('/api/auth/register', {

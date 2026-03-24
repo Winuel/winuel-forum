@@ -85,6 +85,22 @@
           >
         </div>
 
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            代码附件
+          </label>
+          <CodeUploader
+            v-if="!postId"
+            :post-id="postId"
+            :max-file-size="512"
+            @upload-success="handleUploadSuccess"
+            @upload-error="handleUploadError"
+          />
+          <div v-else class="text-sm text-gray-500">
+            已创建帖子，无法再上传代码附件
+          </div>
+        </div>
+
         <div class="flex gap-3">
           <button
             type="submit"
@@ -101,6 +117,15 @@
           </router-link>
         </div>
       </form>
+
+      <!-- 申诉对话框 -->
+      <AppealDialog
+        :show="showAppealDialog"
+        :post-title="title"
+        :audit-reason="currentPostAuditReason"
+        @close="showAppealDialog = false"
+        @submit="handleAppealSubmit"
+      />
     </div>
   </div>
 </template>
@@ -109,6 +134,10 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUIStore } from '../stores/ui'
+import { apiClient } from '../api/client'
+import CodeUploader from '../components/CodeUploader.vue'
+import AppealDialog from '../components/AppealDialog.vue'
+import type { CodeAttachment } from '../types/code'
 
 const router = useRouter()
 const uiStore = useUIStore()
@@ -118,6 +147,14 @@ const categoryId = ref('')
 const content = ref('')
 const tagsInput = ref('')
 const loading = ref(false)
+const postId = ref('')
+const codeAttachments = ref<CodeAttachment[]>([])
+
+// 申诉对话框相关状态
+const showAppealDialog = ref(false)
+const currentPostAuditReason = ref('')
+const appealingPostId = ref('')
+const appealLoading = ref(false)
 
 const categories = ref([
   { id: '1', name: '技术讨论' },
@@ -134,44 +171,88 @@ async function handleSubmit() {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0)
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-      },
-      body: JSON.stringify({
-        title: title.value,
-        content: content.value,
-        categoryId: categoryId.value,
-        tags,
-      }),
-    })
-
-    if (response.ok) {
-      const post = await response.json()
+    const post = await apiClient.post('/api/posts', {
+      title: title.value,
+      content: content.value,
+      categoryId: categoryId.value,
+      tags,
+    }) as { 
+      id: string
+      auditStatus?: string
+      auditReason?: string
+    }
+    
+    postId.value = post.id
+    
+    // 检查是否被拒绝（包含敏感词）
+    if (post.auditStatus === 'rejected' && post.auditReason?.includes('敏感词')) {
+      // 显示申诉对话框
+      currentPostAuditReason.value = post.auditReason
+      appealingPostId.value = post.id
+      showAppealDialog.value = true
+      uiStore.addNotification({
+        type: 'warning',
+        title: '帖子被标记为敏感内容',
+        message: '您的帖子包含敏感词，可以选择申诉或等待管理员审核',
+      })
+    } else {
       uiStore.addNotification({
         type: 'success',
         title: '发布成功',
         message: '帖子已成功发布',
       })
       router.push(`/post/${post.id}`)
-    } else {
-      const error = await response.json()
-      uiStore.addNotification({
-        type: 'error',
-        title: '发布失败',
-        message: error.message || '发布失败，请稍后重试',
-      })
     }
-  } catch {
+  } catch (error: any) {
     uiStore.addNotification({
       type: 'error',
       title: '发布失败',
-      message: '网络错误，请稍后重试',
+      message: error?.message || '发布失败，请稍后重试',
     })
   } finally {
     loading.value = false
   }
+}
+
+const handleAppealSubmit = async (reason: string) => {
+  appealLoading.value = true
+  try {
+    await apiClient.post(`/api/posts/${appealingPostId.value}/appeal`, {
+      reason,
+    })
+    
+    uiStore.addNotification({
+      type: 'success',
+      title: '申诉已提交',
+      message: '您的申诉已提交，管理员将会尽快处理',
+    })
+    
+    router.push(`/post/${appealingPostId.value}`)
+  } catch (error: any) {
+    uiStore.addNotification({
+      type: 'error',
+      title: '申诉失败',
+      message: error?.message || '申诉失败，请稍后重试',
+    })
+  } finally {
+    appealLoading.value = false
+  }
+}
+
+const handleUploadSuccess = (attachment: CodeAttachment) => {
+  codeAttachments.value.push(attachment)
+  uiStore.addNotification({
+    type: 'success',
+    title: '上传成功',
+    message: `代码文件 ${attachment.file_name} 已上传`,
+  })
+}
+
+const handleUploadError = (error: string) => {
+  uiStore.addNotification({
+    type: 'error',
+    title: '上传失败',
+    message: error,
+  })
 }
 </script>

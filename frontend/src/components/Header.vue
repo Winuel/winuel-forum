@@ -287,7 +287,7 @@ async function loadUnreadCount() {
     const response = await notificationsApi.getUnreadCount()
     unreadCount.value = response.unread_count
   } catch (error) {
-    console.error('Failed to load unread count:', error)
+    // Error handling is managed by the error handler
   }
 }
 

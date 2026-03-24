@@ -31,6 +31,14 @@ export interface Comment {
   updatedAt: string
   likeCount: number
   replies?: Comment[]
+  codeReview?: {
+    id: string
+    attachmentOwnerId: string
+    status: 'pending' | 'accepted' | 'rejected'
+    oldContent: string
+    newContent: string
+    fileName: string
+  }
 }
 
 export const usePostStore = defineStore('post', () => {

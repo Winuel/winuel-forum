@@ -28,3 +28,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 .cache/
+
+# Sensitive words library
+data/sensitive-words/
+Sensitive-lexicon/

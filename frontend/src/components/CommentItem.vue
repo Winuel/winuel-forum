@@ -33,6 +33,45 @@
       <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
         {{ comment.content }}
       </p>
+
+      <!-- Code Review Display -->
+      <div v-if="comment.codeReview" class="mt-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+            代码审查
+          </span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">
+            状态: {{ getReviewStatusText(comment.codeReview.status) }}
+          </span>
+        </div>
+        
+        <DiffViewer
+          :old-content="comment.codeReview.oldContent"
+          :new-content="comment.codeReview.newContent"
+          :old-file-name="comment.codeReview.fileName"
+          :new-file-name="`${comment.codeReview.fileName} (提议)`"
+        />
+
+        <!-- Review Actions (for attachment owner) -->
+        <div
+          v-if="isAttachmentOwner && comment.codeReview.status === 'pending'"
+          class="flex gap-2 mt-3"
+        >
+          <button
+            @click="acceptReview"
+            class="px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+          >
+            接受变更
+          </button>
+          <button
+            @click="rejectReview"
+            class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+          >
+            拒绝变更
+          </button>
+        </div>
+      </div>
+
       <div class="flex items-center gap-4 mt-3">
         <button
           @click="toggleLike"
@@ -110,7 +149,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useUserStore } from '../stores/user'
+import { apiClient } from '../api/client'
 import type { Comment } from '../stores/post'
+import DiffViewer from './DiffViewer.vue'
 
 const props = defineProps<{
   comment: Comment
@@ -119,6 +160,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   replySuccess: []
+  reviewAccepted: []
+  reviewRejected: []
 }>()
 
 const userStore = useUserStore()
@@ -128,6 +171,11 @@ const replyContent = ref('')
 const isSubmitting = ref(false)
 
 const currentUser = computed(() => userStore.user)
+
+// Check if current user is the attachment owner
+const isAttachmentOwner = computed(() => {
+  return currentUser.value?.id === props.comment.codeReview?.attachmentOwnerId
+})
 
 function toggleLike() {
   isLiked.value = !isLiked.value
@@ -154,7 +202,7 @@ async function submitReply() {
     // 通知父组件刷新评论列表
     emit('replySuccess')
   } catch (error) {
-    console.error('回复失败:', error)
+    // Error handling is managed by the error handler
   } finally {
     isSubmitting.value = false
   }
@@ -163,6 +211,45 @@ async function submitReply() {
 function handleReplySuccess() {
   // 处理嵌套回复成功
   emit('replySuccess')
+}
+
+function getReviewStatusText(status: string): string {
+  const statusMap: Record<string, string> = {
+    pending: '待审核',
+    accepted: '已接受',
+    rejected: '已拒绝'
+  }
+  return statusMap[status] || status
+}
+
+async function acceptReview() {
+  if (!props.comment.codeReview) return
+
+  try {
+    await apiClient.post('/api/reviews/accept', {
+      review_id: props.comment.codeReview.id,
+      comment: '接受代码变更'
+    })
+    
+    emit('reviewAccepted')
+  } catch (error) {
+    console.error('Failed to accept review:', error)
+  }
+}
+
+async function rejectReview() {
+  if (!props.comment.codeReview) return
+
+  try {
+    await apiClient.post('/api/reviews/reject', {
+      review_id: props.comment.codeReview.id,
+      comment: '拒绝代码变更'
+    })
+    
+    emit('reviewRejected')
+  } catch (error) {
+    console.error('Failed to reject review:', error)
+  }
 }
 
 function formatDate(date: string): string {

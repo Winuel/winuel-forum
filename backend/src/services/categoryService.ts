@@ -5,11 +5,11 @@ export class CategoryService {
   constructor(private db: D1Database) {}
 
   async findAll(): Promise<Category[]> {
-    const result = await this.db.prepare('SELECT * FROM categories ORDER BY name').all<Category>()
+    const result = await this.db.prepare('SELECT id, name, description FROM categories ORDER BY name').all<Category>()
     return result.results || []
   }
 
   async findById(id: string): Promise<Category | null> {
-    return this.db.prepare('SELECT * FROM categories WHERE id = ?').bind(id).first<Category>()
+    return this.db.prepare('SELECT id, name, description FROM categories WHERE id = ?').bind(id).first<Category>()
   }
 }

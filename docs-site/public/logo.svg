@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="cloud-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d946ef;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Cloud shape -->
+  <path d="M50 120 Q30 120 30 100 Q30 80 50 80 Q50 60 80 60 Q100 40 130 60 Q160 60 160 90 Q180 90 180 110 Q180 130 160 130 L50 130 Z" 
+        fill="url(#cloud-gradient)" 
+        opacity="0.9"/>
+  
+  <!-- Link icon -->
+  <g fill="white" opacity="0.95">
+    <circle cx="80" cy="100" r="12"/>
+    <circle cx="120" cy="100" r="12"/>
+    <rect x="85" y="96" width="30" height="8" rx="2"/>
+  </g>
+</svg>

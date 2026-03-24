@@ -5,11 +5,19 @@ import type { MiddlewareHandler } from 'hono'
  * 将所有 HTTP 请求重定向到 HTTPS
  */
 export const httpsRedirect: MiddlewareHandler = async (c, next) => {
+  // 检查当前请求是否已经是 HTTPS
+  const currentUrl = c.req.url
+  if (currentUrl.startsWith('https://')) {
+    // 已经是 HTTPS，直接继续
+    await next()
+    return
+  }
+
   // 检查是否通过 Cloudflare 代理
   const cfVisitor = c.req.header('cf-visitor')
   
   // 如果通过 Cloudflare 代理且是 HTTP 请求，则重定向到 HTTPS
-  if (cfVisitor && cfVisitor.includes('http')) {
+  if (cfVisitor && cfVisitor.includes('"scheme":"http"')) {
     const protocol = 'https://'
     const host = c.req.header('host') || ''
     const path = c.req.url

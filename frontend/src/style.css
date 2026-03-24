@@ -333,4 +333,273 @@
     border-radius: inherit;
     pointer-events: none;
   }
+
+  /* 移动端触摸优化 */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .touch-none {
+    touch-action: none;
+  }
+
+  /* 移动端可点击元素最小尺寸 */
+  .min-touch {
+    min-width: 44px;
+    min-height: 44px;
+    min-touch-action: manipulation;
+  }
+
+  /* 移动端优化 */
+  @media (max-width: 768px) {
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button,
+    a,
+    [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* 性能优化 - 减少 GPU 使用 */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* 优化动画性能 */
+  @layer utilities {
+    .animate-optimized {
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      perspective: 1000px;
+    }
+  }
+
+  /* 骨架屏加载动画 */
+  @keyframes skeleton {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #f0f0f0 25%,
+      #e0e0e0 50%,
+      #f0f0f0 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton 1.5s infinite;
+  }
+
+  .dark .skeleton {
+    background: linear-gradient(
+      90deg,
+      #2d3748 25%,
+      #4a5568 50%,
+      #2d3748 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* 改进的玻璃态效果 */
+  .glass-improved {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .glass-improved {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* 移动端优化的卡片 */
+  .card-mobile {
+    @apply rounded-xl p-4 shadow-soft;
+    @apply active:scale-95 transition-transform;
+  }
+
+  /* 移动端优化的按钮 */
+  .btn-mobile {
+    @apply min-h-12 px-6 rounded-full font-semibold;
+    @apply active:scale-95 transition-transform;
+  }
+
+  /* 移动端优化的输入框 */
+  .input-mobile {
+    @apply min-h-12 px-4 rounded-xl;
+    @apply text-base;
+  }
+
+  /* 改进的渐变文本 */
+  .gradient-text-improved {
+    @apply bg-clip-text text-transparent bg-gradient-to-r;
+    background-image: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 50%, #d946ef 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  /* 改进的卡片悬停效果 */
+  .card-hover {
+    @apply transition-all duration-300;
+    @apply hover:shadow-glow-lg hover:-translate-y-1;
+  }
+
+  /* 改进的按钮悬停效果 */
+  .btn-hover {
+    @apply transition-all duration-300;
+    @apply hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  /* 移动端优化的间距 */
+  @media (max-width: 768px) {
+    .container {
+      @apply px-4;
+    }
+
+    .section {
+      @apply py-8;
+    }
+
+    .card {
+      @apply p-4;
+    }
+  }
+
+  /* 改进的加载状态 */
+  .loading-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
+    @apply flex items-center justify-center z-50;
+  }
+
+  .loading-spinner {
+    @apply w-12 h-12 border-4 border-primary-200 border-t-primary-500;
+    @apply rounded-full animate-spin;
+  }
+
+  /* 改进的空状态 */
+  .empty-state {
+    @apply flex flex-col items-center justify-center;
+    @apply py-16 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-24 h-24 mb-4 text-gray-300;
+  }
+
+  .empty-state-text {
+    @apply text-gray-500 text-lg;
+  }
+
+  /* 改进的错误状态 */
+  .error-state {
+    @apply flex flex-col items-center justify-center;
+    @apply py-16 text-center;
+  }
+
+  .error-state-icon {
+    @apply w-24 h-24 mb-4 text-error-500;
+  }
+
+  .error-state-text {
+    @apply text-gray-500 text-lg;
+  }
+
+  /* 改进的通知动画 */
+  .notification-enter {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  .notification-leave {
+    animation: slide-out-right 0.3s ease-in;
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-out-right {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  /* 改进的卡片进入动画 */
+  .card-enter {
+    animation: card-enter 0.4s ease-out;
+  }
+
+  @keyframes card-enter {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* 改进的列表动画 */
+  .list-enter {
+    animation: list-enter 0.3s ease-out;
+  }
+
+  @keyframes list-enter {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* 改进的淡入动画 */
+  .fade-in-up-improved {
+    animation: fade-in-up 0.6s ease-out;
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }

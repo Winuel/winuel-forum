@@ -2,8 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import commentsRouter from '../../routes/comments'
 import { createMockD1Database } from '../helpers/db'
-import { initJWT, generateToken } from '../../utils/jwt'
+import { initJWT } from '../../utils/jwt'
+import { createAuthHeader, createCSRFHeaders, csrfStore } from '../helpers/test-utils'
 import type { Env, Variables } from '../../types'
+import { Audience } from '../../utils/jwt'
 
 describe('Comments Router', () => {
   let app: Hono<{ Bindings: Env; Variables: Variables }>
@@ -11,7 +13,8 @@ describe('Comments Router', () => {
 
   beforeEach(() => {
     mockDb = createMockD1Database()
-    initJWT('test-secret-key-32-characters-long-key')
+    csrfStore.clear()
+    initJWT('A1b2C3d4!E5f6G7h8@I9j0K1l2#M3n4O5p6')
 
     app = new Hono<{ Bindings: Env; Variables: Variables }>()
     app.use('*', async (c, next) => {
@@ -20,22 +23,23 @@ describe('Comments Router', () => {
       }
       c.env.DB = mockDb
       c.env.JWT_SECRET = 'test-secret-key-32-characters-long-key'
-      // Mock KV storage
+      // Mock KV storage with CSRF support
       c.env.KV = {
-        get: async (key: string) => null,
-        put: async (key: string, value: string, options?: any) => {},
+        get: async (key: string, type?: string) => {
+          const value = csrfStore.get(key)
+          if (type === 'text') {
+            return value as string | null
+          }
+          return value
+        },
+        put: async (key: string, value: string, options?: any) => {
+          csrfStore.put(key, value)
+        },
       } as KVNamespace
       await next()
     })
     app.route('/api/comments', commentsRouter)
   })
-
-  const createAuthHeader = async (userId: string, username: string = 'testuser', role: string = 'user') => {
-    const token = await generateToken({ userId, username, role })
-    return {
-      'Authorization': `Bearer ${token}`,
-    }
-  }
 
   describe('POST /', () => {
     it('should create a new comment', async () => {
@@ -69,11 +73,13 @@ describe('Comments Router', () => {
       }
 
       const authHeader = await createAuthHeader('2')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...authHeader,
+          ...csrfHeaders,
         },
         body: JSON.stringify(commentData),
       })
@@ -89,11 +95,13 @@ describe('Comments Router', () => {
       }
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...authHeader,
+          ...csrfHeaders,
         },
         body: JSON.stringify(commentData),
       })
@@ -147,11 +155,13 @@ describe('Comments Router', () => {
       }
 
       const authHeader = await createAuthHeader('2')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...authHeader,
+          ...csrfHeaders,
         },
         body: JSON.stringify(commentData),
       })
@@ -183,11 +193,13 @@ describe('Comments Router', () => {
       }
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/1', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...authHeader,
+          ...csrfHeaders,
         },
         body: JSON.stringify(updateData),
       })
@@ -206,11 +218,13 @@ describe('Comments Router', () => {
       }
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/999', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...authHeader,
+          ...csrfHeaders,
         },
         body: JSON.stringify(updateData),
       })
@@ -240,11 +254,13 @@ describe('Comments Router', () => {
       }
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/1', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...authHeader,
+          ...csrfHeaders,
         },
         body: JSON.stringify(updateData),
       })
@@ -272,9 +288,13 @@ describe('Comments Router', () => {
       mockDb.tables.set('comments', [mockComment])
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/1', {
         method: 'DELETE',
-        headers: authHeader,
+        headers: {
+          ...authHeader,
+          ...csrfHeaders,
+        },
       })
 
       expect(res.status).toBe(200)
@@ -287,9 +307,13 @@ describe('Comments Router', () => {
       mockDb.tables.set('comments', [])
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/999', {
         method: 'DELETE',
-        headers: authHeader,
+        headers: {
+          ...authHeader,
+          ...csrfHeaders,
+        },
       })
 
       expect(res.status).toBe(404)
@@ -313,9 +337,13 @@ describe('Comments Router', () => {
       mockDb.tables.set('comments', [mockComment])
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/1', {
         method: 'DELETE',
-        headers: authHeader,
+        headers: {
+          ...authHeader,
+          ...csrfHeaders,
+        },
       })
 
       expect(res.status).toBe(403)
@@ -363,9 +391,13 @@ describe('Comments Router', () => {
       mockDb.tables.set('notifications', [])
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/1/like', {
         method: 'POST',
-        headers: authHeader,
+        headers: {
+          ...authHeader,
+          ...csrfHeaders,
+        },
       })
 
       expect(res.status).toBe(200)
@@ -397,9 +429,13 @@ describe('Comments Router', () => {
       mockDb.tables.set('likes', [mockLike])
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/1/like', {
         method: 'POST',
-        headers: authHeader,
+        headers: {
+          ...authHeader,
+          ...csrfHeaders,
+        },
       })
 
       expect(res.status).toBe(400)
@@ -421,9 +457,13 @@ describe('Comments Router', () => {
       mockDb.tables.set('likes', [mockLike])
 
       const authHeader = await createAuthHeader('1')
+      const csrfHeaders = createCSRFHeaders()
       const res = await app.request('/api/comments/1/like', {
         method: 'DELETE',
-        headers: authHeader,
+        headers: {
+          ...authHeader,
+          ...csrfHeaders,
+        },
       })
 
       expect(res.status).toBe(200)

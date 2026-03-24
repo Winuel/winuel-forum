@@ -5,8 +5,14 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "production"
-# 注意：JWT_SECRET 应该使用 secrets 而不是 vars
+# CORS 允许的源（逗号分隔）
+# 例如: CORS_ORIGINS = "https://www.winuel.com,https://winuel.pages.dev,https://admin.winuel.com,https://64229809.winuel-admin.pages.dev,https://winuel-admin.pages.dev"
+# 注意：JWT_SECRET 和 RESEND_API_KEY 应该使用 secrets 而不是 vars
 # 使用命令: wrangler secret put JWT_SECRET
+# 使用命令: wrangler secret put RESEND_API_KEY
+# 邮件发送配置
+RESEND_FROM_EMAIL = "noreply@mail.winuel.com"
+RESEND_FROM_NAME = "云纽论坛"
 
 [[d1_databases]]
 binding = "DB"

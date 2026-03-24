@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d946ef;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Simplified cloud + link icon -->
+  <path d="M6 20 Q2 20 2 16 Q2 12 6 12 Q6 8 10 8 Q14 4 18 8 Q22 8 22 13 Q26 13 26 17 Q26 20 22 20 L6 20 Z" 
+        fill="url(#icon-gradient)"/>
+  
+  <!-- Link symbol -->
+  <g fill="white">
+    <circle cx="10" cy="15" r="3"/>
+    <circle cx="18" cy="15" r="3"/>
+    <rect x="11" y="14" width="6" height="2" rx="1"/>
+  </g>
+</svg>

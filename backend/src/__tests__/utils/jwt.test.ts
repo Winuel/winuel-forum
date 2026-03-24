@@ -3,12 +3,12 @@ import { initJWT, generateToken, verifyToken } from '../../utils/jwt'
 
 describe('JWT Utils', () => {
   beforeEach(() => {
-    initJWT('test-secret-key-32-characters-long-key')
+    initJWT('A1b2C3d4!E5f6G7h8@I9j0K1l2#M3n4O5p6')
   })
 
   describe('initJWT', () => {
     it('should initialize JWT with valid secret', () => {
-      expect(() => initJWT('test-secret-key-32-characters-long-key')).not.toThrow()
+      expect(() => initJWT('A1b2C3d4!E5f6G7h8@I9j0K1l2#M3n4O5p6')).not.toThrow()
     })
 
     it('should throw error for secret shorter than 32 characters', () => {
@@ -77,11 +77,11 @@ describe('JWT Utils', () => {
     })
 
     it('should return null for token with wrong secret', async () => {
-      initJWT('different-secret-key-32-characters-long')
+      initJWT('Z1y2X3w4!V5u6T7s8@R9q0P1o2#I3u4Y5t6')
       const payload = { userId: '1', username: 'testuser', role: 'user' }
       const token = await generateToken(payload)
 
-      initJWT('test-secret-key-32-characters-long-key')
+      initJWT('A1b2C3d4!E5f6G7h8@I9j0K1l2#M3n4O5p6')
       const decoded = await verifyToken(token)
 
       expect(decoded).toBeNull()

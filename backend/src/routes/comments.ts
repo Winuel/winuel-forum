@@ -127,7 +127,7 @@ commentsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async
     const user = c.get('user')
 
     const existingLike = await c.env.DB
-      .prepare('SELECT * FROM likes WHERE user_id = ? AND target_id = ? AND target_type = ?')
+      .prepare('SELECT 1 FROM likes WHERE user_id = ? AND target_id = ? AND target_type = ?')
       .bind(user.userId, id, 'comment')
       .first()
 

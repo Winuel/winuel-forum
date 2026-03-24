@@ -229,7 +229,7 @@ describe('PostService', () => {
 
       await postService.delete('1')
 
-      expect(mockDb.tables.get('posts').length).toBe(0)
+      expect(mockDb.tables.get('posts')[0].deleted_at).toBeDefined();
     })
   })
 

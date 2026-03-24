@@ -98,6 +98,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 import { usePostStore } from '../stores/post'
+import { apiClient } from '../api/client'
 import PostCard from '../components/PostCard.vue'
 
 const userStore = useUserStore()
@@ -117,11 +118,10 @@ const filteredPosts = computed(() => {
 onMounted(async () => {
   postStore.loading = true
   try {
-    const result = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts`)
-    const data = await result.json()
+    const data = await apiClient.get('/api/posts') as any
     postStore.setPosts(data.posts || [])
   } catch (error) {
-    console.error('Failed to fetch posts:', error)
+    // Error handling is managed by the error handler
   } finally {
     postStore.loading = false
   }

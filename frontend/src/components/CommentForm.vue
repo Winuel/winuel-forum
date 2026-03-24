@@ -30,6 +30,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { usePostStore } from '../stores/post'
+import { apiClient } from '../api/client'
 
 const props = defineProps<{
   postId: string
@@ -44,25 +45,14 @@ async function handleSubmit() {
 
   submitting.value = true
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-      },
-      body: JSON.stringify({
-        postId: props.postId,
-        content: content.value,
-      }),
-    })
-
-    if (response.ok) {
-      const comment = await response.json()
-      postStore.addComment(comment)
-      content.value = ''
-    }
+    const comment = await apiClient.post('/api/comments', {
+      postId: props.postId,
+      content: content.value,
+    }) as any
+    postStore.addComment(comment)
+    content.value = ''
   } catch (error) {
-    console.error('Failed to create comment:', error)
+    // Error handling is managed by the error handler
   } finally {
     submitting.value = false
   }

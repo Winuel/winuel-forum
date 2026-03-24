@@ -33,6 +33,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import PostCard from '../components/PostCard.vue'
+import { apiClient } from '../api/client'
 import type { Post } from '../stores/post'
 
 const route = useRoute()
@@ -43,12 +44,11 @@ const loading = ref(false)
 onMounted(async () => {
   loading.value = true
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts?categoryId=${route.params.id}`)
-    const data = await response.json()
+    const data = await apiClient.get(`/api/posts?categoryId=${route.params.id}`) as any
     posts.value = data.posts || []
     categoryName.value = '分类'
   } catch (error) {
-    console.error('Failed to fetch posts:', error)
+    // Error handling is managed by the error handler
   } finally {
     loading.value = false
   }

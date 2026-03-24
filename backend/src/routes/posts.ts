@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { Env, Variables } from '../types'
+import { DEPENDENCY_TOKENS } from '../utils/di'
 import { PostService } from '../services/postService'
 import { NotificationService } from '../services/notificationService'
 import { authMiddleware } from '../middleware/auth'
@@ -9,12 +10,17 @@ const postsRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
 
 postsRouter.get('/', async (c) => {
   try {
+    const container = c.get('container')
+    if (!container) {
+      return c.json({ error: 'Service container not initialized' }, 500)
+    }
+
     const page = parseInt(c.req.query('page') || '1')
     const limit = parseInt(c.req.query('limit') || '20')
     const categoryId = c.req.query('categoryId')
     const authorId = c.req.query('authorId')
 
-    const postService = new PostService(c.env.DB)
+    const postService = container.resolve<PostService>(DEPENDENCY_TOKENS.POST_SERVICE)
     const result = await postService.findAllWithDetails({ page, limit, category_id: categoryId, author_id: authorId })
 
     return c.json({ posts: result.posts, total: result.total })
@@ -25,8 +31,13 @@ postsRouter.get('/', async (c) => {
 
 postsRouter.get('/:id', async (c) => {
   try {
+    const container = c.get('container')
+    if (!container) {
+      return c.json({ error: 'Service container not initialized' }, 500)
+    }
+
     const id = c.req.param('id')!
-    const postService = new PostService(c.env.DB)
+    const postService = container.resolve<PostService>(DEPENDENCY_TOKENS.POST_SERVICE)
 
     await postService.incrementViewCount(id)
 
@@ -118,7 +129,7 @@ postsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c
     const user = c.get('user')
 
     const existingLike = await c.env.DB
-      .prepare('SELECT * FROM likes WHERE user_id = ? AND target_id = ? AND target_type = ?')
+      .prepare('SELECT 1 FROM likes WHERE user_id = ? AND target_id = ? AND target_type = ?')
       .bind(user.userId, id, 'post')
       .first()
 

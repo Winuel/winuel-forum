@@ -7,7 +7,7 @@
 
         <div class="relative">
           <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-600 rounded-2xl shadow-xl shadow-primary-500/30 mb-4 hover:scale-110 hover:rotate-6 transition-all duration-400 group">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 via-primary-600 to secondary-600 rounded-2xl shadow-xl shadow-primary-500/30 mb-4 hover:scale-110 hover:rotate-6 transition-all duration-400 group">
               <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
               <svg
                 class="w-8 h-8 text-white relative z-10 group-hover:animate-pulse-slow"
@@ -65,13 +65,43 @@
               >
                 邮箱地址
               </label>
+              <div class="flex gap-2">
+                <input
+                  id="email"
+                  v-model="email"
+                  type="email"
+                  required
+                  class="input-base transition-all duration-300 hover:border-primary-300 dark:hover:border-primary-500 flex-1"
+                  placeholder="your@email.com"
+                  :disabled="sendingCode"
+                >
+                <button
+                  type="button"
+                  @click="handleSendCode"
+                  :disabled="sendingCode || countdown > 0"
+                  class="px-4 py-2 text-sm font-medium rounded-xl border-2 border-primary-300 text-primary-600 dark:border-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[140px]"
+                >
+                  {{ sendingCode ? '发送中...' : countdown > 0 ? `${countdown}s` : '发送验证码' }}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="verificationCode"
+                class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                验证码
+              </label>
               <input
-                id="email"
-                v-model="email"
-                type="email"
+                id="verificationCode"
+                v-model="verificationCode"
+                type="text"
                 required
+                maxlength="6"
+                pattern="[0-9]{6}"
                 class="input-base transition-all duration-300 hover:border-primary-300 dark:hover:border-primary-500"
-                placeholder="your@email.com"
+                placeholder="6位数字验证码"
               >
             </div>
 
@@ -143,6 +173,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useUIStore } from '../stores/ui'
+import { apiClient } from '../api/client'
+import { sendVerificationCode } from '../api/verification'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -151,7 +183,11 @@ const uiStore = useUIStore()
 const username = ref('')
 const email = ref('')
 const password = ref('')
+const verificationCode = ref('')
 const loading = ref(false)
+const sendingCode = ref(false)
+const countdown = ref(0)
+let countdownTimer: number | null = null
 
 function validateUsername(value: string): string | null {
   // 检查用户名长度
@@ -171,6 +207,73 @@ function validateUsername(value: string): string | null {
   return null
 }
 
+function validateEmail(value: string): string | null {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(value)) {
+    return '请输入有效的邮箱地址'
+  }
+  return null
+}
+
+function validateVerificationCode(value: string): string | null {
+  if (!/^[0-9]{6}$/.test(value)) {
+    return '验证码必须是6位数字'
+  }
+  return null
+}
+
+async function handleSendCode() {
+  const emailError = validateEmail(email.value)
+  if (emailError) {
+    uiStore.addNotification({
+      type: 'error',
+      title: '邮箱格式错误',
+      message: emailError,
+    })
+    return
+  }
+
+  sendingCode.value = true
+  try {
+    const response = await sendVerificationCode({
+      email: email.value,
+      type: 'register',
+    })
+
+    if (response.success) {
+      uiStore.addNotification({
+        type: 'success',
+        title: '验证码已发送',
+        message: '请查看您的邮箱，验证码有效期为5分钟',
+      })
+      
+      // 开始倒计时
+      countdown.value = 60
+      countdownTimer = window.setInterval(() => {
+        countdown.value--
+        if (countdown.value <= 0) {
+          clearInterval(countdownTimer!)
+          countdownTimer = null
+        }
+      }, 1000)
+    } else {
+      uiStore.addNotification({
+        type: 'error',
+        title: '发送失败',
+        message: response.error?.details || response.error?.message || '发送验证码失败，请稍后重试',
+      })
+    }
+  } catch (error: any) {
+    uiStore.addNotification({
+      type: 'error',
+      title: '发送失败',
+      message: error?.error?.details || error?.error?.message || error?.message || '网络错误，请检查网络连接',
+    })
+  } finally {
+    sendingCode.value = false
+  }
+}
+
 async function handleSubmit() {
   // 客户端验证
   const usernameError = validateUsername(username.value)
@@ -183,44 +286,59 @@ async function handleSubmit() {
     return
   }
 
+  const emailError = validateEmail(email.value)
+  if (emailError) {
+    uiStore.addNotification({
+      type: 'error',
+      title: '邮箱格式错误',
+      message: emailError,
+    })
+    return
+  }
+
+  const codeError = validateVerificationCode(verificationCode.value)
+  if (codeError) {
+    uiStore.addNotification({
+      type: 'error',
+      title: '验证码格式错误',
+      message: codeError,
+    })
+    return
+  }
+
   loading.value = true
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: username.value,
-        email: email.value,
-        password: password.value,
-      }),
+    const data = await apiClient.post('/api/auth/register', {
+      username: username.value,
+      email: email.value,
+      password: password.value,
+      verificationCode: verificationCode.value,
+    }) as any
+    userStore.setUser(data.user)
+    userStore.setToken(data.token)
+    uiStore.addNotification({
+      type: 'success',
+      title: '注册成功',
+      message: `欢迎加入云纽，${data.user.username}！`,
     })
-
-    if (response.ok) {
-      const data = await response.json()
-      userStore.setUser(data.user)
-      userStore.setToken(data.token)
-      uiStore.addNotification({
-        type: 'success',
-        title: '注册成功',
-        message: `欢迎加入云纽，${data.user.username}！`,
-      })
-      router.push('/')
-    } else {
-      const error = await response.json()
-      uiStore.addNotification({
-        type: 'error',
-        title: '注册失败',
-        message: error.error?.details || error.error?.message || '注册失败，请稍后重试',
-      })
-    }
-  } catch {
+    router.push('/')
+  } catch (error: any) {
     uiStore.addNotification({
       type: 'error',
       title: '注册失败',
-      message: '网络错误，请稍后重试',
+      message: error?.error?.details || error?.error?.message || error?.message || '注册失败，请稍后重试',
     })
   } finally {
     loading.value = false
   }
 }
+
+// 组件卸载时清除定时器
+import { onUnmounted } from 'vue'
+
+onUnmounted(() => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+  }
+})
 </script>

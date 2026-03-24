@@ -31,6 +31,11 @@ export interface Post {
   view_count: number
   like_count: number
   comment_count: number
+  audit_status?: 'pending' | 'approved' | 'rejected' | 'appealed'
+  audit_reason?: string
+  appealed_by?: string
+  appealed_at?: string
+  appeal_reason?: string
   deleted_at?: string | null
   created_at: string
   updated_at: string
@@ -86,4 +91,13 @@ export interface JWTPayload {
   userId: string
   username: string
   role: string
+}
+
+/**
+ * 带受众的 JWT Payload
+ */
+export interface TokenPayload extends JWTPayload {
+  aud: string
+  iat?: number
+  exp?: number
 }

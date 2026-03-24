@@ -80,6 +80,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useUIStore } from '../stores/ui'
+import { apiClient } from '../api/client'
 
 const router = useRouter()
 const route = useRoute()
@@ -93,38 +94,23 @@ const loading = ref(false)
 async function handleSubmit() {
   loading.value = true
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value,
-      }),
+    const data = await apiClient.post('/api/auth/login', {
+      email: email.value,
+      password: password.value,
+    }) as any
+    userStore.setUser(data.user)
+    userStore.setToken(data.token)
+    uiStore.addNotification({
+      type: 'success',
+      title: '登录成功',
+      message: `欢迎回来，${data.user.username}！`,
     })
-
-    if (response.ok) {
-      const data = await response.json()
-      userStore.setUser(data.user)
-      userStore.setToken(data.token)
-      uiStore.addNotification({
-        type: 'success',
-        title: '登录成功',
-        message: `欢迎回来，${data.user.username}！`,
-      })
-      router.push((route.query.redirect as string) || '/')
-    } else {
-      const error = await response.json()
-      uiStore.addNotification({
-        type: 'error',
-        title: '登录失败',
-        message: error.message || '请检查邮箱和密码',
-      })
-    }
-  } catch {
+    router.push((route.query.redirect as string) || '/')
+  } catch (error: any) {
     uiStore.addNotification({
       type: 'error',
       title: '登录失败',
-      message: '网络错误，请稍后重试',
+      message: error?.message || '请检查邮箱和密码',
     })
   } finally {
     loading.value = false

@@ -35,6 +35,21 @@
           </p>
         </div>
 
+        <!-- Code Attachments Section -->
+        <div v-if="codeAttachments.length > 0" class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            代码附件
+          </h3>
+          <CodeViewer
+            v-for="attachment in codeAttachments"
+            :key="attachment.id"
+            :attachment="attachment"
+            :initially-collapsed="true"
+            :show-line-numbers="true"
+            :show-copy-button="true"
+          />
+        </div>
+
         <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
           <router-link
             :to="`/category/${postStore.currentPost.categoryId}`"
@@ -88,32 +103,61 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, onMounted } from 'vue'
+
 import { useRoute, useRouter } from 'vue-router'
+
 import { useUserStore } from '../stores/user'
+
 import { usePostStore } from '../stores/post'
+
+import { apiClient } from '../api/client'
+
 import CommentList from '../components/CommentList.vue'
 
+import CodeViewer from '../components/CodeViewer.vue'
+
+import type { CodeAttachment } from '../types/code'
+
+
+
 const route = useRoute()
+
 const router = useRouter()
+
 const userStore = useUserStore()
+
+
+
 const postStore = usePostStore()
 
+
+
 const isLiked = ref(false)
+
+const codeAttachments = ref<CodeAttachment[]>([])
 
 onMounted(async () => {
   const postId = route.params.id as string
   postStore.loading = true
   try {
-    const result = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts/${postId}`)
-    const post = await result.json()
-    postStore.setCurrentPost(post)
+    const post = await apiClient.get(`/api/posts/${postId}`) as any
+    postStore.setCurrentPost(post as any)
 
-    const commentsResult = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787'}/api/posts/${postId}/comments`)
-    const comments = await commentsResult.json()
-    postStore.setComments(comments)
+    const comments = await apiClient.get(`/api/posts/${postId}/comments`) as any[]
+    postStore.setComments(comments as any[])
+
+    // Load code attachments
+    try {
+      const attachments = await apiClient.get(`/api/attachments/post/${postId}`) as CodeAttachment[]
+      codeAttachments.value = attachments || []
+    } catch (error) {
+      // Ignore error if attachments endpoint doesn't exist yet
+      console.log('Failed to load code attachments:', error)
+    }
   } catch (error) {
-    console.error('Failed to fetch post:', error)
+    // Error handling is managed by the error handler
   } finally {
     postStore.loading = false
   }

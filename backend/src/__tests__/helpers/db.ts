@@ -235,6 +235,9 @@ export function createMockD1Database(): D1Database {
                   if (sql.includes('is_read = 1')) {
                     updatedRow.is_read = true
                   }
+                  if (sql.includes('deleted_at = CURRENT_TIMESTAMP') || sql.includes('deleted_at = ?')) {
+                    updatedRow.deleted_at = new Date().toISOString()
+                  }
                   if (sql.includes('updated_at = CURRENT_TIMESTAMP') || sql.includes('updated_at = ?')) {
                     updatedRow.updated_at = new Date().toISOString()
                   }
