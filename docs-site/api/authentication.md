@@ -4,7 +4,7 @@
 
 ## 用户注册
 
-\`\`\`http
+```http
 POST /api/auth/register
 Content-Type: application/json
 
@@ -13,7 +13,7 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "password123"
 }
-\`\`\`
+```
 
 **请求参数**:
 
@@ -25,7 +25,7 @@ Content-Type: application/json
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -40,11 +40,11 @@ Content-Type: application/json
   },
   "timestamp": "2024-03-22T10:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 用户登录
 
-\`\`\`http
+```http
 POST /api/auth/login
 Content-Type: application/json
 
@@ -52,7 +52,7 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "password123"
 }
-\`\`\`
+```
 
 **请求参数**:
 
@@ -63,7 +63,7 @@ Content-Type: application/json
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -77,18 +77,18 @@ Content-Type: application/json
   },
   "timestamp": "2024-03-22T10:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 用户登出
 
-\`\`\`http
+```http
 POST /api/auth/logout
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -96,18 +96,18 @@ Authorization: Bearer &lt;token&gt;
   },
   "timestamp": "2024-03-22T10:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 邮箱验证
 
-\`\`\`http
+```http
 POST /api/auth/verify-email
 Content-Type: application/json
 
 {
   "token": "verification-token"
 }
-\`\`\`
+```
 
 **请求参数**:
 
@@ -117,27 +117,27 @@ Content-Type: application/json
 
 ## 刷新令牌
 
-\`\`\`http
+```http
 POST /api/auth/refresh-token
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 密码重置
 
 ### 请求重置密码
 
-\`\`\`http
+```http
 POST /api/auth/forgot-password
 Content-Type: application/json
 
 {
   "email": "user@example.com"
 }
-\`\`\`
+```
 
 ### 重置密码
 
-\`\`\`http
+```http
 POST /api/auth/reset-password
 Content-Type: application/json
 
@@ -145,7 +145,7 @@ Content-Type: application/json
   "token": "reset-token",
   "newPassword": "newpassword123"
 }
-\`\`\`
+```
 
 ## 错误码
 

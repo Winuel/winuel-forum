@@ -5,6 +5,9 @@ export interface User {
   password_hash: string
   avatar?: string
   role: 'user' | 'admin' | 'moderator'
+  provider?: string | null
+  provider_id?: string | null
+  provider_data?: string | null
   deleted_at?: string | null
   created_at: string
   updated_at: string

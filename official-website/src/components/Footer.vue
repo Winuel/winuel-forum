@@ -28,23 +28,32 @@ const social = [
 </script>
 
 <template>
-  <footer class="bg-gray-900 text-gray-400">
-    <div class="container">
-      <div class="py-12 md:py-16">
+  <footer class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 text-gray-400 relative overflow-hidden">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-20"></div>
+      <div class="absolute inset-0 grid-bg opacity-5"></div>
+    </div>
+
+    <div class="container relative z-10">
+      <div class="py-16 md:py-20">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
           <!-- Brand -->
           <div class="lg:col-span-1">
-            <RouterLink to="/" class="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-6">
-              <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
-                <svg class="w-5 h-5 md:w-6 md:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <RouterLink to="/" class="flex items-center space-x-3 mb-6 group">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center shadow-brand hover:shadow-brand-strong transition-all duration-300 group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                <svg class="relative w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                   <path d="M2 17l10 5 10-5"/>
                   <path d="M2 12l10 5 10-5"/>
                 </svg>
               </div>
-              <span class="text-xl md:text-2xl font-bold text-white">CloudLink</span>
+              <span class="text-2xl font-bold text-white group-hover:text-primary-400 transition-colors">
+                CloudLink
+              </span>
             </RouterLink>
-            <p class="text-sm leading-relaxed mb-4 md:mb-6">
+            <p class="text-base leading-relaxed mb-6 text-gray-300">
               现代化的轻量级论坛系统，基于 Cloudflare Workers 构建，提供高性能、低成本、易部署的解决方案。
             </p>
             <div class="flex space-x-3">
@@ -54,10 +63,10 @@ const social = [
                 :href="item.href"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="w-10 h-10 md:w-10 md:h-10 rounded-lg bg-gray-800 flex items-center justify-center hover:bg-primary-500 transition-colors active:scale-95"
+                class="w-12 h-12 rounded-xl bg-gray-800/50 backdrop-blur border border-gray-700 flex items-center justify-center hover:bg-primary-500 hover:border-primary-500 transition-all duration-300 active:scale-95 group"
                 :aria-label="item.name"
               >
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <svg class="w-6 h-6 text-gray-400 group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="currentColor">
                   <path :d="item.icon"/>
                 </svg>
               </a>
@@ -66,24 +75,30 @@ const social = [
 
           <!-- Product Links -->
           <div>
-            <h3 class="text-white font-semibold mb-4 md:mb-6 text-base md:text-lg">产品</h3>
-            <ul class="space-y-3 md:space-y-4">
+            <h3 class="text-white font-bold mb-6 text-lg tracking-tight">产品</h3>
+            <ul class="space-y-4">
               <li v-for="link in links.product" :key="link.name">
                 <RouterLink
                   v-if="!link.external"
                   :to="link.href"
-                  class="hover:text-white transition-colors py-2 inline-block text-sm md:text-base"
+                  class="block hover:text-white hover:translate-x-1 transition-all duration-300 py-2 text-base group"
                 >
-                  {{ link.name }}
+                  <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    {{ link.name }}
+                  </span>
                 </RouterLink>
                 <a
                   v-else
                   :href="link.href"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="hover:text-white transition-colors py-2 inline-block text-sm md:text-base"
+                  class="block hover:text-white hover:translate-x-1 transition-all duration-300 py-2 text-base group"
                 >
-                  {{ link.name }}
+                  <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    {{ link.name }}
+                  </span>
                 </a>
               </li>
             </ul>
@@ -91,14 +106,17 @@ const social = [
 
           <!-- Company Links -->
           <div>
-            <h3 class="text-white font-semibold mb-4 md:mb-6 text-base md:text-lg">公司</h3>
-            <ul class="space-y-3 md:space-y-4">
+            <h3 class="text-white font-bold mb-6 text-lg tracking-tight">公司</h3>
+            <ul class="space-y-4">
               <li v-for="link in links.company" :key="link.name">
                 <RouterLink
                   :to="link.href"
-                  class="hover:text-white transition-colors py-2 inline-block text-sm md:text-base"
+                  class="block hover:text-white hover:translate-x-1 transition-all duration-300 py-2 text-base group"
                 >
-                  {{ link.name }}
+                  <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    {{ link.name }}
+                  </span>
                 </RouterLink>
               </li>
             </ul>
@@ -106,16 +124,19 @@ const social = [
 
           <!-- Resources Links -->
           <div>
-            <h3 class="text-white font-semibold mb-4 md:mb-6 text-base md:text-lg">资源</h3>
-            <ul class="space-y-3 md:space-y-4">
+            <h3 class="text-white font-bold mb-6 text-lg tracking-tight">资源</h3>
+            <ul class="space-y-4">
               <li v-for="link in links.resources" :key="link.name">
                 <a
                   :href="link.href"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="hover:text-white transition-colors py-2 inline-block text-sm md:text-base"
+                  class="block hover:text-white hover:translate-x-1 transition-all duration-300 py-2 text-base group"
                 >
-                  {{ link.name }}
+                  <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    {{ link.name }}
+                  </span>
                 </a>
               </li>
             </ul>
@@ -124,15 +145,24 @@ const social = [
       </div>
 
       <!-- Bottom Bar -->
-      <div class="border-t border-gray-800 py-6 md:py-8">
-        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-sm">
-          <p class="text-center md:text-left">
+      <div class="border-t border-gray-800 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-base">
+          <p class="text-center md:text-left text-gray-500">
             © {{ currentYear }} Lemon Studio. All rights reserved.
           </p>
-          <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-6 text-center md:text-left">
-            <a href="#" class="hover:text-white transition-colors py-1">隐私政策</a>
-            <a href="#" class="hover:text-white transition-colors py-1">服务条款</a>
-            <a href="#" class="hover:text-white transition-colors py-1">Cookie 政策</a>
+          <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-8 text-center md:text-left">
+            <a href="#" class="hover:text-white hover:translate-x-1 transition-all duration-300 py-1 group inline-flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+              隐私政策
+            </a>
+            <a href="#" class="hover:text-white hover:translate-x-1 transition-all duration-300 py-1 group inline-flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+              服务条款
+            </a>
+            <a href="#" class="hover:text-white hover:translate-x-1 transition-all duration-300 py-1 group inline-flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+              Cookie 政策
+            </a>
           </div>
         </div>
       </div>
@@ -141,4 +171,5 @@ const social = [
 </template>
 
 <style scoped>
+/* 添加一些额外的自定义样式 */
 </style>

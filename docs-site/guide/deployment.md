@@ -15,11 +15,11 @@ CloudLink 支持多种部署方式：
 ### 前端部署
 
 1. **准备项目**
-   \`\`\`bash
+   ```bash
    # 构建前端
    cd frontend
    pnpm build
-   \`\`\`
+   ```
 
 2. **创建 Cloudflare Pages 项目**
    - 登录 Cloudflare Dashboard
@@ -33,28 +33,28 @@ CloudLink 支持多种部署方式：
    **输出目录**: `dist`
 
    环境变量：
-   \`\`\`
+   ```
    VITE_API_BASE_URL=https://api.winuel.com
-   \`\`\`
+   ```
 
 4. **部署**
-   \`\`\`bash
+   ```bash
    # 使用 Wrangler CLI
    npx wrangler pages project create cloudlink-frontend
    npx wrangler pages deploy dist --project-name cloudlink-frontend
-   \`\`\`
+   ```
 
 ### 后端部署
 
 1. **准备项目**
-   \`\`\`bash
+   ```bash
    # 构建后端
    cd backend
    pnpm build
-   \`\`\`
+   ```
 
 2. **配置 wrangler.toml**
-   \`\`\`toml
+   ```toml
    name = "cloudlink-api"
    main = "src/index.ts"
    compatibility_date = "2024-03-01"
@@ -70,26 +70,26 @@ CloudLink 支持多种部署方式：
    [[kv_namespaces]]
    binding = "CACHE"
    namespace_id = "your-kv-namespace-id"
-   \`\`\`
+   ```
 
 3. **部署**
-   \`\`\`bash
+   ```bash
    npx wrangler deploy
-   \`\`\`
+   ```
 
 ## 管理后台部署
 
-\`\`\`bash
+```bash
 cd admin-pages
 pnpm build
 npx wrangler pages deploy dist --project-name cloudlink-admin
-\`\`\`
+```
 
 ## Docker 部署
 
 ### 创建 Dockerfile
 
-\`\`\`dockerfile
+```dockerfile
 # backend/Dockerfile
 FROM node:18-alpine
 
@@ -103,17 +103,17 @@ COPY . .
 EXPOSE 8787
 
 CMD ["node", "dist/index.js"]
-\`\`\`
+```
 
 ### 构建和运行
 
-\`\`\`bash
+```bash
 # 构建镜像
 docker build -t cloudlink-api:latest .
 
 # 运行容器
 docker run -p 8787:8788 cloudlink-api:latest
-\`\`\`
+```
 
 ## 环境变量配置
 
@@ -121,7 +121,7 @@ docker run -p 8787:8788 cloudlink-api:latest
 
 创建 `.dev.vars` 文件：
 
-\`\`\`bash
+```bash
 # 数据库配置
 DATABASE_URL=database-id
 KV_NAMESPACE_ID=kv-namespace-id
@@ -134,7 +134,7 @@ JWT_ISSUER=cloudlink-api
 
 # CORS 配置
 CORS_ORIGINS=https://www.winuel.com,https://admin.winuel.com
-\`\`\`
+```
 
 ### 域名配置
 
@@ -157,10 +157,10 @@ Cloudflare 自动提供免费的 SSL 证书：
 
 ### Cloudflare Workers 日志
 
-\`\`\`bash
+```bash
 # 查看 Workers 日志
 npx wrangler tail
-\`\`\`
+```
 
 ### Analytics 集成
 
@@ -173,10 +173,10 @@ npx wrangler tail
 
 ### 缓存策略
 
-\`\`\`typescript
+```typescript
 // API 响应缓存
 const CACHE_DURATION = 300 // 5分钟
-\`\`\`
+```
 
 ### CDN 配置
 
@@ -194,17 +194,17 @@ const CACHE_DURATION = 300 // 5分钟
 
 ### 数据库备份
 
-\`\`\`bash
+```bash
 # 导出数据库
 npx wrangler d1 export cloudlink-db --output=backup.sql
-\`\`\`
+```
 
 ### 恢复数据
 
-\`\`\`bash
+```bash
 # 导入数据库
 npx wrangler d1 execute cloudlink-db --file=backup.sql
-\`\`\`
+```
 
 ## 故障排除
 
@@ -224,13 +224,13 @@ A: 检查 base 配置和资源路径
 
 ### 日志查看
 
-\`\`\`bash
+```bash
 # Workers 日志
 npx wrangler tail
 
 # Pages 日志
 npx wrangler pages deployment tail
-\`\`\`
+```
 
 ## 下一步
 

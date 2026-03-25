@@ -95,7 +95,16 @@ app.use('*', diMiddleware)
 app.use('*', auditLog)
 app.use('*', httpsRedirect)
 app.use('*', hsts)
-app.use('*', csrfMiddleware)
+
+// CSRF保护 - 排除OAuth路由
+app.use('*', async (c, next) => {
+  // 排除OAuth路由
+  if (c.req.path.startsWith('/api/auth/github')) {
+    await next()
+  } else {
+    await csrfMiddleware(c, next)
+  }
+})
 
 app.get('/', (c) => {
   return c.json({

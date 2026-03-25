@@ -6,7 +6,7 @@
 
 ### 推荐的目录结构
 
-\`\`\`
+```
 my-cloudlink-app/
 ├── src/
 │   ├── api/           # API 调用
@@ -19,13 +19,13 @@ my-cloudlink-app/
 ├── public/            # 静态资源
 ├── tests/             # 测试文件
 └── docs/              # 文档
-\`\`\`
+```
 
 ## 组件开发
 
 ### 组件命名
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：PascalCase
 export default {
   name: 'UserProfileCard'
@@ -35,11 +35,11 @@ export default {
 export default {
   name: 'user-profile-card'
 }
-\`\`\`
+```
 
 ### Props 验证
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：详细的 props 验证
 export default {
   props: {
@@ -61,24 +61,24 @@ export default {
 export default {
   props: ['post', 'showActions']
 }
-\`\`\`
+```
 
 ### 事件命名
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：kebab-case
 this.$emit('post-created', post)
 this.$emit('user-logged-in', user)
 
 // ❌ 不推荐：camelCase
 this.$emit('postCreated', post)
-\`\`\`
+```
 
 ## 状态管理
 
 ### Store 结构
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：模块化 store
 import { ref, computed } from 'vue'
 
@@ -104,11 +104,11 @@ const useUserStore = defineStore('user', () => {
     logout
   }
 })
-\`\`\`
+```
 
 ### 异步操作
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：处理错误和加载状态
 const fetchPosts = async () => {
   loading.value = true
@@ -128,13 +128,13 @@ const fetchPosts = async () => {
   const response = await apiClient.get('/api/posts')
   posts.value = response.data
 }
-\`\`\`
+```
 
 ## API 调用
 
 ### 统一的错误处理
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：创建 API 客户端包装器
 const apiClient = getApiClient()
 
@@ -152,11 +152,11 @@ const fetchWithErrorHandler = async (request) => {
 const posts = await fetchWithErrorHandler(() => 
   apiClient.get('/api/posts')
 )
-\`\`\`
+```
 
 ### 请求拦截器
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：配置拦截器
 apiClient.interceptors.request.use(
   (config) => {
@@ -181,13 +181,13 @@ apiClient.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-\`\`\`
+```
 
 ## 性能优化
 
 ### 组件懒加载
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：路由懒加载
 const routes = [
   {
@@ -200,32 +200,32 @@ const routes = [
 const HeavyComponent = defineAsyncComponent(() =>
   import('@/components/HeavyComponent.vue')
 )
-\`\`\`
+```
 
 ### 列表虚拟化
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：大数据列表使用虚拟滚动
 const { list, containerProps, wrapperProps } = useVirtualList(
   largeDataArray,
   { itemHeight: 50 }
 )
-\`\`\`
+```
 
 ### 防抖和节流
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：搜索输入使用防抖
 const search = useDebounceFn(async (keyword) => {
   results.value = await searchPosts(keyword)
 }, 300)
-\`\`\`
+```
 
 ## 安全实践
 
 ### XSS 防护
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：清理用户输入
 const sanitizeContent = (content) => {
   return DOMPurify.sanitize(content, {
@@ -233,11 +233,11 @@ const sanitizeContent = (content) => {
     ALLOWED_ATTR: ['href']
   })
 }
-\`\`\`
+```
 
 ### CSRF 保护
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：包含 CSRF 令牌
 const getCSRFToken = () => {
   return document.querySelector('meta[name="csrf-token"]')?.content
@@ -248,13 +248,13 @@ apiClient.post('/api/posts', data, {
     'X-CSRF-Token': getCSRFToken()
   }
 })
-\`\`\`
+```
 
 ## 代码风格
 
 ### 使用 ESLint
 
-\`\`\`json
+```json
 {
   "extends": [
     "plugin:vue/vue3-recommended",
@@ -266,11 +266,11 @@ apiClient.post('/api/posts', data, {
     "vue/multi-word-component-names": "off"
   }
 }
-\`\`\`
+```
 
 ### 使用 Prettier
 
-\`\`\`json
+```json
 {
   "semi": false,
   "singleQuote": true,
@@ -278,13 +278,13 @@ apiClient.post('/api/posts', data, {
   "printWidth": 100,
   "tabWidth": 2
 }
-\`\`\`
+```
 
 ## 测试
 
 ### 单元测试
 
-\`\`\`javascript
+```javascript
 // ✅ 推荐：测试关键逻辑
 describe('User Store', () => {
   it('should login successfully', async () => {
@@ -293,11 +293,11 @@ describe('User Store', () => {
     expect(store.isLoggedIn).toBe(true)
   })
 })
-\`\`\`
+```
 
 ### 组件测试
 
-\`\`\`javascript
+```javascript
 // 组件测试示例
 describe('PostCard', () => {
   it('renders post title', () => {
@@ -313,23 +313,23 @@ describe('PostCard', () => {
     expect(wrapper.text()).toContain('Test Post')
   })
 })
-\`\`\`
+```
 
 ## 部署
 
 ### 环境变量管理
 
-\`\`\`bash
+```bash
 # .env.development
 VITE_API_BASE_URL=\`YOUR_LOCALHOST:8787\`
 
 # .env.production
 VITE_API_BASE_URL=https://api.winuel.com
-\`\`\`
+```
 
 ### 构建优化
 
-\`\`\`javascript
+```javascript
 // vite.config.js
 export default defineConfig({
   build: {
@@ -343,24 +343,24 @@ export default defineConfig({
     }
   }
 })
-\`\`\`
+```
 
 ## 监控和日志
 
 ### 错误追踪
 
-\`\`\`javascript
+```javascript
 // 错误追踪示例
 Sentry.init({
   dsn: 'your-sentry-dsn',
   environment: import.meta.env.MODE,
   tracesSampleRate: 1.0
 })
-\`\`\`
+```
 
 ### 性能监控
 
-\`\`\`javascript
+```javascript
 // 记录关键操作性能
 const measurePerformance = (name, fn) => {
   const start = performance.now()
@@ -369,19 +369,19 @@ const measurePerformance = (name, fn) => {
   console.log(\`\${name} took \${end - start}ms\`)
   return result
 }
-\`\`\`
+```
 
 ## 常见陷阱
 
 ### ❌ 不要直接修改 props
 
-\`\`\`javascript
+```javascript
 // ❌ 错误
 props.post.title = 'New Title'
 
 // ✅ 正确
 emit('update:post', { ...props.post, title: 'New Title' })
-\`\`\`
+```
 
 ### ❌ 不要在模板中使用复杂表达式
 
@@ -391,13 +391,13 @@ emit('update:post', { ...props.post, title: 'New Title' })
 
 ✅ 正确做法：使用计算属性
 
-\`\`\`javascript
+```javascript
 import { computed } from 'vue'
 
 const popularPostCount = computed(() => 
   posts.value.filter(item => item.likes > 10).length
 )
-\`\`\`
+```
 
 ## 下一步
 

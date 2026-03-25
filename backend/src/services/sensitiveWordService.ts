@@ -77,6 +77,42 @@ export class SensitiveWordService {
   }
 
   /**
+   * 处理重叠的匹配结果，只保留最长的匹配
+   * @param matches 所有匹配结果
+   * @returns 过滤后的匹配结果
+   */
+  private mergeOverlappingMatches(matches: SensitiveWordMatch[]): SensitiveWordMatch[] {
+    if (matches.length === 0) {
+      return []
+    }
+
+    // 按起始位置和结束位置排序
+    matches.sort((a, b) => a.startIndex - b.startIndex || b.endIndex - a.endIndex)
+
+    const result: SensitiveWordMatch[] = []
+    let current = matches[0]
+
+    for (let i = 1; i < matches.length; i++) {
+      const next = matches[i]
+
+      // 如果下一个匹配与当前匹配重叠
+      if (next.startIndex <= current.endIndex) {
+        // 保留长度更长的匹配
+        if (next.endIndex > current.endIndex) {
+          current = next
+        }
+        // 否则跳过较短的匹配
+      } else {
+        result.push(current)
+        current = next
+      }
+    }
+
+    result.push(current)
+    return result
+  }
+
+  /**
    * 检测文本中的敏感词
    * @param text 待检测的文本
    * @returns 匹配到的敏感词列表
@@ -111,7 +147,7 @@ export class SensitiveWordService {
       }
     }
 
-    return matches
+    return this.mergeOverlappingMatches(matches)
   }
 
   /**

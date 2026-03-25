@@ -8,7 +8,7 @@ CloudLink 提供了强大的插件系统，允许开发者扩展论坛功能。
 
 ### 插件结构
 
-\`\`\`javascript
+```javascript
 const myPlugin = {
   // 插件基本信息
   name: 'my-plugin',
@@ -60,13 +60,13 @@ const myPlugin = {
 }
 
 export default myPlugin
-\`\`\`
+```
 
 ## 创建插件项目
 
 ### 1. 初始化插件项目
 
-\`\`\`bash
+```bash
 # 创建插件目录
 mkdir cloudlink-my-plugin
 cd cloudlink-my-plugin
@@ -76,11 +76,11 @@ npm init -y
 
 # 安装依赖
 npm install @cloudlink/plugin-sdk
-\`\`\`
+```
 
 ### 2. 创建插件文件
 
-\`\`\`javascript
+```javascript
 // src/index.js
 // 插件文件示例
 export default createPlugin({
@@ -98,11 +98,11 @@ export default createPlugin({
     }
   }
 })
-\`\`\`
+```
 
 ### 3. 配置文件
 
-\`\`\`json
+```json
 {
   "name": "cloudlink-hello-world",
   "version": "1.0.0",
@@ -118,13 +118,13 @@ export default createPlugin({
     "@cloudlink/plugin-system": "^1.0.0"
   }
 }
-\`\`\`
+```
 
 ## 插件开发示例
 
 ### 示例 1: 内容过滤器
 
-\`\`\`javascript
+```javascript
 // 内容过滤器插件示例
 export default createPlugin({
   name: 'content-filter',
@@ -161,11 +161,11 @@ export default createPlugin({
     }
   }
 })
-\`\`\`
+```
 
 ### 示例 2: 统计插件
 
-\`\`\`javascript
+```javascript
 // 统计插件示例
 export default createPlugin({
   name: 'post-statistics',
@@ -210,11 +210,11 @@ export default createPlugin({
     }
   }
 })
-\`\`\`
+```
 
 ### 示例 3: 通知增强
 
-\`\`\`javascript
+```javascript
 // 通知增强插件示例
 export default createPlugin({
   name: 'notification-enhancer',
@@ -252,13 +252,13 @@ export default createPlugin({
     }
   }
 })
-\`\`\`
+```
 
 ## 插件 API
 
 ### Context 对象
 
-\`\`\`javascript
+```javascript
 {
   // API 客户端
   api: apiClient,
@@ -275,11 +275,11 @@ export default createPlugin({
   // 日志
   logger: logger
 }
-\`\`\`
+```
 
 ### 存储接口
 
-\`\`\`javascript
+```javascript
 // 设置数据
 context.storage.set(key, value)
 
@@ -291,11 +291,11 @@ context.storage.delete(key)
 
 // 清空所有数据
 context.storage.clear()
-\`\`\`
+```
 
 ### 事件总线
 
-\`\`\`javascript
+```javascript
 // 监听事件
 context.eventBus.on('custom-event', (data) => {
   console.log('收到自定义事件:', data)
@@ -306,11 +306,11 @@ context.eventBus.emit('custom-event', { message: 'Hello' })
 
 // 取消监听
 context.eventBus.off('custom-event', handler)
-\`\`\`
+```
 
 ## 插件测试
 
-\`\`\`javascript
+```javascript
 // 插件测试示例
 describe('My Plugin', () => {
   it('should initialize correctly', () => {
@@ -330,35 +330,35 @@ describe('My Plugin', () => {
     expect(filtered).toBe('This is *** content')
   })
 })
-\`\`\`
+```
 
 ## 插件发布
 
 ### 1. 构建插件
 
-\`\`\`bash
+```bash
 npm run build
-\`\`\`
+```
 
 ### 2. 发布到 npm
 
-\`\`\`bash
+```bash
 npm publish
-\`\`\`
+```
 
 ### 3. 在项目中使用
 
-\`\`\`bash
+```bash
 npm install cloudlink-hello-world
-\`\`\`
+```
 
-\`\`\`javascript
+```javascript
 // 使用插件示例
 import helloWorld from 'cloudlink-hello-world'
 
 // 注册插件
 registerPlugin(helloWorld)
-\`\`\`
+```
 
 ## 最佳实践
 

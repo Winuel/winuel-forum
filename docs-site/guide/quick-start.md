@@ -14,42 +14,42 @@
 
 ### 1. 克隆仓库
 
-\`\`\`bash
+```bash
 git clone https://github.com/LemonStudio-hub/yunniu.git
 cd yunniu
-\`\`\`
+```
 
 ### 2. 安装依赖
 
-\`\`\`bash
+```bash
 # 使用 pnpm 安装所有依赖
 pnpm install
-\`\`\`
+```
 
 ### 3. 配置环境变量
 
 复制环境变量示例文件：
 
-\`\`\`bash
+```bash
 # 后端配置
 cp backend/.dev.vars.example backend/.dev.vars
 
 # 前端配置
 cp frontend/.env.development.example frontend/.env.development
-\`\`\`
+```
 
 编辑配置文件，填入您的 API 密钥和其他配置信息。
 
 ### 4. 启动开发服务器
 
-\`\`\`bash
+```bash
 # 同时启动前后端开发服务器
 pnpm dev
 
 # 或者分别启动
 pnpm dev:backend  # 后端 API
 pnpm dev:frontend # 前端界面
-\`\`\`
+```
 
 ## 访问应用
 
@@ -84,38 +84,38 @@ pnpm dev:frontend # 前端界面
 
 A: 在环境变量配置文件中修改端口号：
 
-\`\`\`bash
+```bash
 # backend/.dev.vars
 PORT=8787
 
 # frontend/.env.development
 VITE_PORT=5173
-\`\`\`
+```
 
 ### Q: 如何启用生产模式？
 
 A: 使用构建命令部署生产版本：
 
-\`\`\`bash
+```bash
 # 构建生产版本
 pnpm build
 
 # 部署到 Cloudflare Workers
 cd backend
 pnpm deploy
-\`\`\`
+```
 
 ### Q: 如何重置数据库？
 
 A: 删除数据库文件并重新初始化：
 
-\`\`\`bash
+```bash
 # 删除数据库文件
 rm -f backend/.wrangler/state/v3/d1/miniflare-D1DatabaseObject
 
 # 重新初始化
 pnpm dev
-\`\`\`
+```
 
 ## 获取帮助
 

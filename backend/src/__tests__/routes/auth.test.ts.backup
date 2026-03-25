@@ -7,7 +7,6 @@ import { strictAuthRateLimit } from '../../middleware/rateLimit'
 import { authMiddleware } from '../../middleware/auth'
 import { hashPassword } from '../../utils/crypto'
 import { initEmailChecker } from '../../utils/validation'
-import { setupMockEmailService } from '../helpers/emailServiceMock'
 import { csrfStore, createCSRFHeaders } from '../helpers/test-utils'
 import type { Env, Variables } from '../../types'
 
@@ -19,10 +18,13 @@ describe('Auth Router', () => {
   beforeEach(async () => {
     mockDb = createMockD1Database()
     initJWT('A1b2C3d4!E5f6G7h8@I9j0K1l2#M3n4O5p6')
-    testPasswordHash = await hashPassword('MySecurePass456')
+    testPasswordHash = await hashPassword('Password123!')
     // Initialize disposable email checker with test blocklist
     initEmailChecker(['tempmail.com'], [])
-    setupMockEmailService()
+    // Mock email service to be unavailable in tests
+    ;(globalThis as any).emailService = {
+      isAvailable: () => false
+    }
     // Clear CSRF store before each test
     csrfStore.clear()
 
@@ -52,7 +54,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'testuser',
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'Password123!',
         verificationCode: '123456',
       }
 
@@ -92,7 +94,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'a',
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'Password123!',
         verificationCode: '123456',
       }
 
@@ -112,7 +114,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'testuser',
         email: 'invalid-email',
-        password: 'MySecurePass456',
+        password: 'Password123!',
         verificationCode: '123456',
       }
 
@@ -152,7 +154,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'testuser',
         email: 'test@tempmail.com',
-        password: 'MySecurePass456',
+        password: 'Password123!',
         verificationCode: '123456',
       }
 
@@ -185,7 +187,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'newuser',
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'Password123!',
         verificationCode: '123456',
       }
 
@@ -219,7 +221,7 @@ describe('Auth Router', () => {
 
       const loginData = {
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'Password123!',
       }
 
       const res = await app.request('/api/auth/login', {
@@ -258,7 +260,7 @@ describe('Auth Router', () => {
 
       const loginData = {
         email: 'nonexistent@example.com',
-        password: 'MySecurePass456',
+        password: 'Password123!',
       }
 
       const res = await app.request('/api/auth/login', {

@@ -17,8 +17,8 @@ export class OAuthService {
   ) {}
 
   /**获取授权URL*/
-  getAuthorizationUrl(redirectUri?: string): string {
-    const state = this.generateState()
+  async getAuthorizationUrl(redirectUri?: string): Promise<string> {
+    const state = await this.generateState()
     const params = new URLSearchParams({
       client_id: this.auth.clientId,
       redirect_uri: redirectUri || this.auth.redirectUri,
@@ -120,13 +120,13 @@ export class OAuthService {
   }
 
   /**生成state参数*/
-  private generateState(): string {
+  private async generateState(): Promise<string> {
     const state = Math.random().toString(36).substring(2, 15) +
                   Math.random().toString(36).substring(2, 15)
-    
+
     // 存储state用于验证
-    this.tokenStorage.saveState(state)
-    
+    await this.tokenStorage.saveState(state)
+
     return state
   }
 

@@ -13,33 +13,33 @@ CloudLink 论坛系统的官方文档站点。
 
 ### 安装依赖
 
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
 ### 启动开发服务器
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 访问 \`YOUR_LOCALHOST:5173\`
 
 ### 构建生产版本
 
-\`\`\`bash
+```bash
 npm run build
-\`\`\`
+```
 
 ### 预览构建结果
 
-\`\`\`bash
+```bash
 npm run preview
-\`\`\`
+```
 
 ## 项目结构
 
-\`\`\`
+```
 docs-site/
 ├── .vitepress/          # VitePress 配置
 │   ├── config.ts         # 站点配置
@@ -52,7 +52,7 @@ docs-site/
 ├── tutorial/            # 教程文档
 ├── index.md             # 首页
 └── package.json
-\`\`\`
+```
 
 ## 部署
 

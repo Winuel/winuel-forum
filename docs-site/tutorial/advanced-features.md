@@ -8,7 +8,7 @@
 
 CloudLink 支持 WebSocket 实时通信，可以实时接收通知和更新。
 
-\`\`\`javascript
+```javascript
 // WebSocket 连接示例
 const { connect, disconnect, onMessage } = useWebSocket()
 
@@ -29,7 +29,7 @@ onMessage((data) => {
       break
   }
 })
-\`\`\`
+```
 
 ### 通知类型
 
@@ -41,7 +41,7 @@ onMessage((data) => {
 
 ### 处理通知
 
-\`\`\`javascript
+```javascript
 const handleNotification = (notification) => {
   // 显示通知UI
   showNotification({
@@ -57,13 +57,13 @@ const handleNotification = (notification) => {
   // 标记为已读
   markNotificationAsRead(notification.id)
 }
-\`\`\`
+```
 
 ## 搜索功能
 
 ### 全文搜索
 
-\`\`\`javascript
+```javascript
 // 搜索功能示例
 const { searchPosts, searchUsers } = useSearch()
 
@@ -81,11 +81,11 @@ const userResults = await searchUsers({
   page: 1,
   limit: 10
 })
-\`\`\`
+```
 
 ### 高级搜索选项
 
-\`\`\`javascript
+```javascript
 const advancedSearch = await searchPosts({
   keyword: 'Vue.js',
   category: 'tech',
@@ -99,13 +99,13 @@ const advancedSearch = await searchPosts({
   page: 1,
   limit: 20
 })
-\`\`\`
+```
 
 ## 插件系统
 
 ### 使用插件
 
-\`\`\`javascript
+```javascript
 // 插件系统示例
 const { registerPlugin, usePlugin } = usePluginSystem()
 
@@ -131,7 +131,7 @@ registerPlugin({
 
 // 使用插件
 usePlugin('markdown-enhancer')
-\`\`\`
+```
 
 ### 内置插件
 
@@ -145,7 +145,7 @@ usePlugin('markdown-enhancer')
 
 ### 本地缓存
 
-\`\`\`javascript
+```javascript
 // 缓存功能示例
 const { get, set, remove, clear } = useCache()
 
@@ -160,11 +160,11 @@ remove('user-posts')
 
 // 清空所有缓存
 clear()
-\`\`\`
+```
 
 ### 缓存策略
 
-\`\`\`javascript
+```javascript
 const cacheOptions = {
   // 用户数据：短时间缓存
   userData: { ttl: 60 }, // 1分钟
@@ -176,20 +176,20 @@ const cacheOptions = {
   categories: { ttl: 3600 }, // 1小时
   tags: { ttl: 3600 }
 }
-\`\`\`
+```
 
 ## 性能优化
 
 ### 虚拟滚动
 
-\`\`\`javascript
+```javascript
 // 虚拟滚动示例
 const { list, containerProps, wrapperProps } = useVirtualList({
   data: posts,
   itemHeight: 150,
   overscan: 5
 })
-\`\`\`
+```
 
 ### 图片懒加载
 
@@ -199,7 +199,7 @@ const { list, containerProps, wrapperProps } = useVirtualList({
 
 ### 请求优化
 
-\`\`\`javascript
+```javascript
 // 请求优化示例
 const apiClient = getApiClient()
 
@@ -216,13 +216,13 @@ apiClient.get('/api/posts', { signal: controller.signal })
 
 // 取消请求
 controller.abort()
-\`\`\`
+```
 
 ## 安全功能
 
 ### XSS 防护
 
-\`\`\`javascript
+```javascript
 // XSS 防护示例
 const cleanContent = sanitize(userInput, {
   allowedTags: ['p', 'br', 'strong', 'em', 'a'],
@@ -230,11 +230,11 @@ const cleanContent = sanitize(userInput, {
     'a': ['href']
   }
 })
-\`\`\`
+```
 
 ### CSRF 保护
 
-\`\`\`javascript
+```javascript
 // CSRF 保护示例
 const csrfToken = getCSRFToken()
 
@@ -244,7 +244,7 @@ apiClient.post('/api/posts', postData, {
     'X-CSRF-Token': csrfToken
   }
 })
-\`\`\`
+```
 
 ## 下一步
 

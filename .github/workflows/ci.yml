@@ -91,8 +91,8 @@ jobs:
         run: |
           mkdir -p backend/data/sensitive-words
           mkdir -p backend/data/blocklist
-          # Create empty sensitive word files for testing
-          touch backend/data/sensitive-words/words.txt
+          # Create test sensitive word files with sample words
+          echo -e "政治\n习近平" > backend/data/sensitive-words/words.txt
           # Create empty blocklist file for testing
           touch backend/data/blocklist/domains.txt
 

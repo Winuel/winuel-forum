@@ -6,7 +6,7 @@
 
 ### 用户注册
 
-\`\`\`http
+```http
 POST /api/auth/register
 Content-Type: application/json
 
@@ -15,10 +15,10 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "securePassword123"
 }
-\`\`\`
+```
 
 **响应示例**:
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -33,11 +33,11 @@ Content-Type: application/json
   },
   "timestamp": "2024-03-22T10:00:00.000Z"
 }
-\`\`\`
+```
 
 ### 用户登录
 
-\`\`\`http
+```http
 POST /api/auth/login
 Content-Type: application/json
 
@@ -45,11 +45,11 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "securePassword123"
 }
-\`\`\`
+```
 
 ### 保存认证令牌
 
-\`\`\`javascript
+```javascript
 // 保存到 localStorage
 localStorage.setItem('token', token)
 
@@ -57,13 +57,13 @@ localStorage.setItem('token', token)
 const headers = {
   'Authorization': \`Bearer \${token}\`
 }
-\`\`\`
+```
 
 ## 帖子管理
 
 ### 创建帖子
 
-\`\`\`javascript
+```javascript
 // 使用 API 客户端
 import { apiClient } from '@cloudlink/shared-api'
 
@@ -83,11 +83,11 @@ createPost({
   categoryId: 'category-1',
   tags: ['vue', 'javascript']
 })
-\`\`\`
+```
 
 ### 获取帖子列表
 
-\`\`\`javascript
+```javascript
 // 获取帖子列表（分页）
 const getPosts = async (page = 1, limit = 10) => {
   const response = await apiClient.get('/api/posts', {
@@ -108,11 +108,11 @@ const getFilteredPosts = async () => {
   })
   return response.data
 }
-\`\`\`
+```
 
 ### 点赞帖子
 
-\`\`\`javascript
+```javascript
 const likePost = async (postId) => {
   const response = await apiClient.post(\`/api/posts/\${postId}/like\`, {}, {
     headers: {
@@ -121,13 +121,13 @@ const likePost = async (postId) => {
   })
   return response.data
 }
-\`\`\`
+```
 
 ## 评论系统
 
 ### 添加评论
 
-\`\`\`javascript
+```javascript
 const addComment = async (postId, content) => {
   const response = await apiClient.post(\`/api/posts/\${postId}/comments\`, {
     content: content
@@ -141,22 +141,22 @@ const addComment = async (postId, content) => {
 
 // 添加嵌套回复
 addComment(postId, '这是父评论的回复', 'parent-comment-id')
-\`\`\`
+```
 
 ### 获取评论
 
-\`\`\`javascript
+```javascript
 const getComments = async (postId) => {
   const response = VueClient.get(\`/api/posts/\${postId}/comments\`)
   return response.data
 }
-\`\`\`
+```
 
 ## 用户状态管理
 
 ### 使用 Pinia 管理用户状态
 
-\`\`\`javascript
+```javascript
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { apiClient } from '@cloudlink/shared-api'
@@ -196,13 +196,13 @@ export const useUserStore = defineStore('user', () => {
     logout
   }
 })
-\`\`\`
+```
 
 ## 实时功能
 
 ### 实时更新通知
 
-\`\`\`javascript
+```javascript
 import { useEventBus } from '@cloudlink/plugin-system'
 
 const eventBus = useEventBus()
@@ -220,11 +220,11 @@ eventBus.on('post:updated', (post) => {
   // 更新UI
   updatePostInList(post)
 })
-\`\`\`
+```
 
 ### WebSocket 连接
 
-\`\`\`javascript
+```javascript
 // 建立 WebSocket 连接
 const ws = new WebSocket(\`ws://\${apiUrl}/ws\`)
 
@@ -243,13 +243,13 @@ ws.onclose = () => {
   // 尝试重连
   setTimeout(() => connectWebSocket(), 3000)
 }
-\`\`\`
+```
 
 ## 错误处理
 
 ### API 错误处理
 
-\`\`\`javascript
+```javascript
 const handleApiCall = async (apiFunction) => {
   try {
     const response = await apiFunction()
@@ -284,13 +284,13 @@ const handleApiCall = async (apiFunction) => {
     throw error
   }
 }
-\`\`\`
+```
 
 ## 性能优化
 
 ### 请求防抖
 
-\`\`\`javascript
+```javascript
 import { debounce } from 'lodash-es'
 
 // 搜索输入防抖
@@ -300,11 +300,11 @@ const searchPosts = debounce(async (keyword) => {
   })
   return response.data
 }, 300)
-\`\`\`
+```
 
 ### 数据缓存
 
-\`\`\`javascript
+```javascript
 const cache = new Map()
 
 const getCachedData = async (key, fetcher) => {
@@ -316,7 +316,7 @@ const getCachedData = async (key, fetcher) => {
   cache.set(key, data)
   return data
 }
-\`\`\`
+```
 
 ## 最佳实践
 
@@ -324,7 +324,7 @@ const getCachedData = async (key, fetcher) => {
 
 使用 Vue 的错误捕获 API 来处理组件错误：
 
-\`\`\`javascript
+```javascript
 import { ref, onErrorCaptured } from 'vue'
 
 const error = ref(null)
@@ -334,13 +334,13 @@ onErrorCaptured((err) => {
   console.error('捕获错误:', err)
   return false // 阻止错误继续向上传播
 })
-\`\`\`
+```
 
 ### 2. 加载状态管理
 
 实现统一的加载状态管理：
 
-\`\`\`javascript
+```javascript
 import { ref } from 'vue'
 
 const loading = ref(false)
@@ -359,11 +359,11 @@ const fetchData = async () => {
     loading.value = false
   }
 }
-\`\`\`
+```
 
 ### 3. 请求重试机制
 
-\`\`\`javascript
+```javascript
 const retryRequest = async (fn, maxRetries = 3) => {
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -378,7 +378,7 @@ const retryRequest = async (fn, maxRetries = 3) => {
 
 // 使用示例
 const result = await retryRequest(() => apiClient.get('/api/posts'))
-\`\`\`
+```
 
 ## 下一步
 

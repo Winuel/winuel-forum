@@ -4,14 +4,14 @@
 
 ## 获取当前用户信息
 
-\`\`\`http
+```http
 GET /api/users/me
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -26,11 +26,11 @@ Authorization: Bearer &lt;token&gt;
   },
   "timestamp": "2024-03-22T12:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 更新用户资料
 
-\`\`\`http
+```http
 PUT /api/users/me
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -40,7 +40,7 @@ Content-Type: application/json
   "avatar": "https://example.com/avatar.jpg",
   "bio": "更新后的个人简介"
 }
-\`\`\`
+```
 
 **请求参数**:
 
@@ -52,7 +52,7 @@ Content-Type: application/json
 
 ## 修改密码
 
-\`\`\`http
+```http
 POST /api/users/change-password
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -61,7 +61,7 @@ Content-Type: application/json
   "oldPassword": "oldpassword",
   "newPassword": "newpassword"
 }
-\`\`\`
+```
 
 **请求参数**:
 
@@ -72,9 +72,9 @@ Content-Type: application/json
 
 ## 获取用户公开信息
 
-\`\`\`http
+```http
 GET /api/users/{userId}
-\`\`\`
+```
 
 **路径参数**:
 
@@ -84,23 +84,23 @@ GET /api/users/{userId}
 
 ## 上传头像
 
-\`\`\`http
+```http
 POST /api/users/avatar
 Authorization: Bearer &lt;token&gt;
 Content-Type: multipart/form-data
 
 avatar: &lt;file&gt;
-\`\`\`
+```
 
 ## 获取用户统计信息
 
-\`\`\`http
+```http
 GET /api/users/{userId}/stats
-\`\`\`
+```
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -112,33 +112,33 @@ GET /api/users/{userId}/stats
   },
   "timestamp": "2024-03-22T12:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 关注用户
 
-\`\`\`http
+```http
 POST /api/users/{userId}/follow
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 取消关注
 
-\`\`\`http
+```http
 DELETE /api/users/{userId}/follow
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 获取关注列表
 
-\`\`\`http
+```http
 GET /api/users/{userId}/following?page=1&limit=20
-\`\`\`
+```
 
 ## 获取粉丝列表
 
-\`\`\`http
+```http
 GET /api/users/{userId}/followers?page=1&limit=20
-\`\`\`
+```
 
 ## 错误码
 

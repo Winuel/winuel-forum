@@ -4,9 +4,9 @@
 
 ## 获取帖子列表
 
-\`\`\`http
+```http
 GET /api/posts?page=1&limit=10&category=tech&tag=vue&sort=latest
-\`\`\`
+```
 
 **查询参数**:
 
@@ -21,7 +21,7 @@ GET /api/posts?page=1&limit=10&category=tech&tag=vue&sort=latest
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -56,13 +56,13 @@ GET /api/posts?page=1&limit=10&category=tech&tag=vue&sort=latest
   },
   "timestamp": "2024-03-22T12:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 获取帖子详情
 
-\`\`\`http
+```http
 GET /api/posts/{postId}
-\`\`\`
+```
 
 **路径参数**:
 
@@ -72,7 +72,7 @@ GET /api/posts/{postId}
 
 ## 创建帖子
 
-\`\`\`http
+```http
 POST /api/posts
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -83,7 +83,7 @@ Content-Type: application/json
   "categoryId": "category-id",
   "tags": ["vue", "javascript"]
 }
-\`\`\`
+```
 
 **请求参数**:
 
@@ -96,7 +96,7 @@ Content-Type: application/json
 
 ## 更新帖子
 
-\`\`\`http
+```http
 PUT /api/posts/{postId}
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -107,25 +107,25 @@ Content-Type: application/json
   "categoryId": "new-category-id",
   "tags": ["vue", "typescript"]
 }
-\`\`\`
+```
 
 ## 删除帖子
 
-\`\`\`http
+```http
 DELETE /api/posts/{postId}
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 点赞帖子
 
-\`\`\`http
+```http
 POST /api/posts/{postId}/like
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -134,40 +134,40 @@ Authorization: Bearer &lt;token&gt;
   },
   "timestamp": "2024-03-22T12:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 取消点赞
 
-\`\`\`http
+```http
 DELETE /api/posts/{postId}/like
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 收藏帖子
 
-\`\`\`http
+```http
 POST /api/posts/{postId}/bookmark
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 取消收藏
 
-\`\`\`http
+```http
 DELETE /api/posts/{postId}/bookmark
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 获取用户帖子
 
-\`\`\`http
+```http
 GET /api/users/{userId}/posts?page=1&limit=10
-\`\`\`
+```
 
 ## 搜索帖子
 
-\`\`\`http
+```http
 GET /api/posts/search?q=vue&page=1&limit=10
-\`\`\`
+```
 
 **查询参数**:
 
@@ -179,16 +179,16 @@ GET /api/posts/search?q=vue&page=1&limit=10
 
 ## 获取热门帖子
 
-\`\`\`http
+```http
 GET /api/posts/hot?days=7&limit=10
-\`\`\`
+```
 
 ## 获取推荐帖子
 
-\`\`\`http
+```http
 GET /api/posts/recommended
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 错误码
 

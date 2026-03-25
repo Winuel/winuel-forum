@@ -4,9 +4,9 @@
 
 ## 获取评论列表
 
-\`\`\`http
+```http
 GET /api/posts/{postId}/comments?page=1&limit=20&sort=latest
-\`\`\`
+```
 
 **路径参数**:
 
@@ -24,7 +24,7 @@ GET /api/posts/{postId}/comments?page=1&limit=20&sort=latest
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -67,11 +67,11 @@ GET /api/posts/{postId}/comments?page=1&limit=20&sort=latest
   },
   "timestamp": "2024-03-22T12:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 创建评论
 
-\`\`\`http
+```http
 POST /api/posts/{postId}/comments
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -80,7 +80,7 @@ Content-Type: application/json
   "content": "评论内容",
   "parentId": "parent-comment-id"
 }
-\`\`\`
+```
 
 **请求参数**:
 
@@ -91,7 +91,7 @@ Content-Type: application/json
 
 ## 更新评论
 
-\`\`\`http
+```http
 PUT /api/comments/{commentId}
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -99,25 +99,25 @@ Content-Type: application/json
 {
   "content": "更新后的评论内容"
 }
-\`\`\`
+```
 
 ## 删除评论
 
-\`\`\`http
+```http
 DELETE /api/comments/{commentId}
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 点赞评论
 
-\`\`\`http
+```http
 POST /api/comments/{commentId}/like
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 **响应示例**:
 
-\`\`\`json
+```json
 {
   "success": true,
   "data": {
@@ -126,30 +126,30 @@ Authorization: Bearer &lt;token&gt;
   },
   "timestamp": "2024-03-22T12:00:00.000Z"
 }
-\`\`\`
+```
 
 ## 取消点赞评论
 
-\`\`\`http
+```http
 DELETE /api/comments/{commentId}/like
 Authorization: Bearer &lt;token&gt;
-\`\`\`
+```
 
 ## 获取评论详情
 
-\`\`\`http
+```http
 GET /api/comments/{commentId}
-\`\`\`
+```
 
 ## 获取用户评论
 
-\`\`\`http
+```http
 GET /api/users/{userId}/comments?page=1&limit=20
-\`\`\`
+```
 
 ## 批量删除评论
 
-\`\`\`http
+```http
 POST /api/comments/batch-delete
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -157,11 +157,11 @@ Content-Type: application/json
 {
   "commentIds": ["comment-1", "comment-2", "comment-3"]
 }
-\`\`\`
+```
 
 ## 举报评论
 
-\`\`\`http
+```http
 POST /api/comments/{commentId}/report
 Authorization: Bearer &lt;token&gt;
 Content-Type: application/json
@@ -170,7 +170,7 @@ Content-Type: application/json
   "reason": "spam",
   "description": "评论包含垃圾信息"
 }
-\`\`\`
+```
 
 **举报原因**:
 
