@@ -98,6 +98,25 @@ export const csrfMiddleware: MiddlewareHandler = async (c, next) => {
  * 验证 POST、PUT、DELETE 请求的 CSRF 令牌
  */
 export const csrfProtectionMiddleware: MiddlewareHandler = async (c, next) => {
+  // 排除OAuth路由和其他公共端点
+  const excludedPaths = [
+    '/api/auth/github',
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/send-verification-code',
+    '/api/auth/verify-code',
+    '/api/auth/logout',
+    '/health',
+    '/'
+  ]
+  
+  const isExcluded = excludedPaths.some(path => c.req.path.startsWith(path))
+  
+  if (isExcluded) {
+    await next()
+    return
+  }
+  
   // 只需要验证写操作
   if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(c.req.method)) {
     const csrf = new CSRFManager()
