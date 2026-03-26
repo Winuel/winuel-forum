@@ -1,5 +1,9 @@
 # 云纽论坛 (Winuel)
 
+> **⚠️ 此仓库已迁移到新的组织架构**
+
+> 本项目已拆分为多个独立仓库，全部迁移到 **Winuel** organization 下。请查看下面的迁移说明。
+
 <div align="center">
 
 ![Winuel Logo](https://img.shields.io/badge/Winuel-Forum-blue)
@@ -10,9 +14,41 @@
 
 现代化的轻量级论坛系统，基于 Cloudflare Workers Serverless 平台构建
 
-[官网](https://www.winuel.com) • [文档](#文档) • [演示](#演示) • [贡献](#贡献)
+[官网](https://www.winuel.com) • [文档](https://docs.winuel.com) • [演示](https://hub.winuel.com) • [贡献](https://github.com/Winuel/winuel-forum/contributing)
 
 </div>
+
+## 📦 项目迁移（重要）
+
+本项目已于 **2026年3月26日** 完成拆分和迁移。请访问新的仓库地址：
+
+### 新仓库地址
+
+| 仓库名称 | 地址 | 用途 |
+|----------|------|------|
+| **winuel-packages** | [github.com/Winuel/winuel-packages](https://github.com/Winuel/winuel-packages) | 共享包库 |
+| **winuel-forum** | [github.com/Winuel/winuel-forum](https://github.com/Winuel/winuel-forum) | 论坛系统 |
+| **winuel-docs** | [github.com/Winuel/winuel-docs](https://github.com/Winuel/winuel-docs) | 文档站点 |
+| **winuel-website** | [github.com/Winuel/winuel-website](https://github.com/Winuel/winuel-website) | 官方网站 |
+
+### 为什么拆分？
+
+为了更好地管理项目和促进协作，我们将项目拆分为多个独立仓库：
+- **模块化管理**：每个项目独立管理，职责清晰
+- **更好的协作**：不同团队可以独立开发和部署
+- **版本控制**：各项目可以独立发布版本
+- **依赖清晰**：共享包作为独立项目，可被多个项目引用
+
+### 迁移后如何使用？
+
+1. **开发论坛系统**：访问 [Winuel/winuel-forum](https://github.com/Winuel/winuel-forum)
+2. **使用共享包**：访问 [Winuel/winuel-packages](https://github.com/Winuel/winuel-packages)
+3. **查看文档**：访问 [docs.winuel.com](https://docs.winuel.com)
+4. **了解产品**：访问 [www.winuel.com](https://www.winuel.com)
+
+> **注意**：此仓库仅保留历史记录，后续开发请访问上述新仓库。
+
+---
 
 ## 📋 目录
 
