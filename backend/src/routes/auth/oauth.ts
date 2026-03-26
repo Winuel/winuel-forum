@@ -6,6 +6,21 @@ import type { Variables } from '../../types'
 
 const app = new Hono<{ Variables: Variables }>()
 
+/**OAuth根路径 - 返回可用端点信息*/
+app.get('/', async (c) => {
+  return c.json({
+    success: true,
+    message: 'GitHub OAuth 服务',
+    endpoints: [
+      'GET /api/auth/github/test - 测试配置',
+      'GET /api/auth/github/github/authorize - 获取授权URL',
+      'GET /api/auth/github/github/callback - OAuth回调',
+      'GET /api/auth/github/user - 获取用户信息',
+      'GET /api/auth/github/validate - 验证令牌'
+    ]
+  })
+})
+
 /**测试端点 - 验证配置*/
 app.get('/test', async (c) => {
   const container = c.get('container')

@@ -7,6 +7,41 @@ import { csrfProtectionMiddleware } from '../middleware/csrf'
 
 const commentsRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
 
+// 获取所有评论（需要管理员权限）或特定帖子的评论
+commentsRouter.get('/', async (c) => {
+  try {
+    const postId = c.req.query('postId')
+    const postService = new PostService(c.env.DB)
+
+    if (postId) {
+      // 获取特定帖子的评论
+      const comments = await postService.findCommentsByPostId(postId)
+      return c.json(comments)
+    } else {
+      // 获取所有评论（需要管理员权限，这里暂时返回空）
+      return c.json([])
+    }
+  } catch (error: any) {
+    return c.json({ error: error.message || '获取评论失败' }, 500)
+  }
+})
+
+commentsRouter.get('/:id', async (c) => {
+  try {
+    const id = c.req.param('id')!
+    const postService = new PostService(c.env.DB)
+    const comment = await postService.findCommentById(id)
+    
+    if (!comment) {
+      return c.json({ error: '评论不存在' }, 404)
+    }
+    
+    return c.json(comment)
+  } catch (error: any) {
+    return c.json({ error: error.message || '获取评论失败' }, 500)
+  }
+})
+
 commentsRouter.post('/', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
     const user = c.get('user')
