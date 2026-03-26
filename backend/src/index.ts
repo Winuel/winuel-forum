@@ -147,6 +147,21 @@ app.route('/api/admin/audit-logs', adminAuditLogsRouter)
 app.route('/api/admin/stats', adminStatsRouter)
 app.route('/api/admin/plugins', adminPluginsRouter)
 
+// 数据库迁移端点（移到管理员中间件之前，因为可能需要在不依赖认证的情况下执行）
+app.post('/api/admin/run-migrations', async (c) => {
+  try {
+    const executeMigrations = (await import('../scripts/runMigrations')).default
+    const result = await executeMigrations(c.env.DB)
+    return c.json(result)
+  } catch (error: any) {
+    console.error('数据库迁移失败:', error)
+    return c.json({ 
+      success: false, 
+      error: error.message || '数据库迁移失败' 
+    }, 500)
+  }
+})
+
 app.notFound((c) => {
   const error = handleError(new Error('Not Found'))
   return c.json(formatErrorResponse(error), 404)
