@@ -1,43 +1,127 @@
+/**
+ * 帖子服务
+ * Post Service
+ * 
+ * 负责处理论坛帖子相关的业务逻辑，包括：
+ * - 帖子的创建、查询、更新和删除
+ * - 评论的创建、查询、更新和删除
+ * - 标签管理
+ * - 帖子统计数据（浏览量、点赞数、评论数）
+ * - 帖子申诉功能
+ * 
+ * Provides forum post-related business logic handling:
+ * - Post creation, query, update, and deletion
+ * - Comment creation, query, update, and deletion
+ * - Tag management
+ * - Post statistics (view count, like count, comment count)
+ * - Post appeal functionality
+ * 
+ * @package backend/src/services
+ */
+
 import type { Post, Comment } from '../db/models'
 import { generateId } from '../utils/crypto'
 
+/**
+ * 创建帖子输入接口
+ * Create Post Input Interface
+ * 定义创建新帖子所需的数据结构
+ * Defines the data structure required for creating a new post
+ */
 export interface CreatePostInput {
+  /** 帖子标题 / Post title */
   title: string
+  /** 帖子内容 / Post content */
   content: string
+  /** 作者 ID / Author ID */
   author_id: string
+  /** 分类 ID / Category ID */
   category_id: string
+  /** 标签列表（可选）/ Tag list (optional) */
   tags?: string[]
 }
 
+/**
+ * 更新帖子输入接口
+ * Update Post Input Interface
+ * 定义更新帖子所需的数据结构
+ * Defines the data structure required for updating a post
+ */
 export interface UpdatePostInput {
+  /** 帖子标题（可选）/ Post title (optional) */
   title?: string
+  /** 帖子内容（可选）/ Post content (optional) */
   content?: string
+  /** 分类 ID（可选）/ Category ID (optional) */
   category_id?: string
+  /** 标签列表（可选）/ Tag list (optional) */
   tags?: string[]
 }
 
+/**
+ * 申诉帖子输入接口
+ * Appeal Post Input Interface
+ * 定义申诉帖子所需的数据结构
+ * Defines the data structure required for appealing a post
+ */
 export interface AppealPostInput {
+  /** 帖子 ID / Post ID */
   post_id: string
+  /** 用户 ID / User ID */
   user_id: string
+  /** 申诉原因 / Appeal reason */
   reason: string
 }
 
+/**
+ * 创建评论输入接口
+ * Create Comment Input Interface
+ * 定义创建评论所需的数据结构
+ * Defines the data structure required for creating a comment
+ */
 export interface CreateCommentInput {
+  /** 帖子 ID / Post ID */
   post_id: string
+  /** 作者 ID / Author ID */
   author_id: string
+  /** 评论内容 / Comment content */
   content: string
+  /** 父评论 ID（可选，用于回复）/ Parent comment ID (optional, for replies) */
   parent_id?: string
 }
 
+/**
+ * 帖子服务类
+ * Post Service Class
+ * 
+ * 提供帖子管理的所有业务逻辑
+ * Provides all business logic for post management
+ */
 export class PostService {
+  /**
+   * 构造函数
+   * Constructor
+   * 
+   * @param db - D1 数据库实例 / D1 database instance
+   */
   constructor(private db: D1Database) {}
 
+  /**
+   * 创建帖子
+   * Create Post
+   * 
+   * 创建一个新帖子，并进行敏感词检测
+   * Creates a new post and performs sensitive word detection
+   * 
+   * @param input - 帖子创建信息 / Post creation information
+   * @returns 创建的帖子对象 / Created post object
+   */
   async create(input: CreatePostInput): Promise<Post> {
-    // 导入敏感词检测服务
+    // 导入敏感词检测服务 / Import sensitive word detection service
     const { getSensitiveWordService } = await import('./sensitiveWordService')
     const sensitiveWordService = getSensitiveWordService()
 
-    // 检测标题和内容中的敏感词
+    // 检测标题和内容中的敏感词 / Detect sensitive words in title and content
     const titleMatches = sensitiveWordService.detect(input.title)
     const contentMatches = sensitiveWordService.detect(input.content)
 
@@ -45,7 +129,7 @@ export class PostService {
     let auditStatus: 'pending' | 'rejected' = 'pending'
     let auditReason = ''
 
-    // 如果发现敏感词，标记为 rejected，并提供模糊化告警
+    // 如果发现敏感词，标记为 rejected，并提供模糊化告警 / If sensitive words are found, mark as rejected and provide masked warning
     if (titleMatches.length > 0 || contentMatches.length > 0) {
       const allMatches = [...titleMatches, ...contentMatches]
       const uniqueWords = [...new Set(allMatches.map(m => m.word))]
@@ -55,6 +139,7 @@ export class PostService {
       auditReason = `帖子包含敏感词：${filteredWords.join(', ')}（实际敏感词：${uniqueWords.join(', ')}）`
     }
 
+    // 插入帖子数据 / Insert post data
     await this.db
       .prepare(
         'INSERT INTO posts (id, title, content, author_id, category_id, audit_status, audit_reason) VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -62,6 +147,7 @@ export class PostService {
       .bind(id, input.title, input.content, input.author_id, input.category_id, auditStatus, auditReason)
       .run()
 
+    // 添加标签 / Add tags
     if (input.tags && input.tags.length > 0) {
       await this.addTagsToPost(id, input.tags)
     }
@@ -69,10 +155,31 @@ export class PostService {
     return this.findById(id) as Promise<Post>
   }
 
+  /**
+   * 根据 ID 查找帖子
+   * Find Post by ID
+   * 
+   * @param id - 帖子 ID / Post ID
+   * @returns 帖子对象或 null / Post object or null
+   */
   async findById(id: string): Promise<Post | null> {
     return this.db.prepare('SELECT id, title, content, author_id, category_id, view_count, like_count, comment_count, created_at, updated_at FROM posts WHERE id = ? AND deleted_at IS NULL').bind(id).first<Post>()
   }
 
+  /**
+   * 查找所有帖子
+   * Find All Posts
+   * 
+   * 支持分页、分类筛选和作者筛选
+   * Supports pagination, category filtering, and author filtering
+   * 
+   * @param options - 查询选项 / Query options
+   * @param options.page - 页码 / Page number
+   * @param options.limit - 每页数量 / Items per page
+   * @param options.category_id - 分类 ID / Category ID
+   * @param options.author_id - 作者 ID / Author ID
+   * @returns 包含帖子列表和总数的对象 / Object containing post list and total count
+   */
   async findAll(options: {
     page?: number
     limit?: number
@@ -82,6 +189,7 @@ export class PostService {
     const { page = 1, limit = 20, category_id, author_id } = options
     const offset = (page - 1) * limit
 
+    // 构建查询语句 / Build query statement
     let query = 'SELECT id, title, content, author_id, category_id, view_count, like_count, comment_count, created_at, updated_at FROM posts WHERE deleted_at IS NULL'
     const params: any[] = []
 
@@ -100,6 +208,7 @@ export class PostService {
 
     const posts = await this.db.prepare(query).bind(...params).all<Post>()
 
+    // 计算总数 / Calculate total count
     let countQuery = 'SELECT COUNT(*) as count FROM posts WHERE deleted_at IS NULL'
     const countParams: any[] = []
 
@@ -121,6 +230,16 @@ export class PostService {
     }
   }
 
+  /**
+   * 查找所有帖子（包含详细信息）
+   * Find All Posts with Details
+   * 
+   * 支持分页、分类筛选和作者筛选，返回包含作者、分类和标签的详细信息
+   * Supports pagination, category filtering, and author filtering, returns detailed info including author, category, and tags
+   * 
+   * @param options - 查询选项 / Query options
+   * @returns 包含帖子列表（含详细信息）和总数的对象 / Object containing post list (with details) and total count
+   */
   async findAllWithDetails(options: {
     page?: number
     limit?: number
@@ -130,7 +249,7 @@ export class PostService {
     const { page = 1, limit = 20, category_id, author_id } = options
     const offset = (page - 1) * limit
 
-    // 使用 JOIN 查询一次性获取帖子、作者和分类信息
+    // 使用 JOIN 查询一次性获取帖子、作者和分类信息 / Use JOIN query to get post, author, and category info at once
     let query = `
       SELECT 
         p.*,
@@ -159,10 +278,10 @@ export class PostService {
 
     const postsResult = await this.db.prepare(query).bind(...params).all()
 
-    // 获取所有帖子ID
+    // 获取所有帖子ID / Get all post IDs
     const postIds = postsResult.results?.map((p: any) => p.id) || []
 
-    // 一次性获取所有标签
+    // 一次性获取所有标签 / Get all tags at once
     let tagsMap: Record<string, string[]> = {}
     if (postIds.length > 0) {
       const placeholders = postIds.map(() => '?').join(',')
@@ -182,7 +301,7 @@ export class PostService {
       })
     }
 
-    // 组装结果
+    // 组装结果 / Assemble results
     const posts = postsResult.results?.map((post: any) => ({
       id: post.id,
       title: post.title,
@@ -206,7 +325,7 @@ export class PostService {
       tags: tagsMap[post.id] || []
     })) || []
 
-    // 计算总数
+    // 计算总数 / Calculate total count
     let countQuery = 'SELECT COUNT(*) as count FROM posts WHERE deleted_at IS NULL'
     const countParams: any[] = []
 
@@ -228,8 +347,18 @@ export class PostService {
     }
   }
 
+  /**
+   * 根据 ID 查找帖子（包含详细信息）
+   * Find Post by ID with Details
+   * 
+   * 返回包含作者、分类和标签的详细信息
+   * Returns detailed info including author, category, and tags
+   * 
+   * @param id - 帖子 ID / Post ID
+   * @returns 帖子对象（含详细信息）或 null / Post object (with details) or null
+   */
   async findByIdWithDetails(id: string): Promise<any | null> {
-    // 使用 JOIN 查询一次性获取帖子、作者、分类和标签信息
+    // 使用 JOIN 查询一次性获取帖子、作者、分类和标签信息 / Use JOIN query to get post, author, category, and tag info at once
     const query = `
       SELECT 
         p.*,
@@ -248,7 +377,7 @@ export class PostService {
       return null
     }
 
-    // 获取标签
+    // 获取标签 / Get tags
     const tagsQuery = `
       SELECT t.name 
       FROM post_tags pt
@@ -281,6 +410,14 @@ export class PostService {
     }
   }
 
+  /**
+   * 更新帖子
+   * Update Post
+   * 
+   * @param id - 帖子 ID / Post ID
+   * @param input - 更新信息 / Update information
+   * @returns 更新后的帖子对象或 null / Updated post object or null
+   */
   async update(id: string, input: UpdatePostInput): Promise<Post | null> {
     const updates: string[] = []
     const params: any[] = []
@@ -310,33 +447,77 @@ export class PostService {
     return this.findById(id)
   }
 
+  /**
+   * 删除帖子（软删除）
+   * Delete Post (Soft Delete)
+   * 
+   * @param id - 帖子 ID / Post ID
+   */
   async delete(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?').bind(id).run()
   }
 
+  /**
+   * 增加帖子浏览量
+   * Increment Post View Count
+   * 
+   * @param id - 帖子 ID / Post ID
+   */
   async incrementViewCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET view_count = view_count + 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
   }
 
+  /**
+   * 增加帖子点赞数
+   * Increment Post Like Count
+   * 
+   * @param id - 帖子 ID / Post ID
+   */
   async incrementLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET like_count = like_count + 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
   }
 
+  /**
+   * 减少帖子点赞数
+   * Decrement Post Like Count
+   * 
+   * @param id - 帖子 ID / Post ID
+   */
   async decrementLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET like_count = like_count - 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
   }
 
+  /**
+   * 增加帖子评论数
+   * Increment Post Comment Count
+   * 
+   * @param id - 帖子 ID / Post ID
+   */
   async incrementCommentCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET comment_count = comment_count + 1 WHERE id = ?').bind(id).run()
   }
 
+  /**
+   * 减少帖子评论数
+   * Decrement Post Comment Count
+   * 
+   * @param id - 帖子 ID / Post ID
+   */
   async decrementCommentCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET comment_count = comment_count - 1 WHERE id = ?').bind(id).run()
   }
 
+  /**
+   * 创建评论
+   * Create Comment
+   * 
+   * @param input - 评论创建信息 / Comment creation information
+   * @returns 创建的评论对象 / Created comment object
+   */
   async createComment(input: CreateCommentInput): Promise<Comment> {
     const id = generateId()
 
+    // 插入评论数据 / Insert comment data
     await this.db
       .prepare(
         'INSERT INTO comments (id, post_id, author_id, content, parent_id) VALUES (?, ?, ?, ?, ?)'
@@ -344,15 +525,30 @@ export class PostService {
       .bind(id, input.post_id, input.author_id, input.content, input.parent_id || null)
       .run()
 
+    // 增加帖子评论数 / Increment post comment count
     await this.incrementCommentCount(input.post_id)
 
     return this.findCommentById(id) as Promise<Comment>
   }
 
+  /**
+   * 根据 ID 查找评论
+   * Find Comment by ID
+   * 
+   * @param id - 评论 ID / Comment ID
+   * @returns 评论对象或 null / Comment object or null
+   */
   async findCommentById(id: string): Promise<Comment | null> {
     return this.db.prepare('SELECT id, post_id, author_id, content, parent_id, like_count, created_at, updated_at FROM comments WHERE id = ? AND deleted_at IS NULL').bind(id).first<Comment>()
   }
 
+  /**
+   * 根据帖子 ID 查找评论
+   * Find Comments by Post ID
+   * 
+   * @param postId - 帖子 ID / Post ID
+   * @returns 评论列表 / Comment list
+   */
   async findCommentsByPostId(postId: string): Promise<Comment[]> {
     const result = await this.db
       .prepare('SELECT id, post_id, author_id, content, parent_id, like_count, created_at, updated_at FROM comments WHERE post_id = ? AND deleted_at IS NULL ORDER BY created_at ASC')
@@ -362,8 +558,18 @@ export class PostService {
     return result.results || []
   }
 
+  /**
+   * 根据帖子 ID 查找评论（包含回复）
+   * Find Comments with Replies by Post ID
+   * 
+   * 返回评论树结构，包含所有回复
+   * Returns comment tree structure with all replies
+   * 
+   * @param postId - 帖子 ID / Post ID
+   * @returns 评论树列表 / Comment tree list
+   */
   async findCommentsWithReplies(postId: string): Promise<any[]> {
-    // 获取所有评论，包括回复
+    // 获取所有评论，包括回复 / Get all comments including replies
     const allComments = await this.db
       .prepare(`
         SELECT 
@@ -386,11 +592,11 @@ export class PostService {
       return []
     }
 
-    // 构建评论树
+    // 构建评论树 / Build comment tree
     const commentMap: Record<string, any> = {}
     const rootComments: any[] = []
 
-    // 第一遍：创建所有评论节点
+    // 第一遍：创建所有评论节点 / First pass: create all comment nodes
     allComments.results.forEach((comment: any) => {
       commentMap[comment.id] = {
         id: comment.id,
@@ -411,13 +617,13 @@ export class PostService {
       }
     })
 
-    // 第二遍：构建父子关系
+    // 第二遍：构建父子关系 / Second pass: build parent-child relationships
     Object.values(commentMap).forEach((comment: any) => {
       if (comment.parent_id && commentMap[comment.parent_id]) {
-        // 这是一个回复，添加到父评论的回复列表
+        // 这是一个回复，添加到父评论的回复列表 / This is a reply, add to parent comment's reply list
         commentMap[comment.parent_id].replies.push(comment)
       } else {
-        // 这是一个顶级评论
+        // 这是一个顶级评论 / This is a top-level comment
         rootComments.push(comment)
       }
     })
@@ -425,6 +631,14 @@ export class PostService {
     return rootComments
   }
 
+  /**
+   * 更新评论
+   * Update Comment
+   * 
+   * @param id - 评论 ID / Comment ID
+   * @param content - 评论内容 / Comment content
+   * @returns 更新后的评论对象或 null / Updated comment object or null
+   */
   async updateComment(id: string, content: string): Promise<Comment | null> {
     await this.db
       .prepare('UPDATE comments SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
@@ -434,6 +648,12 @@ export class PostService {
     return this.findCommentById(id)
   }
 
+  /**
+   * 删除评论（软删除）
+   * Delete Comment (Soft Delete)
+   * 
+   * @param id - 评论 ID / Comment ID
+   */
   async deleteComment(id: string): Promise<void> {
     const comment = await this.findCommentById(id)
     if (comment) {
@@ -442,14 +662,33 @@ export class PostService {
     }
   }
 
+  /**
+   * 增加评论点赞数
+   * Increment Comment Like Count
+   * 
+   * @param id - 评论 ID / Comment ID
+   */
   async incrementCommentLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE comments SET like_count = like_count + 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
   }
 
+  /**
+   * 减少评论点赞数
+   * Decrement Comment Like Count
+   * 
+   * @param id - 评论 ID / Comment ID
+   */
   async decrementCommentLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE comments SET like_count = like_count - 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
   }
 
+  /**
+   * 为帖子添加标签（私有方法）
+   * Add Tags to Post (Private Method)
+   * 
+   * @param postId - 帖子 ID / Post ID
+   * @param tagNames - 标签名称列表 / Tag name list
+   */
   private async addTagsToPost(postId: string, tagNames: string[]): Promise<void> {
     for (const tagName of tagNames) {
       const tagId = generateId()
@@ -464,30 +703,42 @@ export class PostService {
 
   /**
    * 申诉帖子
+   * Appeal Post
+   * 
+   * 将被敏感词检测拒绝的帖子提交申诉
+   * Submits an appeal for a post rejected by sensitive word detection
+   * 
+   * @param postId - 帖子 ID / Post ID
+   * @param userId - 用户 ID / User ID
+   * @param reason - 申诉原因 / Appeal reason
+   * @returns 更新后的帖子对象 / Updated post object
+   * @throws 如果帖子不存在 / Throws if post doesn't exist
+   * @throws 如果帖子不能申诉 / Throws if post cannot be appealed
+   * @throws 如果帖子已经申诉过 / Throws if post has already been appealed
    */
   async appeal(postId: string, userId: string, reason: string): Promise<Post> {
     const post = await this.findById(postId)
     
     if (!post) {
-      throw new Error('帖子不存在')
+      throw new Error('帖子不存在 / Post does not exist')
     }
 
-    // 检查是否可以申诉（只有被敏感词检测拒绝的帖子可以申诉）
+    // 检查是否可以申诉（只有被敏感词检测拒绝的帖子可以申诉） / Check if appeal is allowed (only posts rejected by sensitive word detection can be appealed)
     if (post.audit_status !== 'rejected') {
-      throw new Error('该帖子不能申诉')
+      throw new Error('该帖子不能申诉 / This post cannot be appealed')
     }
 
-    // 检查是否已经申诉过
+    // 检查是否已经申诉过 / Check if already appealed
     if (post.appealed_by) {
-      throw new Error('该帖子已经申诉过')
+      throw new Error('该帖子已经申诉过 / This post has already been appealed')
     }
 
-    // 更新帖子状态为申诉中
+    // 更新帖子状态为申诉中 / Update post status to appealed
     await this.db.prepare(
       'UPDATE posts SET audit_status = ?, appealed_by = ?, appealed_at = ?, appeal_reason = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
     ).bind('appealed', userId, new Date().toISOString(), reason, postId).run()
 
-    // 记录审核日志
+    // 记录审核日志 / Record audit log
     await this.db.prepare(
       'INSERT INTO audit_logs (id, post_id, user_id, action, old_status, new_status, reason) VALUES (?, ?, ?, ?, ?, ?, ?)'
     ).bind(generateId(), postId, userId, 'appeal', 'rejected', 'appealed', reason).run()
@@ -495,6 +746,13 @@ export class PostService {
     return this.findById(postId) as Promise<Post>
   }
 
+  /**
+   * 更新帖子标签（私有方法）
+   * Update Post Tags (Private Method)
+   * 
+   * @param postId - 帖子 ID / Post ID
+   * @param tagNames - 标签名称列表 / Tag name list
+   */
   private async updatePostTags(postId: string, tagNames: string[]): Promise<void> {
     await this.db.prepare('DELETE FROM post_tags WHERE post_id = ?').bind(postId).run()
     await this.addTagsToPost(postId, tagNames)
