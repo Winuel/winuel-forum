@@ -45,20 +45,38 @@ app.use('*', async (c, next) => {
   if (c.env.ENVIRONMENT) {
     ;(globalThis as any).ENVIRONMENT = c.env.ENVIRONMENT
   }
+  
+  // 初始化JWT - 增强错误处理
   if (c.env.JWT_SECRET && !(globalThis as any).JWT_SECRET_INITIALIZED) {
     try {
+      // 验证JWT密钥强度
+      if (c.env.JWT_SECRET.length < 32) {
+        throw new Error('JWT_SECRET must be at least 32 characters long')
+      }
+      
       initJWT(c.env.JWT_SECRET)
       ;(globalThis as any).JWT_SECRET_INITIALIZED = true
+      ;(globalThis as any).JWT_SECRET_VALID = true
+      
       // 初始化 Logger - 使用静态方法
       const { Logger } = await import('./utils/logger')
       Logger.init(c.env.ENVIRONMENT || 'production')
-    } catch (error) {
-      console.error('Failed to initialize JWT:', error)
-      // 不抛出错误，允许请求继续进行
+      console.log('✅ JWT initialized successfully')
+    } catch (error: any) {
+      console.error('❌ Failed to initialize JWT:', error.message)
+      ;(globalThis as any).JWT_SECRET_INITIALIZED = false
+      ;(globalThis as any).JWT_SECRET_VALID = false
+      ;(globalThis as any).JWT_SECRET_ERROR = error.message
+      // 不抛出错误，但标记JWT初始化失败
     }
+  } else if (!c.env.JWT_SECRET) {
+    console.warn('⚠️ JWT_SECRET is not configured')
+    ;(globalThis as any).JWT_SECRET_INITIALIZED = false
+    ;(globalThis as any).JWT_SECRET_VALID = false
+    ;(globalThis as any).JWT_SECRET_ERROR = 'JWT_SECRET not configured'
   }
   
-  // 初始化邮件服务
+  // 初始化邮件服务 - 增强错误处理
   if (c.env.RESEND_API_KEY && !(globalThis as any).EMAIL_SERVICE_INITIALIZED) {
     try {
       const emailService = new EmailService(
@@ -68,22 +86,42 @@ app.use('*', async (c, next) => {
       )
       ;(globalThis as any).emailService = emailService
       ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = true
-      console.log('Email service initialized')
-    } catch (error) {
-      console.error('Failed to initialize email service:', error)
+      ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = true
+      console.log('✅ Email service initialized')
+    } catch (error: any) {
+      console.error('❌ Failed to initialize email service:', error.message)
+      ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = false
+      ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = false
+      ;(globalThis as any).EMAIL_SERVICE_ERROR = error.message
+      // 不抛出错误，允许请求继续进行
     }
+  } else if (!c.env.RESEND_API_KEY) {
+    console.warn('⚠️ RESEND_API_KEY is not configured')
+    ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = false
+    ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = false
+    ;(globalThis as any).EMAIL_SERVICE_ERROR = 'RESEND_API_KEY not configured'
   }
   
-  // 初始化数据库（仅在首次请求时）
+  // 初始化数据库（仅在首次请求时）- 增强错误处理
   if (c.env.DB && !(globalThis as any).DB_INITIALIZED) {
     try {
       const { initializeDatabase } = await import('./utils/dbInitializer')
       await initializeDatabase(c.env.DB)
       ;(globalThis as any).DB_INITIALIZED = true
-    } catch (error) {
-      console.error('Failed to initialize database:', error)
+      ;(globalThis as any).DB_AVAILABLE = true
+      console.log('✅ Database initialized')
+    } catch (error: any) {
+      console.error('❌ Failed to initialize database:', error.message)
+      ;(globalThis as any).DB_INITIALIZED = false
+      ;(globalThis as any).DB_AVAILABLE = false
+      ;(globalThis as any).DB_ERROR = error.message
       // 不抛出错误，允许请求继续进行
     }
+  } else if (!c.env.DB) {
+    console.warn('⚠️ Database is not configured')
+    ;(globalThis as any).DB_INITIALIZED = false
+    ;(globalThis as any).DB_AVAILABLE = false
+    ;(globalThis as any).DB_ERROR = 'Database not configured'
   }
   
   await next()
@@ -107,7 +145,30 @@ app.get('/', (c) => {
 })
 
 app.get('/health', (c) => {
-  return c.json({ status: 'ok' })
+  const jwtValid = (globalThis as any).JWT_SECRET_VALID === true
+  const jwtError = (globalThis as any).JWT_SECRET_ERROR
+  const dbAvailable = (globalThis as any).DB_AVAILABLE === true
+  const dbError = (globalThis as any).DB_ERROR
+  const emailAvailable = (globalThis as any).EMAIL_SERVICE_AVAILABLE === true
+  const emailError = (globalThis as any).EMAIL_SERVICE_ERROR
+  
+  return c.json({
+    status: 'ok',
+    services: {
+      jwt: {
+        available: jwtValid,
+        error: jwtError || null
+      },
+      database: {
+        available: dbAvailable,
+        error: dbError || null
+      },
+      email: {
+        available: emailAvailable,
+        error: emailError || null
+      }
+    }
+  })
 })
 
 // 数据库初始化端点（仅用于首次部署）
@@ -150,8 +211,9 @@ app.route('/api/admin/plugins', adminPluginsRouter)
 // 数据库迁移端点（移到管理员中间件之前，因为可能需要在不依赖认证的情况下执行）
 app.post('/api/admin/run-migrations', async (c) => {
   try {
-    const executeMigrations = (await import('../scripts/runMigrations')).default
-    const result = await executeMigrations(c.env.DB)
+    // 动态导入迁移脚本
+    const runMigrations = await import('./utils/runMigrations')
+    const result = await runMigrations.default(c.env.DB)
     return c.json(result)
   } catch (error: any) {
     console.error('数据库迁移失败:', error)

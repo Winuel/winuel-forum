@@ -36,28 +36,27 @@ export const auditLog: MiddlewareHandler<{ Bindings: Env; Variables: Variables }
     // 记录成功的请求
     const duration = Date.now() - startTime
 
-    // 只记录写操作（POST, PUT, DELETE）
+    // 只记录写操作（POST, PUT, DELETE）- 异步执行不阻塞请求
     if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
-      try {
-        await auditService.create({
-          user_id: userId,
-          action: `${method} ${path}`,
-          entity_type: 'api_request',
-          entity_id: c.req.path,
-          new_values: {
-            method,
-            path,
-            statusCode: c.res.status,
-            duration,
-          },
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          status: 'success',
-        })
-      } catch (auditError) {
+      // 使用Promise但不等待，让它在后台执行
+      auditService.create({
+        user_id: userId,
+        action: `${method} ${path}`,
+        entity_type: 'api_request',
+        entity_id: c.req.path,
+        new_values: {
+          method,
+          path,
+          statusCode: c.res.status,
+          duration,
+        },
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        status: 'success',
+      }).catch((auditError) => {
         // 审计日志失败不应该影响 API 响应
         console.error('Failed to create audit log:', auditError)
-      }
+      })
     }
   } catch (error) {
     // 记录失败的请求

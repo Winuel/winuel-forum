@@ -90,12 +90,16 @@ app.get('/github/authorize', async (c) => {
   } catch (error: any) {
     console.error('OAuth authorize error:', error)
     console.error('Error stack:', error.stack)
+    
+    // 生产环境不暴露详细错误信息
+    const isProduction = (globalThis as any).ENVIRONMENT === 'production'
+    
     return c.json({
       success: false,
       error: {
         code: 'OAUTH_ERROR',
-        message: error.message || '获取授权URL失败',
-        details: error.stack
+        message: isProduction ? '获取授权URL失败，请稍后重试' : (error.message || '获取授权URL失败'),
+        ...(isProduction ? {} : { details: error.stack })
       }
     }, 500)
   }

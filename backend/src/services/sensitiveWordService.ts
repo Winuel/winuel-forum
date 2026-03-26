@@ -29,35 +29,66 @@ export class SensitiveWordService {
    */
   private loadSensitiveWords(): void {
     try {
-      const files = readdirSync(this.dataDir)
-      let totalWords = 0
+      // 尝试从文件系统加载（本地开发环境）
+      // 使用typeof检查避免window类型错误
+      const isBrowser = typeof (globalThis as any).window !== 'undefined'
+      const isNode = typeof (globalThis as any).process !== 'undefined' && (globalThis as any).process.versions
+      
+      if (!isBrowser && isNode) {
+        const { readdirSync, readFileSync } = require('fs')
+        const { join } = require('path')
+        const files = readdirSync(this.dataDir)
+        let totalWords = 0
 
-      for (const file of files) {
-        if (file.endsWith('.txt')) {
-          const filePath = join(this.dataDir, file)
-          const content = readFileSync(filePath, 'utf-8')
-          const words = content.split('\n').map(w => w.trim()).filter(w => w.length > 0)
+        for (const file of files) {
+          if (file.endsWith('.txt')) {
+            const filePath = join(this.dataDir, file)
+            const content = readFileSync(filePath, 'utf-8')
+            const words = content.split('\n').map((w: string) => w.trim()).filter((w: string) => w.length > 0)
 
-          for (const word of words) {
-            this.insertWord(word)
-            this.sensitiveWords.add(word)
-            totalWords++
+            for (const word of words) {
+              this.insertWord(word)
+              this.sensitiveWords.add(word)
+              totalWords++
+            }
+
+            console.log(`✓ 加载敏感词文件: ${file} (${words.length} 个词)`)
           }
-
-          console.log(`✓ 加载敏感词文件: ${file} (${words.length} 个词)`)
         }
-      }
 
-      console.log(`✓ 敏感词库加载完成，共 ${totalWords} 个敏感词`)
-    } catch (error: any) {
-      // 如果是目录不存在的错误，在测试环境中可能是正常的，记录警告但不抛出错误
-      if (error.code === 'ENOENT') {
-        console.warn(`⚠ 敏感词目录不存在: ${this.dataDir}，敏感词过滤功能将被禁用`)
-        return
+        console.log(`✓ 敏感词库加载完成，共 ${totalWords} 个敏感词`)
+      } else {
+        // Cloudflare Workers环境 - 使用内置的基本敏感词
+        console.warn('⚠️ 文件系统不可用，使用内置基本敏感词库')
+        this.loadBuiltinWords()
       }
-      console.error('✗ 加载敏感词库失败:', error)
-      throw error
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        console.warn(`⚠ 敏感词目录不存在: ${this.dataDir}，使用内置基本敏感词库`)
+        this.loadBuiltinWords()
+      } else {
+        console.error('⚠ 加载敏感词库失败，使用内置基本敏感词库:', error.message)
+        this.loadBuiltinWords()
+      }
     }
+  }
+
+  /**
+   * 加载内置的基本敏感词（用于Cloudflare Workers环境）
+   */
+  private loadBuiltinWords(): void {
+    const builtinWords = [
+      '政治',
+      '习近平',
+      '敏感词示例'
+    ]
+
+    for (const word of builtinWords) {
+      this.insertWord(word)
+      this.sensitiveWords.add(word)
+    }
+
+    console.log(`✓ 内置敏感词库加载完成，共 ${builtinWords.length} 个敏感词`)
   }
 
   /**

@@ -43,7 +43,7 @@ async function executeMigrations(db: D1Database) {
     const executedMigrations = await db
       .prepare('SELECT id FROM schema_migrations')
       .all<{ id: string }>()
-    const executedIds = new Set(executedMigrations.map(m => m.id))
+    const executedIds = new Set(executedMigrations.results.map((m: { id: string }) => m.id))
 
     // 4. 执行未执行的迁移
     let executedCount = 0
