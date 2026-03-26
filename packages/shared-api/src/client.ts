@@ -5,7 +5,7 @@
 
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import axios from 'axios'
-import type { ApiResponse, ErrorCode } from '@cloudlink/shared-core'
+import type { ApiResponse, ErrorCode } from '@winuel/shared-core'
 
 // ============================================================================
 // 配置接口

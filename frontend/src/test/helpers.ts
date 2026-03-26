@@ -3,7 +3,7 @@
  * 提供 API mock 和其他测试辅助函数
  */
 
-import { getApiClient } from '@cloudlink/shared-api'
+import { getApiClient } from '@winuel/shared-api'
 import type { Post, Comment } from '../stores/post'
 import type { User } from '../stores/user'
 import { expect } from 'vitest'

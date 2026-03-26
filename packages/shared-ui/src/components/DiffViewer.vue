@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { DiffViewerProps, DiffResult } from '@cloudlink/shared-core'
+import type { DiffViewerProps, DiffResult } from '@winuel/shared-core'
 
 const props = withDefaults(defineProps<DiffViewerProps>(), {
   inline: true

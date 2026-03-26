@@ -1,5 +1,5 @@
-import { PluginLoader } from '@cloudlink/plugin-system'
-import type { PluginPackage, PluginManifest, PluginStatus } from '@cloudlink/plugin-system'
+import { PluginLoader } from '@winuel/plugin-system'
+import type { PluginPackage, PluginManifest, PluginStatus } from '@winuel/plugin-system'
 
 /**前端插件管理服务*/
 export class FrontendPluginService {

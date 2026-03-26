@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { UploadFile, UploadOptions, CodeAttachment } from '@cloudlink/shared-core'
+import type { UploadFile, UploadOptions, CodeAttachment } from '@winuel/shared-core'
 
 interface UploadedFile {
   file: File

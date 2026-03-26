@@ -3,7 +3,7 @@
  * 使用共享 API 包
  */
 
-import { getApiClient } from '@cloudlink/shared-api'
+import { getApiClient } from '@winuel/shared-api'
 
 export const apiClient = getApiClient()
 
@@ -27,5 +27,5 @@ export async function patch<T>(url: string, data?: unknown): Promise<T> {
   return apiClient.patch<T>(url, data)
 }
 
-export { getApiClient, ApiClient } from '@cloudlink/shared-api'
-export type { ApiError, ApiClientConfig } from '@cloudlink/shared-api'
+export { getApiClient, ApiClient } from '@winuel/shared-api'
+  export type { ApiError, ApiClientConfig } from '@winuel/shared-api'

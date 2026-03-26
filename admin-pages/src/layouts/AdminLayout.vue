@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AdminLayout } from '@cloudlink/shared-ui'
+import { AdminLayout } from '@winuel/shared-ui'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()

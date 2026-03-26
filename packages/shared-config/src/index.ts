@@ -3,7 +3,7 @@
  * 提供统一的环境配置管理
  */
 
-import type { AppConfig } from '@cloudlink/shared-core'
+import type { AppConfig } from '@winuel/shared-core'
 
 // ============================================================================
 // 环境类型

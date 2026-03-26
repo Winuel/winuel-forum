@@ -36,19 +36,19 @@ importers:
 
   admin-pages:
     dependencies:
-      '@cloudlink/shared-api':
+      '@winuel/shared-api':
         specifier: workspace:*
         version: link:../packages/shared-api
-      '@cloudlink/shared-config':
+      '@winuel/shared-config':
         specifier: workspace:*
         version: link:../packages/shared-config
-      '@cloudlink/shared-core':
+      '@winuel/shared-core':
         specifier: workspace:*
         version: link:../packages/shared-core
-      '@cloudlink/shared-stores':
+      '@winuel/shared-stores':
         specifier: workspace:*
         version: link:../packages/shared-stores
-      '@cloudlink/shared-ui':
+      '@winuel/shared-ui':
         specifier: workspace:*
         version: link:../packages/shared-ui
       axios:
@@ -94,12 +94,12 @@ importers:
 
   backend:
     dependencies:
-      '@cloudlink/plugin-system':
-        specifier: workspace:*
-        version: link:../packages/plugin-system
       '@tsndr/cloudflare-worker-jwt':
         specifier: ^3.2.1
         version: 3.2.1
+      '@winuel/plugin-system':
+        specifier: workspace:*
+        version: link:../packages/plugin-system
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
@@ -140,22 +140,22 @@ importers:
 
   frontend:
     dependencies:
-      '@cloudlink/plugin-system':
+      '@winuel/plugin-system':
         specifier: workspace:*
         version: link:../packages/plugin-system
-      '@cloudlink/shared-api':
+      '@winuel/shared-api':
         specifier: workspace:*
         version: link:../packages/shared-api
-      '@cloudlink/shared-config':
+      '@winuel/shared-config':
         specifier: workspace:*
         version: link:../packages/shared-config
-      '@cloudlink/shared-core':
+      '@winuel/shared-core':
         specifier: workspace:*
         version: link:../packages/shared-core
-      '@cloudlink/shared-stores':
+      '@winuel/shared-stores':
         specifier: workspace:*
         version: link:../packages/shared-stores
-      '@cloudlink/shared-ui':
+      '@winuel/shared-ui':
         specifier: workspace:*
         version: link:../packages/shared-ui
       axios:
@@ -295,7 +295,7 @@ importers:
 
   packages/plugin-system:
     dependencies:
-      '@cloudlink/shared-core':
+      '@winuel/shared-core':
         specifier: workspace:*
         version: link:../shared-core
     devDependencies:
@@ -308,7 +308,7 @@ importers:
 
   packages/shared-api:
     dependencies:
-      '@cloudlink/shared-core':
+      '@winuel/shared-core':
         specifier: workspace:*
         version: link:../shared-core
       axios:
@@ -321,7 +321,7 @@ importers:
 
   packages/shared-config:
     dependencies:
-      '@cloudlink/shared-core':
+      '@winuel/shared-core':
         specifier: workspace:*
         version: link:../shared-core
     devDependencies:
@@ -340,7 +340,7 @@ importers:
 
   packages/shared-stores:
     dependencies:
-      '@cloudlink/shared-core':
+      '@winuel/shared-core':
         specifier: workspace:*
         version: link:../shared-core
       pinia:
@@ -356,7 +356,7 @@ importers:
 
   packages/shared-ui:
     dependencies:
-      '@cloudlink/shared-core':
+      '@winuel/shared-core':
         specifier: workspace:*
         version: link:../shared-core
       vue:

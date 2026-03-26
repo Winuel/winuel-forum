@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { CodeViewerProps, CodeAttachment } from '@cloudlink/shared-core'
+import type { CodeViewerProps, CodeAttachment } from '@winuel/shared-core'
 
 const props = withDefaults(defineProps<CodeViewerProps>(), {
   initiallyCollapsed: true,

@@ -4,7 +4,7 @@
  */
 
 import { defineStore } from 'pinia'
-import type { User, UserRole } from '@cloudlink/shared-core'
+import type { User, UserRole } from '@winuel/shared-core'
 
 export interface UserState {
   user: User | null
