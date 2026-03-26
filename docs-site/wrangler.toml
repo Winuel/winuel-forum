@@ -4,9 +4,6 @@ pages_build_output_dir = ".vitepress/dist"
 
 [env.production]
 name = "winuel-docs"
-routes = [
-  { pattern = "docs.winuel.com", custom_domain = true }
-]
 
 [env.preview]
 name = "winuel-docs-preview"
