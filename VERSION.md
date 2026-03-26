@@ -1,4 +1,4 @@
-# CloudLink 版本摘要
+# Winuel 版本摘要
 
 ## 当前版本: v0.1.0-beta
 
@@ -11,27 +11,27 @@
 ### 📦 包版本清单
 
 #### 主项目
-- `cloudlink`: `0.1.0-beta`
+- `winuel`: `0.1.0-beta`
 
 #### 共享包
-- `@cloudlink/plugin-system`: `0.1.0-beta`
-- `@cloudlink/shared-api`: `0.1.0-beta`
-- `@cloudlink/shared-config`: `0.1.0-beta`
-- `@cloudlink/shared-core`: `0.1.0-beta`
-- `@cloudlink/shared-stores`: `0.1.0-beta`
-- `@cloudlink/shared-ui`: `0.1.0-beta`
+- `@winuel/plugin-system`: `0.1.0-beta`
+- `@winuel/shared-api`: `0.1.0-beta`
+- `@winuel/shared-config`: `0.1.0-beta`
+- `@winuel/shared-core`: `0.1.0-beta`
+- `@winuel/shared-stores`: `0.1.0-beta`
+- `@winuel/shared-ui`: `0.1.0-beta`
 
 #### 应用
-- `cloudlink-backend`: `0.1.0-beta`
-- `cloudlink-frontend`: `0.1.0-beta`
-- `cloudlink-admin`: `0.1.0-beta`
+- `winuel-backend`: `0.1.0-beta`
+- `winuel-frontend`: `0.1.0-beta`
+- `winuel-admin`: `0.1.0-beta`
 
 ### 🚀 快速开始
 
 ```bash
 # 克隆项目
-git clone https://github.com/LemonStudio-hub/yunniu.git
-cd yunniu
+git clone https://github.com/LemonStudio-hub/winuel.git
+cd winuel
 
 # 检出版本
 git checkout develop
@@ -73,10 +73,10 @@ pnpm build
 
 ### 📞 获取帮助
 
-- **问题反馈**: https://github.com/LemonStudio-hub/yunniu/issues
-- **讨论区**: https://github.com/LemonStudio-hub/yunniu/discussions
+- **问题反馈**: https://github.com/LemonStudio-hub/winuel/issues
+- **讨论区**: https://github.com/LemonStudio-hub/winuel/discussions
 - **演示站点**: https://www.winuel.com
 
 ---
 
-**感谢使用 CloudLink！期待您的反馈和贡献！** 🚀
+**感谢使用 Winuel！期待您的反馈和贡献！** 🚀

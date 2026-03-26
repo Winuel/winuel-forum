@@ -5,7 +5,7 @@
         <!-- 社交媒体链接图标 -->
         <div class="flex items-center gap-3">
           <a
-            href="https://github.com/LemonStudio-hub/yunniu"
+            href="https://github.com/LemonStudio-hub/winuel"
             target="_blank"
             rel="noopener noreferrer"
             class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-300 hover:scale-110 shadow-md hover:shadow-lg"

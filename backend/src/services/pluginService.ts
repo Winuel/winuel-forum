@@ -1,7 +1,7 @@
 import type { D1Database } from '@cloudflare/workers-types'
 import type { PluginRecord, PluginConfigRecord } from '../models/plugin.js'
-import type { PluginPackage, PluginManifest, PluginConfig } from '@cloudlink/plugin-system'
-import { PluginLoader, PluginValidator, PluginStatus } from '@cloudlink/plugin-system'
+import type { PluginPackage, PluginManifest, PluginConfig } from '@winuel/plugin-system'
+import { PluginLoader, PluginValidator, PluginStatus } from '@winuel/plugin-system'
 
 /**插件管理服务*/
 export class PluginService {

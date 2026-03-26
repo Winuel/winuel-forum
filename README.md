@@ -1,8 +1,8 @@
-# 云纽论坛 (CloudLink)
+# 云纽论坛 (Winuel)
 
 <div align="center">
 
-![CloudLink Logo](https://img.shields.io/badge/CloudLink-Forum-blue)
+![Winuel Logo](https://img.shields.io/badge/Winuel-Forum-blue)
 ![Vue](https://img.shields.io/badge/Vue-3.5.30-4FC08D)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020)
@@ -120,8 +120,8 @@
 
 ```bash
 # 克隆项目
-git clone git@github.com:LemonStudio-hub/yunniu.git
-cd yunniu
+git clone git@github.com:LemonStudio-hub/winuel.git
+cd winuel
 
 # 安装前端依赖
 cd frontend
@@ -182,7 +182,7 @@ wrangler secret put JWT_SECRET
 ## 项目结构
 
 ```
-cloudlink/
+winuel/
 ├── frontend/              # 前端项目
 │   ├── src/
 │   │   ├── api/          # API 封装
@@ -371,8 +371,8 @@ wrangler deploy
 
 ## 联系方式
 
-- 项目主页：[https://github.com/LemonStudio-hub/yunniu](https://github.com/LemonStudio-hub/yunniu)
-- 问题反馈：[Issues](https://github.com/LemonStudio-hub/yunniu/issues)
+- 项目主页：[https://github.com/LemonStudio-hub/winuel](https://github.com/LemonStudio-hub/winuel)
+- 问题反馈：[Issues](https://github.com/LemonStudio-hub/winuel/issues)
 
 ---
 

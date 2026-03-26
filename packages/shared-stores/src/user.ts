@@ -1,5 +1,5 @@
 /**
- * CloudLink 共享用户状态管理
+ * Winuel 共享用户状态管理
  * 提供 Pinia store 用于用户状态管理
  */
 

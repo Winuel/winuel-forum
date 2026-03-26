@@ -7,9 +7,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'CloudLinkSharedUI',
-      fileName: (format) => `cloudlink-shared-ui.${format}.js`,
-    },
+      name: 'WinuelSharedUI',
+        fileName: (format) => `winuel-shared-ui.${format}.js`,    },
     rollupOptions: {
       external: ['vue'],
       output: {

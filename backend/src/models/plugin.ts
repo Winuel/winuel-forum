@@ -1,4 +1,4 @@
-import type { PluginConfig, PluginStatus, PluginPlatform } from '@cloudlink/plugin-system'
+import type { PluginConfig, PluginStatus, PluginPlatform } from '@winuel/plugin-system'
 
 /**插件数据模型*/
 export interface PluginRecord {

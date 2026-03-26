@@ -1,5 +1,5 @@
 /**
- * CloudLink 共享 UI 状态管理
+ * Winuel 共享 UI 状态管理
  * 提供 Pinia store 用于 UI 状态管理
  */
 

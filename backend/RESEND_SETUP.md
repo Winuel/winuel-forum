@@ -39,7 +39,7 @@ RESEND_FROM_NAME = "云纽论坛"
 ```bash
 cd backend
 # 使用 Wrangler 执行迁移
-wrangler d1 execute cloudlink-db --file=migrations/008_add_verification_codes.sql
+wrangler d1 execute winuel-db --file=migrations/008_add_verification_codes.sql
 ```
 
 ## 🚀 部署

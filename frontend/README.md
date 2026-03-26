@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![CloudLink Frontend](https://img.shields.io/badge/CloudLink-Frontend-4FC08D)
+![Winuel Frontend](https://img.shields.io/badge/Winuel-Frontend-4FC08D)
 ![Vue](https://img.shields.io/badge/Vue-3.5.30-4FC08D)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6)
 ![Vite](https://img.shields.io/badge/Vite-8.0.0-646CFF)
@@ -647,4 +647,4 @@ MIT License
 
 ---
 
-**CloudLink Frontend Team** © 2026
+**Winuel Frontend Team** © 2026

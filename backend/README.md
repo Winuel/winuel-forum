@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![CloudLink Backend](https://img.shields.io/badge/CloudLink-Backend-F38020)
+![Winuel Backend](https://img.shields.io/badge/Winuel-Backend-F38020)
 ![Hono](https://img.shields.io/badge/Hono-4.12.8-orange)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020)
@@ -121,7 +121,7 @@ wrangler deploy
 ### wrangler.toml
 
 ```toml
-name = "cloudlink-backend"
+name = "winuel-backend"
 main = "src/index.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
@@ -131,7 +131,7 @@ ENVIRONMENT = "development"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "cloudlink-db"
+database_name = "winuel-db"
 database_id = "8ede8043-e500-4893-a93d-58c2d1048f1a"
 
 [[kv_namespaces]]
@@ -432,13 +432,13 @@ wrangler deploy
 
 ```bash
 # 创建数据库
-wrangler d1 create cloudlink-db
+wrangler d1 create winuel-db
 
 # 初始化数据库结构
-wrangler d1 execute cloudlink-db --file=./src/db/schema.sql --remote
+wrangler d1 execute winuel-db --file=./src/db/schema.sql --remote
 
 # 查询数据库
-wrangler d1 execute cloudlink-db --remote --command "SELECT * FROM users"
+wrangler d1 execute winuel-db --remote --command "SELECT * FROM users"
 ```
 
 ### 环境变量管理
@@ -552,4 +552,4 @@ MIT License
 
 ---
 
-**CloudLink Backend Team** © 2026
+**Winuel Backend Team** © 2026

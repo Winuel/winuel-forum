@@ -1,4 +1,4 @@
-import type { MarketplaceToken } from '@cloudlink/plugin-system'
+import type { MarketplaceToken } from '@winuel/plugin-system'
 
 /**市场认证信息*/
 export interface MarketplaceAuth {

@@ -1,6 +1,6 @@
 # 贡献指南 (Contributing Guidelines)
 
-感谢你对 CloudLink 论坛项目的关注！我们欢迎所有形式的贡献。
+感谢你对 Winuel 论坛项目的关注！我们欢迎所有形式的贡献。
 
 ## 📋 目录
 
@@ -23,8 +23,8 @@
 
 ```bash
 # 克隆项目
-git clone git@github.com:LemonStudio-hub/yunniu.git
-cd yunniu
+git clone git@github.com:LemonStudio-hub/winuel.git
+cd winuel
 
 # 安装所有依赖
 npm run install:all
@@ -315,7 +315,7 @@ onMounted(() => {
 
 如有问题或建议，请通过以下方式联系：
 
-- [GitHub Issues](https://github.com/LemonStudio-hub/yunniu/issues)
+- [GitHub Issues](https://github.com/LemonStudio-hub/winuel/issues)
 - [项目文档](./README.md)
 
 ---

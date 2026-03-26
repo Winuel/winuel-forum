@@ -1,5 +1,5 @@
 /**
- * CloudLink 共享状态管理包
+ * Winuel 共享状态管理包
  * 导出 Pinia stores
  */
 

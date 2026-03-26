@@ -1,5 +1,5 @@
 /**
- * CloudLink 共享 UI 组件
+ * Winuel 共享 UI 组件
  */
 
 // 导出布局组件

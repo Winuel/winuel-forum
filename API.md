@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![CloudLink API](https://img.shields.io/badge/CloudLink-API-F38020)
+![Winuel API](https://img.shields.io/badge/Winuel-API-F38020)
 ![REST](https://img.shields.io/badge/API-REST-02569B)
 ![JSON](https://img.shields.io/badge/Format-JSON-000000)
 
@@ -859,9 +859,9 @@ X-API-Version: 1.0.0
 
 如有问题或建议，请通过以下方式联系：
 
-- GitHub Issues：[https://github.com/LemonStudio-hub/yunniu/issues](https://github.com/LemonStudio-hub/yunniu/issues)
+- GitHub Issues：[https://github.com/LemonStudio-hub/winuel/issues](https://github.com/LemonStudio-hub/winuel/issues)
 - 邮箱：support@cloudlink.dev
 
 ---
 
-**CloudLink API Team** © 2026
+**Winuel API Team** © 2026

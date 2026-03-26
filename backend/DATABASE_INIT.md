@@ -8,7 +8,7 @@
 
 1. 访问 Cloudflare Dashboard: https://dash.cloudflare.com
 2. 进入 Workers & Pages > D1
-3. 选择数据库: `cloudlink-db`
+3. 选择数据库: `winuel-db`
 4. 点击 "Console" 或 "Execute SQL"
 5. 执行以下 SQL 语句：
 
@@ -35,11 +35,10 @@ CREATE INDEX IF NOT EXISTS idx_verification_codes_type ON verification_codes(typ
 
 ```bash
 cd backend
-wrangler d1 execute cloudlink-db --command "CREATE TABLE IF NOT EXISTS verification_codes (id TEXT PRIMARY KEY, email TEXT NOT NULL, code TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'register', expires_at TEXT NOT NULL, created_at TEXT NOT NULL, used_at TEXT, attempts INTEGER DEFAULT 0)"
-wrangler d1 execute cloudlink-db --command "CREATE INDEX IF NOT EXISTS idx_verification_codes_email ON verification_codes(email)"
-wrangler d1 execute cloudlink-db --command "CREATE INDEX IF NOT EXISTS idx_verification_codes_expires_at ON verification_codes(expires_at)"
-wrangler d1 execute cloudlink-db --command "CREATE INDEX IF NOT EXISTS idx_verification_codes_type ON verification_codes(type)"
-```
+wrangler d1 execute winuel-db --command "CREATE TABLE IF NOT EXISTS verification_codes (id TEXT PRIMARY KEY, email TEXT NOT NULL, code TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'register', expires_at TEXT NOT NULL, created_at TEXT NOT NULL, used_at TEXT, attempts INTEGER DEFAULT 0)"
+  wrangler d1 execute winuel-db --command "CREATE INDEX IF NOT EXISTS idx_verification_codes_email ON verification_codes(email)"
+  wrangler d1 execute winuel-db --command "CREATE INDEX IF NOT EXISTS idx_verification_codes_expires_at ON verification_codes(expires_at)"
+  wrangler d1 execute winuel-db --command "CREATE INDEX IF NOT EXISTS idx_verification_codes_type ON verification_codes(type)"```
 
 ### 验证表是否创建成功
 

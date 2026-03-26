@@ -24,7 +24,7 @@ describe('Footer Component', () => {
     
     const githubLink = socialLinks.find((link: any) => link.attributes('aria-label') === 'GitHub')
     expect(githubLink).toBeDefined()
-    expect(githubLink.attributes('href')).toBe('https://github.com/LemonStudio-hub/yunniu')
+    expect(githubLink.attributes('href')).toBe('https://github.com/LemonStudio-hub/winuel')
     
     const studioLink = socialLinks.find((link: any) => link.attributes('aria-label') === '工作室主页')
     expect(studioLink).toBeDefined()

@@ -1,5 +1,5 @@
 /**
- * CloudLink 服务注册器
+ * Winuel 服务注册器
  * 负责注册所有服务和依赖
  */
 
@@ -12,7 +12,7 @@ import { AuditService } from '../services/auditService'
 import { CodeAttachmentService } from '../services/codeAttachmentService'
 import { PluginService } from '../services/pluginService'
 import { CodeAttachmentModel, CodeReviewModel } from '../models/codeAttachment'
-import { PluginLoader } from '@cloudlink/plugin-system'
+import { PluginLoader } from '@winuel/plugin-system'
 
 export type Env = {
   DB: D1Database

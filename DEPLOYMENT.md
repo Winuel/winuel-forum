@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![CloudLink Deployment](https://img.shields.io/badge/CloudLink-Deployment-F38020)
+![Winuel Deployment](https://img.shields.io/badge/Winuel-Deployment-F38020)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020)
 ![Workers](https://img.shields.io/badge/Workers-F48020)
 ![Pages](https://img.shields.io/badge/Pages-324558)
@@ -72,7 +72,7 @@ npm run build
 确保 `backend/wrangler.toml` 配置正确：
 
 ```toml
-name = "cloudlink-backend"
+name = "winuel-backend"
 main = "src/index.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
@@ -82,7 +82,7 @@ ENVIRONMENT = "production"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "cloudlink-db"
+database_name = "winuel-db"
 database_id = "your-database-id"
 
 [[kv_namespaces]]
@@ -95,7 +95,7 @@ preview_id = "your-preview-kv-namespace-id"
 
 ```bash
 # 创建数据库
-wrangler d1 create cloudlink-db
+wrangler d1 create winuel-db
 
 # 记录返回的 database_id，更新 wrangler.toml
 ```
@@ -104,17 +104,17 @@ wrangler d1 create cloudlink-db
 
 ```bash
 # 执行数据库 schema
-wrangler d1 execute cloudlink-db --file=./src/db/schema.sql --remote
+wrangler d1 execute winuel-db --file=./src/db/schema.sql --remote
 ```
 
 ### 5. 创建 KV 命名空间
 
 ```bash
 # 创建 KV 命名空间
-wrangler kv namespace create CLOUDLINK_KV
+wrangler kv namespace create WINUEL_KV
 
 # 创建 preview KV 命名空间
-wrangler kv namespace create CLOUDLINK_KV_PREVIEW --preview
+wrangler kv namespace create WINUEL_KV_PREVIEW --preview
 
 # 记录返回的 id，更新 wrangler.toml
 ```
@@ -165,7 +165,7 @@ npm run build
 
 ```bash
 # 创建 Pages 项目
-wrangler pages project create cloudlink-frontend
+wrangler pages project create winuel-frontend
 
 # 部署
 wrangler pages deploy dist
@@ -213,7 +213,7 @@ git push origin main
 #### 创建数据库
 
 ```bash
-wrangler d1 create cloudlink-db
+wrangler d1 create winuel-db
 ```
 
 #### 查看数据库列表
@@ -226,22 +226,22 @@ wrangler d1 list
 
 ```bash
 # 执行单个查询
-wrangler d1 execute cloudlink-db --remote --command "SELECT * FROM users"
+wrangler d1 execute winuel-db --remote --command "SELECT * FROM users"
 
 # 执行 SQL 文件
-wrangler d1 execute cloudlink-db --remote --file=./src/db/schema.sql
+wrangler d1 execute winuel-db --remote --file=./src/db/schema.sql
 ```
 
 #### 导出数据
 
 ```bash
-wrangler d1 export cloudlink-db --remote --output=backup.sql
+wrangler d1 export winuel-db --remote --output=backup.sql
 ```
 
 #### 导入数据
 
 ```bash
-wrangler d1 execute cloudlink-db --remote --file=backup.sql
+wrangler d1 execute winuel-db --remote --file=backup.sql
 ```
 
 ### 数据库备份
@@ -252,7 +252,7 @@ wrangler d1 execute cloudlink-db --remote --file=backup.sql
 # 创建备份脚本
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
-wrangler d1 export cloudlink-db --remote --output=backup_${DATE}.sql
+wrangler d1 export winuel-db --remote --output=backup_${DATE}.sql
 ```
 
 ## 环境变量配置
@@ -351,7 +351,7 @@ Content: your-pages.pages.dev
 wrangler tail
 
 # 查看 Pages 实时日志
-wrangler pages tail cloudlink-frontend
+wrangler pages tail winuel-frontend
 ```
 
 ### 日志查询
@@ -408,7 +408,7 @@ wrangler deploy --verbose
 wrangler d1 list
 
 # 测试数据库连接
-wrangler d1 execute cloudlink-db --remote --command "SELECT 1"
+wrangler d1 execute winuel-db --remote --command "SELECT 1"
 
 # 检查 wrangler.toml 中的数据库配置
 ```
@@ -535,7 +535,7 @@ CREATE INDEX IF NOT EXISTS idx_posts_title ON posts(title);
 EOF
 
 # 执行迁移
-wrangler d1 execute cloudlink-db --remote --file=migrations/001_add_index.sql
+wrangler d1 execute winuel-db --remote --file=migrations/001_add_index.sql
 ```
 
 ### 回滚策略
@@ -657,4 +657,4 @@ npm audit fix
 
 ---
 
-**CloudLink Team** © 2026
+**Winuel Team** © 2026

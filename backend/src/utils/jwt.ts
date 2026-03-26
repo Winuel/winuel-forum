@@ -183,7 +183,7 @@ export async function generateToken(payload: JWTPayload, audience: Audience = Au
     .setIssuedAt()
     .setExpirationTime('7d')
     .setAudience(audience)
-    .setIssuer('cloudlink-api')
+    .setIssuer('winuel-api')
     .sign(secret)
 }
 
@@ -191,7 +191,7 @@ export async function verifyToken(token: string, expectedAudience?: Audience): P
   try {
     const secret = getSecret()
     const { payload } = await jwtVerify(token, secret, {
-      issuer: 'cloudlink-api',
+      issuer: 'winuel-api',
       audience: expectedAudience
     })
     

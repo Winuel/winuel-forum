@@ -1,6 +1,6 @@
-# CloudLink Official Website
+# Winuel Official Website
 
-CloudLink 官网 - 现代化、简洁优雅的官方网站
+Winuel 官网 - 现代化、简洁优雅的官方网站
 
 ## 技术栈
 
@@ -62,7 +62,7 @@ official-website/
 
 ```bash
 # 部署到 Cloudflare Pages
-npx wrangler pages deploy dist --project-name=cloudlink-official-website
+npx wrangler pages deploy dist --project-name=winuel-official-website
 ```
 
 ## 设计理念
