@@ -97,7 +97,7 @@ const icons = {
             <div class="absolute inset-0 animate-shimmer"></div>
           </div>
           <span class="text-2xl md:text-3xl font-bold gradient-text tracking-tight">
-            CloudLink
+            Winuel
           </span>
         </RouterLink>
 
@@ -198,7 +198,7 @@ const icons = {
                   <path d="M2 12l10 5 10-5"/>
                 </svg>
               </div>
-              <span class="text-2xl font-bold gradient-text">CloudLink</span>
+              <span class="text-2xl font-bold gradient-text">Winuel</span>
             </RouterLink>
             <button
               @click="toggleMenu"
@@ -272,7 +272,7 @@ const icons = {
                 </svg>
               </a>
               <a
-                href="https://twitter.com/cloudlink"
+                href="https://twitter.com/winuel"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-all duration-300 hover:scale-110 hover:shadow-lg touch-manipulation"

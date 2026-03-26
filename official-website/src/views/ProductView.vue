@@ -100,7 +100,7 @@ onMounted(() => {
         <div class="max-w-4xl mx-auto text-center animate-on-scroll">
           <h1 class="text-5xl md:text-6xl font-bold mb-8 gradient-text">产品功能</h1>
           <p class="text-xl text-gray-600 leading-relaxed mb-8">
-            CloudLink 提供丰富的功能和灵活的扩展能力，满足各种社区建设需求
+            Winuel 提供丰富的功能和灵活的扩展能力，满足各种社区建设需求
           </p>
         </div>
       </div>
@@ -183,8 +183,8 @@ onMounted(() => {
       <div class="container">
         <div class="max-w-6xl mx-auto">
           <div class="text-center mb-16 animate-on-scroll">
-            <h2 class="section-title gradient-text">为什么选择 CloudLink</h2>
-            <p class="section-subtitle">相比传统论坛系统，CloudLink 具有显著优势</p>
+            <h2 class="section-title gradient-text">为什么选择 Winuel</h2>
+            <p class="section-subtitle">相比传统论坛系统，Winuel 具有显著优势</p>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -214,7 +214,7 @@ onMounted(() => {
         <div class="max-w-4xl mx-auto text-center animate-on-scroll">
           <h2 class="text-4xl md:text-5xl font-bold mb-8">立即开始使用</h2>
           <p class="text-xl mb-12 text-primary-100">
-            体验 CloudLink 的强大功能，打造属于您的社区
+            体验 Winuel 的强大功能，打造属于您的社区
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <CTAButton href="https://hub.winuel.com" size="lg" variant="secondary">

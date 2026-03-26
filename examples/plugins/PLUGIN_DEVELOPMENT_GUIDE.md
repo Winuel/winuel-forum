@@ -1,6 +1,6 @@
-# CloudLink 插件开发指南
+# Winuel 插件开发指南
 
-欢迎使用 CloudLink 插件系统！本指南将帮助你创建功能强大的插件。
+欢迎使用 Winuel 插件系统！本指南将帮助你创建功能强大的插件。
 
 ## 目录
 
@@ -17,7 +17,7 @@
 
 - Node.js >= 18.0.0
 - TypeScript >= 5.0.0
-- CloudLink 平台环境
+- Winuel 平台环境
 
 ### 创建基础插件
 
@@ -44,7 +44,7 @@ EOF
 
 # 3. 创建插件类
 cat > MyPlugin.ts << EOF
-import { BasePlugin } from '@cloudlink/plugin-system'
+import { BasePlugin } from '@winuel/plugin-system'
 
 export class MyPlugin extends BasePlugin {
   metadata = {
@@ -111,7 +111,7 @@ my-awesome-plugin/
 ### 继承 BasePlugin
 
 ```typescript
-import { BasePlugin, PluginContext } from '@cloudlink/plugin-system'
+import { BasePlugin, PluginContext } from '@winuel/plugin-system'
 
 export class MyPlugin extends BasePlugin {
   // 必须实现元数据
@@ -402,14 +402,14 @@ await this.emit('plugin:update', { version: '1.1.0' })
 
 - [插件 API 文档](./api-reference.md)
 - [示例插件](../examples/plugins/hello-world)
-- [插件市场](https://marketplace.cloudlink.example.com)
-- [社区论坛](https://forum.cloudlink.example.com)
+- [插件市场](https://marketplace.winuel.example.com)
+- [社区论坛](https://forum.winuel.example.com)
 
 ## 支持
 
 如有问题，请访问：
-- GitHub Issues: https://github.com/cloudlink/plugin-system/issues
-- 开发者社区: https://community.cloudlink.example.com
+- GitHub Issues: https://github.com/winuel/plugin-system/issues
+- 开发者社区: https://community.winuel.example.com
 
 ---
 

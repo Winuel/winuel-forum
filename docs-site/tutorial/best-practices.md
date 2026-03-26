@@ -1,13 +1,13 @@
 # 最佳实践
 
-本指南提供了使用 CloudLink 论坛系统的最佳实践建议。
+本指南提供了使用 Winuel 论坛系统的最佳实践建议。
 
 ## 项目结构
 
 ### 推荐的目录结构
 
 ```
-my-cloudlink-app/
+my-winuel-app/
 ├── src/
 │   ├── api/           # API 调用
 │   ├── components/    # 组件
@@ -337,7 +337,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['vue', 'vue-router', 'pinia'],
-          ui: ['@cloudlink/shared-ui']
+          ui: ['@winuel/shared-ui']
         }
       }
     }

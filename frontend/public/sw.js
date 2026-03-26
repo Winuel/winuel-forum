@@ -1,9 +1,9 @@
-// CloudLink Forum Service Worker
+// Winuel Forum Service Worker
 // 提供离线支持、缓存管理和后台同步功能
 
-const CACHE_NAME = 'cloudlink-v1'
-const OFFLINE_CACHE = 'cloudlink-offline-v1'
-const RUNTIME_CACHE = 'cloudlink-runtime-v1'
+const CACHE_NAME = 'winuel-v1'
+const OFFLINE_CACHE = 'winuel-offline-v1'
+const RUNTIME_CACHE = 'winuel-runtime-v1'
 
 // 需要预缓存的关键资源
 const PRECACHE_URLS = [

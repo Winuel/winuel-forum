@@ -1,4 +1,4 @@
-# CloudLink Forum E2E Tests
+# Winuel Forum E2E Tests
 
 云纽论坛的端到端（E2E）测试套件，使用 Puppeteer 和 Vitest 构建。
 

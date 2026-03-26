@@ -1,6 +1,6 @@
 # 配置指南
 
-本指南将帮助您配置 CloudLink 论坛系统的各种设置。
+本指南将帮助您配置 Winuel 论坛系统的各种设置。
 
 ## 环境变量配置
 
@@ -17,7 +17,7 @@ KV_NAMESPACE_ID=your-kv-namespace-id
 JWT_SECRET=your-secret-key-min-32-chars
 JWT_USER_AUD=user
 JWT_ADMIN_AUD=admin
-JWT_ISSUER=cloudlink-api
+JWT_ISSUER=winuel-api
 
 # CORS 配置
 CORS_ORIGINS=https://www.winuel.com,https://admin.winuel.com,https://winuel.pages.dev
@@ -36,7 +36,7 @@ API_BASE_URL=\`YOUR_LOCALHOST:8787\`
 VITE_API_BASE_URL=\`YOUR_LOCALHOST:8787\`
 
 # 应用配置
-VITE_APP_TITLE=CloudLink 论坛
+VITE_APP_TITLE=Winuel 论坛
 VITE_APP_DESCRIPTION=现代化的轻量级论坛系统
 
 # 功能开关
@@ -65,14 +65,14 @@ VITE_API_BASE_URL=\`YOUR_LOCALHOST:8787\`
 
 ```bash
 # 创建数据库
-npx wrangler d1 create cloudlink-db
+npx wrangler d1 create winuel-db
 
 # 执行迁移
-npx wrangler d1 execute cloudlink-db --file=backend/migrations/001_add_soft_delete.sql
-npx wrangler d1 execute cloudlink-db --file=backend/migrations/002_add_audit_logs.sql
-npx wrangler d1 execute cloudlink-db --file=backend/migrations/003_add_performance_indexes.sql
-npx wrangler d1 execute cloudlink-db --file=backend/migrations/004_add_code_attachments.sql
-npx wrangler d1 execute cloudlink-db --file=backend/migrations/005_add_plugin_system.sql
+npx wrangler d1 execute winuel-db --file=backend/migrations/001_add_soft_delete.sql
+npx wrangler d1 execute winuel-db --file=backend/migrations/002_add_audit_logs.sql
+npx wrangler d1 execute winuel-db --file=backend/migrations/003_add_performance_indexes.sql
+npx wrangler d1 execute winuel-db --file=backend/migrations/004_add_code_attachments.sql
+npx wrangler d1 execute winuel-db --file=backend/migrations/005_add_plugin_system.sql
 ```
 
 ### KV 存储配置
@@ -220,7 +220,7 @@ const emailConfig = {
   service: 'resend',
   apiKey: process.env.RESEND_API_KEY,
   from: 'noreply@winuel.com',
-  fromName: 'CloudLink'
+  fromName: 'Winuel'
 }
 ```
 
@@ -232,7 +232,7 @@ const storageConfig = {
   accountId: process.env.R2_ACCOUNT_ID,
   accessKeyId: process.env.R2_ACCESS_KEY_ID,
   secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-  bucket: 'cloudlink-uploads'
+  bucket: 'winuel-uploads'
 }
 ```
 

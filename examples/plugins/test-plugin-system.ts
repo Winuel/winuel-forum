@@ -3,7 +3,7 @@
  * 用于验证插件系统的核心功能
  */
 
-import { PluginLoader, PluginValidator } from '@cloudlink/plugin-system'
+import { PluginLoader, PluginValidator } from '@winuel/plugin-system'
 import { HelloWorldPlugin } from './hello-world/HelloWorldPlugin'
 import { readFileSync } from 'fs'
 import { join } from 'path'

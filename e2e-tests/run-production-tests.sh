@@ -5,7 +5,7 @@
 set -e
 
 echo "========================================="
-echo "CloudLink Forum - Production E2E Tests"
+echo "Winuel Forum - Production E2E Tests"
 echo "========================================="
 echo ""
 

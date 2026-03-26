@@ -17,7 +17,7 @@ let authToken = ''
 // 辅助函数：延迟执行
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-describe('CloudLink Forum - Production E2E Tests', () => {
+describe('Winuel Forum - Production E2E Tests', () => {
   let browser: Browser
   let page: Page
   let apiRequests: { url: string; method: string; status?: number }[] = []

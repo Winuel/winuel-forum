@@ -1,8 +1,8 @@
-# CloudLink 文档站点开发计划
+# Winuel 文档站点开发计划
 
 ## 📋 项目概述
 
-**项目名称**: CloudLink 官方文档站点  
+**项目名称**: Winuel 官方文档站点  
 **技术栈**: VitePress + Vue 3 + TypeScript + TailwindCSS  
 **目标**: 创建界面精美、美观大气、内容详实的文档站点
 
@@ -203,8 +203,8 @@ docs-site/
 ### VitePress配置
 ```typescript
 export default defineConfig({
-  title: 'CloudLink 文档',
-  description: 'CloudLink 论坛系统官方文档',
+  title: 'Winuel 文档',
+  description: 'Winuel 论坛系统官方文档',
   themeConfig: {
     // 导航栏
     nav: [...],

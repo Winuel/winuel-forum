@@ -1,7 +1,7 @@
 import puppeteer, { Browser, Page } from 'puppeteer'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 
-describe('CloudLink Forum - Basic E2E Tests', () => {
+describe('Winuel Forum - Basic E2E Tests', () => {
   let browser: Browser
   let page: Page
 
@@ -132,7 +132,7 @@ describe('CloudLink Forum - Basic E2E Tests', () => {
   })
 })
 
-describe('CloudLink Forum - Post Tests', () => {
+describe('Winuel Forum - Post Tests', () => {
   let browser: Browser
   let page: Page
 

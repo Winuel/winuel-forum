@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'CloudLink 文档',
-  description: 'CloudLink 论坛系统官方文档 - 基于 Cloudflare Workers 的现代化论坛解决方案',
+  title: 'Winuel 文档',
+  description: 'Winuel 论坛系统官方文档 - 基于 Cloudflare Workers 的现代化论坛解决方案',
   lang: 'zh-CN',
 
   base: '/',
@@ -10,20 +10,20 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#6366f1' }],
-    ['meta', { name: 'og:title', content: 'CloudLink 文档' }],
-    ['meta', { name: 'og:description', content: 'CloudLink 论坛系统官方文档' }],
+    ['meta', { name: 'og:title', content: 'Winuel 文档' }],
+    ['meta', { name: 'og:description', content: 'Winuel 论坛系统官方文档' }],
     ['meta', { name: 'og:type', content: 'website' }],
     ['meta', { name: 'og:image', content: '/og-image.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:title', content: 'CloudLink 文档' }],
-    ['meta', { name: 'twitter:description', content: 'CloudLink 论坛系统官方文档' }],
+    ['meta', { name: 'twitter:title', content: 'Winuel 文档' }],
+    ['meta', { name: 'twitter:description', content: 'Winuel 论坛系统官方文档' }],
     ['meta', { name: 'twitter:image', content: '/og-image.png' }]
   ],
 
   themeConfig: {
     logo: '/logo.svg',
 
-    siteTitle: 'CloudLink',
+    siteTitle: 'Winuel',
 
     // 外观选项 - 启用暗黑模式
     appearance: 'dark',

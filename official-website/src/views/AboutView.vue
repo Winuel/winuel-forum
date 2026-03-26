@@ -35,7 +35,7 @@ const timeline = [
   {
     year: '2023',
     title: '项目启动',
-    description: '团队组建，开始 CloudLink 论坛系统的设计和开发'
+    description: '团队组建，开始 Winuel 论坛系统的设计和开发'
   },
   {
     year: '2024',
@@ -79,7 +79,7 @@ onMounted(() => {
         <div class="max-w-4xl mx-auto text-center animate-on-scroll">
           <h1 class="text-5xl md:text-6xl font-bold mb-8 gradient-text">关于我们</h1>
           <p class="text-xl text-gray-600 leading-relaxed mb-8">
-            CloudLink 是由 Lemon Studio 团队开发的现代化论坛系统，致力于为用户提供
+            Winuel 是由 Lemon Studio 团队开发的现代化论坛系统，致力于为用户提供
             <span class="text-primary-500 font-semibold">高性能</span>、
             <span class="text-secondary-500 font-semibold">低成本</span>、
             <span class="text-primary-500 font-semibold">易部署</span>的社区解决方案。

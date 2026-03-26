@@ -210,7 +210,7 @@ onMounted(() => {
                     </svg>
                   </a>
                   <a
-                    href="https://twitter.com/cloudlink"
+                    href="https://twitter.com/winuel"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="w-12 h-12 rounded-lg bg-gray-900 text-white flex items-center justify-center hover:bg-primary-500 transition-colors"
@@ -238,32 +238,32 @@ onMounted(() => {
           <div class="space-y-4">
             <details class="card p-6 cursor-pointer group animate-on-scroll">
               <summary class="flex items-center justify-between font-semibold text-lg">
-                CloudLink 是免费的吗？
+                Winuel 是免费的吗？
                 <svg class="w-5 h-5 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </summary>
-              <p class="mt-4 text-gray-600">CloudLink 提供免费版本，小规模项目几乎免费。按使用量计费，您只需为实际使用的资源付费。具体价格请参考我们的定价页面。</p>
+              <p class="mt-4 text-gray-600">Winuel 提供免费版本，小规模项目几乎免费。按使用量计费，您只需为实际使用的资源付费。具体价格请参考我们的定价页面。</p>
             </details>
             
             <details class="card p-6 cursor-pointer group animate-on-scroll">
               <summary class="flex items-center justify-between font-semibold text-lg">
-                如何部署 CloudLink？
+                如何部署 Winuel？
                 <svg class="w-5 h-5 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </summary>
-              <p class="mt-4 text-gray-600">CloudLink 支持 Cloudflare Pages 一键部署。您只需要连接您的 GitHub 仓库，配置好环境变量，即可自动部署。详细步骤请参考我们的部署文档。</p>
+              <p class="mt-4 text-gray-600">Winuel 支持 Cloudflare Pages 一键部署。您只需要连接您的 GitHub 仓库，配置好环境变量，即可自动部署。详细步骤请参考我们的部署文档。</p>
             </details>
             
             <details class="card p-6 cursor-pointer group animate-on-scroll">
               <summary class="flex items-center justify-between font-semibold text-lg">
-                CloudLink 支持哪些功能？
+                Winuel 支持哪些功能？
                 <svg class="w-5 h-5 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </summary>
-              <p class="mt-4 text-gray-600">CloudLink 支持用户管理、帖子发布、评论互动、分类标签、通知系统、搜索功能、数据分析等完整的论坛功能。同时提供插件系统，支持功能扩展。</p>
+              <p class="mt-4 text-gray-600">Winuel 支持用户管理、帖子发布、评论互动、分类标签、通知系统、搜索功能、数据分析等完整的论坛功能。同时提供插件系统，支持功能扩展。</p>
             </details>
             
             <details class="card p-6 cursor-pointer group animate-on-scroll">

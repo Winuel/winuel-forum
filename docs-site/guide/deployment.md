@@ -1,10 +1,10 @@
 # 部署指南
 
-本指南将帮助您将 CloudLink 论坛系统部署到生产环境。
+本指南将帮助您将 Winuel 论坛系统部署到生产环境。
 
 ## 部署方式
 
-CloudLink 支持多种部署方式：
+Winuel 支持多种部署方式：
 
 - **Cloudflare Pages** - 推荐方式，免费且性能优异
 - **Cloudflare Workers** - 直接部署 API
@@ -40,8 +40,8 @@ CloudLink 支持多种部署方式：
 4. **部署**
    ```bash
    # 使用 Wrangler CLI
-   npx wrangler pages project create cloudlink-frontend
-   npx wrangler pages deploy dist --project-name cloudlink-frontend
+   npx wrangler pages project create winuel-frontend
+   npx wrangler pages deploy dist --project-name winuel-frontend
    ```
 
 ### 后端部署
@@ -55,7 +55,7 @@ CloudLink 支持多种部署方式：
 
 2. **配置 wrangler.toml**
    ```toml
-   name = "cloudlink-api"
+   name = "winuel-api"
    main = "src/index.ts"
    compatibility_date = "2024-03-01"
    
@@ -64,7 +64,7 @@ CloudLink 支持多种部署方式：
    
    [[d1_databases]]
    binding = "DB"
-   database_name = "cloudlink-db"
+   database_name = "winuel-db"
    database_id = "your-database-id"
    
    [[kv_namespaces]]
@@ -82,7 +82,7 @@ CloudLink 支持多种部署方式：
 ```bash
 cd admin-pages
 pnpm build
-npx wrangler pages deploy dist --project-name cloudlink-admin
+npx wrangler pages deploy dist --project-name winuel-admin
 ```
 
 ## Docker 部署
@@ -109,10 +109,10 @@ CMD ["node", "dist/index.js"]
 
 ```bash
 # 构建镜像
-docker build -t cloudlink-api:latest .
+docker build -t winuel-api:latest .
 
 # 运行容器
-docker run -p 8787:8788 cloudlink-api:latest
+docker run -p 8787:8788 winuel-api:latest
 ```
 
 ## 环境变量配置
@@ -130,7 +130,7 @@ KV_NAMESPACE_ID=kv-namespace-id
 JWT_SECRET=your-jwt-secret
 JWT_USER_AUD=user
 JWT_ADMIN_AUD=admin
-JWT_ISSUER=cloudlink-api
+JWT_ISSUER=winuel-api
 
 # CORS 配置
 CORS_ORIGINS=https://www.winuel.com,https://admin.winuel.com
@@ -196,14 +196,14 @@ const CACHE_DURATION = 300 // 5分钟
 
 ```bash
 # 导出数据库
-npx wrangler d1 export cloudlink-db --output=backup.sql
+npx wrangler d1 export winuel-db --output=backup.sql
 ```
 
 ### 恢复数据
 
 ```bash
 # 导入数据库
-npx wrangler d1 execute cloudlink-db --file=backup.sql
+npx wrangler d1 execute winuel-db --file=backup.sql
 ```
 
 ## 故障排除

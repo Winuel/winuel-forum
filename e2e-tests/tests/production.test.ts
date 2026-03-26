@@ -17,7 +17,7 @@ let testUser = {
 
 let authToken = ''
 
-describe('CloudLink Forum - Production E2E Tests', () => {
+describe('Winuel Forum - Production E2E Tests', () => {
   let browser: Browser
   let page: Page
   let apiRequests: { url: string; method: string; status?: number }[] = []

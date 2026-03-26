@@ -1,6 +1,6 @@
 # API 概览
 
-CloudLink 提供了完整的 RESTful API，支持论坛系统的所有核心功能。
+Winuel 提供了完整的 RESTful API，支持论坛系统的所有核心功能。
 
 ## 基础信息
 

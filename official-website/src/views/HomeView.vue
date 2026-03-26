@@ -274,7 +274,7 @@ onMounted(() => {
             准备好开始了吗？
           </h2>
           <p class="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto">
-            立即体验 CloudLink 论坛系统，开启您的社区建设之旅
+            立即体验 Winuel 论坛系统，开启您的社区建设之旅
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <CTAButton href="https://hub.winuel.com" size="lg" variant="primary" class="w-full sm:w-auto">

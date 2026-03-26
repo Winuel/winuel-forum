@@ -2,12 +2,12 @@
 layout: home
 
 hero:
-  name: "CloudLink"
+  name: "Winuel"
   text: "现代化的轻量级论坛系统"
   tagline: "基于 Cloudflare Workers Serverless 平台构建，高性能、低成本、易部署"
   image:
     src: /logo.svg
-    alt: CloudLink
+    alt: Winuel
   actions:
     - theme: brand
       text: 快速开始
@@ -38,9 +38,9 @@ features:
 
 ---
 
-## 🎯 为什么选择 CloudLink？
+## 🎯 为什么选择 Winuel？
 
-CloudLink 论坛系统专为现代互联网应用设计，采用最新的云原生技术栈，提供出色的性能和用户体验。
+Winuel 论坛系统专为现代互联网应用设计，采用最新的云原生技术栈，提供出色的性能和用户体验。
 
 ### 核心优势
 
@@ -131,6 +131,6 @@ pnpm dev
 
 ## 💪 开始使用
 
-从快速开始指南开始，了解如何安装、配置和使用 CloudLink 论坛系统。
+从快速开始指南开始，了解如何安装、配置和使用 Winuel 论坛系统。
 
 [快速开始 →](/guide/quick-start)

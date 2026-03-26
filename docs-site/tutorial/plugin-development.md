@@ -1,10 +1,10 @@
 # 插件开发教程
 
-本教程将指导您如何为 CloudLink 开发自定义插件。
+本教程将指导您如何为 Winuel 开发自定义插件。
 
 ## 插件系统概述
 
-CloudLink 提供了强大的插件系统，允许开发者扩展论坛功能。
+Winuel 提供了强大的插件系统，允许开发者扩展论坛功能。
 
 ### 插件结构
 
@@ -68,14 +68,14 @@ export default myPlugin
 
 ```bash
 # 创建插件目录
-mkdir cloudlink-my-plugin
-cd cloudlink-my-plugin
+mkdir winuel-my-plugin
+cd winuel-my-plugin
 
 # 初始化项目
 npm init -y
 
 # 安装依赖
-npm install @cloudlink/plugin-sdk
+npm install @winuel/plugin-sdk
 ```
 
 ### 2. 创建插件文件
@@ -104,18 +104,18 @@ export default createPlugin({
 
 ```json
 {
-  "name": "cloudlink-hello-world",
+  "name": "winuel-hello-world",
   "version": "1.0.0",
   "description": "Hello World 插件示例",
   "main": "src/index.js",
-  "keywords": ["cloudlink", "plugin"],
+  "keywords": ["winuel", "plugin"],
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "@cloudlink/plugin-sdk": "^1.0.0"
+    "@winuel/plugin-sdk": "^1.0.0"
   },
   "peerDependencies": {
-    "@cloudlink/plugin-system": "^1.0.0"
+    "@winuel/plugin-system": "^1.0.0"
   }
 }
 ```
@@ -349,12 +349,12 @@ npm publish
 ### 3. 在项目中使用
 
 ```bash
-npm install cloudlink-hello-world
+npm install winuel-hello-world
 ```
 
 ```javascript
 // 使用插件示例
-import helloWorld from 'cloudlink-hello-world'
+import helloWorld from 'winuel-hello-world'
 
 // 注册插件
 registerPlugin(helloWorld)
@@ -362,7 +362,7 @@ registerPlugin(helloWorld)
 
 ## 最佳实践
 
-1. **命名规范**: 使用 `cloudlink-` 前缀
+1. **命名规范**: 使用 `winuel-` 前缀
 2. **版本管理**: 遵循语义化版本
 3. **错误处理**: 妥善处理异常
 4. **性能优化**: 避免阻塞主线程

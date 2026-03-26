@@ -1,4 +1,4 @@
-# CloudLink v0.1.0-beta 发布说明
+# Winuel v0.1.0-beta 发布说明
 
 **发布日期**: 2026年3月22日  
 **版本类型**: Beta 测试版本  
@@ -9,7 +9,7 @@
 
 ## 🎉 版本概述
 
-CloudLink 论坛系统的首个公开测试版本！经过完整的 Phase 1-3 模块化重构，我们实现了现代化、可扩展的插件化架构。
+Winuel 论坛系统的首个公开测试版本！经过完整的 Phase 1-3 模块化重构，我们实现了现代化、可扩展的插件化架构。
 
 ### 核心成就
 - ✅ 完成3个开发阶段的模块化重构
@@ -56,20 +56,20 @@ pnpm build:admin
 ## 📦 包版本信息
 
 ### 主项目
-- `cloudlink`: `0.1.0-beta`
+- `winuel`: `0.1.0-beta`
 
 ### 共享包
-- `@cloudlink/plugin-system`: `0.1.0-beta` - 插件系统核心
-- `@cloudlink/shared-api`: `0.1.0-beta` - API客户端
-- `@cloudlink/shared-config`: `0.1.0-beta` - 配置管理
-- `@cloudlink/shared-core`: `0.1.0-beta` - 核心类型
-- `@cloudlink/shared-stores`: `0.1.0-beta` - 状态管理
-- `@cloudlink/shared-ui`: `0.1.0-beta` - UI组件库
+- `@winuel/plugin-system`: `0.1.0-beta` - 插件系统核心
+- `@winuel/shared-api`: `0.1.0-beta` - API客户端
+- `@winuel/shared-config`: `0.1.0-beta` - 配置管理
+- `@winuel/shared-core`: `0.1.0-beta` - 核心类型
+- `@winuel/shared-stores`: `0.1.0-beta` - 状态管理
+- `@winuel/shared-ui`: `0.1.0-beta` - UI组件库
 
 ### 应用
-- `cloudlink-backend`: `0.1.0-beta` - 后端API
-- `cloudlink-frontend`: `0.1.0-beta` - 前端界面
-- `cloudlink-admin`: `0.1.0-beta` - 管理后台
+- `winuel-backend`: `0.1.0-beta` - 后端API
+- `winuel-frontend`: `0.1.0-beta` - 前端界面
+- `winuel-admin`: `0.1.0-beta` - 管理后台
 
 ---
 
@@ -290,4 +290,4 @@ MIT License - 详见 [LICENSE](../LICENSE) 文件
 
 ---
 
-**感谢使用 CloudLink！期待您的反馈和贡献！** 🚀
+**感谢使用 Winuel！期待您的反馈和贡献！** 🚀

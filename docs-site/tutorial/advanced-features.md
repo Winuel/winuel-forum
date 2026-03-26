@@ -1,12 +1,12 @@
 # 高级功能
 
-本教程介绍 CloudLink 论坛系统的高级功能。
+本教程介绍 Winuel 论坛系统的高级功能。
 
 ## 实时通知
 
 ### WebSocket 连接
 
-CloudLink 支持 WebSocket 实时通信，可以实时接收通知和更新。
+Winuel 支持 WebSocket 实时通信，可以实时接收通知和更新。
 
 ```javascript
 // WebSocket 连接示例

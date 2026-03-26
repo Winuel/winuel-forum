@@ -1,6 +1,6 @@
 # 基础使用教程
 
-本教程将指导您使用 CloudLink 论坛系统的核心功能。
+本教程将指导您使用 Winuel 论坛系统的核心功能。
 
 ## 用户认证
 
@@ -65,7 +65,7 @@ const headers = {
 
 ```javascript
 // 使用 API 客户端
-import { apiClient } from '@cloudlink/shared-api'
+import { apiClient } from '@winuel/shared-api'
 
 const createPost = async (postData) => {
   const response = await apiClient.post('/api/posts', postData, {
@@ -159,7 +159,7 @@ const getComments = async (postId) => {
 ```javascript
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { apiClient } from '@cloudlink/shared-api'
+import { apiClient } from '@winuel/shared-api'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref(null)
@@ -203,7 +203,7 @@ export const useUserStore = defineStore('user', () => {
 ### 实时更新通知
 
 ```javascript
-import { useEventBus } from '@cloudlink/plugin-system'
+import { useEventBus } from '@winuel/plugin-system'
 
 const eventBus = useEventBus()
 

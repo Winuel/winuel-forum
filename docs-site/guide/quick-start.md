@@ -1,6 +1,6 @@
 # 快速开始
 
-欢迎使用 CloudLink 论坛系统！本指南将帮助您快速安装和运行 CloudLink。
+欢迎使用 Winuel 论坛系统！本指南将帮助您快速安装和运行 Winuel。
 
 ## 前置要求
 
@@ -68,11 +68,11 @@ pnpm dev:frontend # 前端界面
    - 邮箱地址
    - 密码（至少8个字符）
 4. 完成邮箱验证
-5. 开始使用 CloudLink 论坛系统
+5. 开始使用 Winuel 论坛系统
 
 ## 下一步
 
-恭喜！您已经成功安装并运行了 CloudLink 论坛系统。接下来，您可以：
+恭喜！您已经成功安装并运行了 Winuel 论坛系统。接下来，您可以：
 
 - [阅读配置指南](/guide/configuration) - 了解更多配置选项
 - [查看 API 文档](/api/overview) - 学习如何调用 API

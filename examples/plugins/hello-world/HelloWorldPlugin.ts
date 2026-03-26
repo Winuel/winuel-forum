@@ -1,5 +1,5 @@
-import { BasePlugin } from '@cloudlink/plugin-system'
-import type { PluginContext, PluginConfigSchema } from '@cloudlink/plugin-system'
+import { BasePlugin } from '@winuel/plugin-system'
+import type { PluginContext, PluginConfigSchema } from '@winuel/plugin-system'
 
 /**Hello World 示例插件*/
 export class HelloWorldPlugin extends BasePlugin {
@@ -8,11 +8,10 @@ export class HelloWorldPlugin extends BasePlugin {
     name: 'Hello World Plugin',
     version: '1.0.0',
     description: '一个简单的示例插件，展示插件系统的基本功能',
-    author: 'CloudLink Team',
-    authorEmail: 'team@cloudlink.example.com',
-    homepage: 'https://cloudlink.example.com/plugins/hello-world',
-    repository: 'https://github.com/cloudlink/hello-world-plugin',
-    license: 'MIT',
+    author: 'Winuel Team',
+    authorEmail: 'team@winuel.example.com',
+      homepage: 'https://winuel.example.com/plugins/hello-world',
+      repository: 'https://github.com/winuel/hello-world-plugin',    license: 'MIT',
     keywords: ['示例', '插件', 'hello-world'],
     platform: 'both',
     priority: 1,

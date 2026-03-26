@@ -1,6 +1,6 @@
 # Hello World Plugin
 
-一个简单的示例插件，展示 CloudLink 插件系统的基本功能。
+一个简单的示例插件，展示 Winuel 插件系统的基本功能。
 
 ## 功能特性
 
@@ -82,7 +82,7 @@ hello-world-plugin/
 ### 创建插件基类
 
 ```typescript
-import { BasePlugin } from '@cloudlink/plugin-system'
+import { BasePlugin } from '@winuel/plugin-system'
 
 export class MyPlugin extends BasePlugin {
   metadata = {
