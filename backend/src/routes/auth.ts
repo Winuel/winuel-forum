@@ -71,7 +71,10 @@ authRouter.post('/register', strictAuthRateLimit, async (c) => {
     }
 
     const result = await userService.create({ username, email, password })
-    return c.json(result)
+    return c.json({
+      success: true,
+      data: result
+    })
   } catch (error: any) {
     const errorInfo = handleError(error)
     const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 500
@@ -89,11 +92,14 @@ authRouter.post('/login', strictAuthRateLimit, async (c) => {
 
     const userService = new UserService(c.env.DB)
     const result = await userService.login({ email, password })
-    
+
     // Set httpOnly cookie for enhanced security
     c.header('Set-Cookie', `auth_token=${result.token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`)
-    
-    return c.json(result)
+
+    return c.json({
+      success: true,
+      data: result
+    })
   } catch (error: any) {
     const errorInfo = handleError(error)
     const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 401
@@ -114,11 +120,14 @@ authRouter.post('/admin/login', strictAuthRateLimit, async (c) => {
 
     const userService = new UserService(c.env.DB)
     const result = await userService.adminLogin({ email, password })
-    
+
     // Set httpOnly cookie for enhanced security
     c.header('Set-Cookie', `admin_token=${result.token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`)
-    
-    return c.json(result)
+
+    return c.json({
+      success: true,
+      data: result
+    })
   } catch (error: any) {
     const errorInfo = handleError(error)
     const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 401
@@ -136,7 +145,10 @@ authRouter.get('/me', authMiddleware, async (c) => {
       throw createError.notFound('user')
     }
 
-    return c.json(userData)
+    return c.json({
+      success: true,
+      data: userData
+    })
   } catch (error: any) {
     const errorInfo = handleError(error)
     const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 500
@@ -145,7 +157,10 @@ authRouter.get('/me', authMiddleware, async (c) => {
 })
 
 authRouter.post('/logout', authMiddleware, csrfProtectionMiddleware, async (c) => {
-  return c.json({ message: '退出成功' })
+  return c.json({
+    success: true,
+    message: '退出成功'
+  })
 })
 
 /**

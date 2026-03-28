@@ -235,39 +235,31 @@ async function handleSendCode() {
 
   sendingCode.value = true
   try {
-    const response = await sendVerificationCode({
+    await sendVerificationCode({
       email: email.value,
       type: 'register',
     })
 
-    if (response.success) {
-      uiStore.addNotification({
-        type: 'success',
-        title: '验证码已发送',
-        message: '请查看您的邮箱，验证码有效期为5分钟',
-      })
-      
-      // 开始倒计时
-      countdown.value = 60
-      countdownTimer = window.setInterval(() => {
-        countdown.value--
-        if (countdown.value <= 0) {
-          clearInterval(countdownTimer!)
-          countdownTimer = null
-        }
-      }, 1000)
-    } else {
-      uiStore.addNotification({
-        type: 'error',
-        title: '发送失败',
-        message: response.error?.details || response.error?.message || '发送验证码失败，请稍后重试',
-      })
-    }
+    uiStore.addNotification({
+      type: 'success',
+      title: '验证码已发送',
+      message: '请查看您的邮箱，验证码有效期为5分钟',
+    })
+
+    // 开始倒计时
+    countdown.value = 60
+    countdownTimer = window.setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(countdownTimer!)
+        countdownTimer = null
+      }
+    }, 1000)
   } catch (error: any) {
     uiStore.addNotification({
       type: 'error',
       title: '发送失败',
-      message: error?.error?.details || error?.error?.message || error?.message || '网络错误，请检查网络连接',
+      message: error?.details || error?.message || '网络错误，请检查网络连接',
     })
   } finally {
     sendingCode.value = false
