@@ -81,60 +81,82 @@ describe('Validation Utils', () => {
   })
 
   describe('validatePassword', () => {
-    it('should accept valid password with letters and numbers', () => {
-      const result = validatePassword('myPassword1')
+    it('should accept valid password with letters, numbers and special characters', () => {
+      const result = validatePassword('myPassword1!')
       expect(result.isValid).toBe(true)
+      expect(result.errors).toHaveLength(0)
     })
 
-    it('should accept password with uppercase letters', () => {
-      const result = validatePassword('MyPassword1')
+    it('should accept password with uppercase letters, numbers and special characters', () => {
+      const result = validatePassword('MyPassword1!')
       expect(result.isValid).toBe(true)
+      expect(result.errors).toHaveLength(0)
     })
 
-    it('should accept password with only lowercase letters', () => {
-      const result = validatePassword('mypassword1')
+    it('should accept password with only lowercase letters, numbers and special characters', () => {
+      const result = validatePassword('mypassword1!')
       expect(result.isValid).toBe(true)
+      expect(result.errors).toHaveLength(0)
     })
 
-    it('should accept password with only uppercase letters', () => {
-      const result = validatePassword('MYPASSWORD1')
+    it('should accept password with only uppercase letters, numbers and special characters', () => {
+      const result = validatePassword('MYPASSWORD1!')
       expect(result.isValid).toBe(true)
+      expect(result.errors).toHaveLength(0)
     })
 
     it('should reject password with only 7 characters', () => {
-      const result = validatePassword('test123')
+      const result = validatePassword('test12!')
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('密码长度至少为8个字符')
+      expect(result.errors).toContain('密码长度至少为8个字符 / Password must be at least 8 characters')
     })
 
     it('should reject password with only letters', () => {
-      const result = validatePassword('testabcd')
+      const result = validatePassword('testabcdef!')
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('密码必须包含至少一个数字')
+      expect(result.errors).toContain('密码必须包含至少一个数字 / Password must contain at least one number')
     })
 
     it('should reject password with only numbers', () => {
-      const result = validatePassword('1234567')
+      const result = validatePassword('12345678!')
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('密码必须包含至少一个字母')
+      expect(result.errors).toContain('密码必须包含至少一个字母 / Password must contain at least one letter')
     })
 
-    it('should reject password with special characters', () => {
-      const result = validatePassword('test123!@#')
+    it('should reject password without special characters', () => {
+      const result = validatePassword('test12345')
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('密码只能包含字母和数字')
+      expect(result.errors).toContain('密码必须包含至少一个特殊字符（如：!@#$%^&*等）/ Password must contain at least one special character (e.g., !@#$%^&*)')
     })
 
     it('should reject common weak passwords', () => {
       const result = validatePassword('password123')
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('密码过于简单，请使用更复杂的密码')
+      expect(result.errors).toContain('密码过于简单，请使用更复杂的密码 / Password is too weak, please use a stronger password')
     })
 
     it('should reject too long password', () => {
-      const result = validatePassword('a'.repeat(129))
+      const result = validatePassword('a'.repeat(129) + '1!')
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('密码长度不能超过128个字符')
+      expect(result.errors).toContain('密码长度不能超过128个字符 / Password must not exceed 128 characters')
+    })
+
+    it('should reject password without letters but with numbers and special characters', () => {
+      const result = validatePassword('12345678!')
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('密码必须包含至少一个字母 / Password must contain at least one letter')
+    })
+
+    it('should reject password with only letters and special characters but no numbers', () => {
+      const result = validatePassword('testpassword!')
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('密码必须包含至少一个数字 / Password must contain at least one number')
+    })
+
+    it('should reject password with only letters and numbers but no special characters', () => {
+      const result = validatePassword('testpassword123')
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('密码必须包含至少一个特殊字符（如：!@#$%^&*等）/ Password must contain at least one special character (e.g., !@#$%^&*)')
     })
   })
 

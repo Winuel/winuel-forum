@@ -100,8 +100,12 @@ describe('Posts Router', () => {
       const res = await app.request('/api/posts')
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { posts: any[] }
-      expect(json.posts).toHaveLength(2)
+      const json = await res.json() as { success: boolean, data: any[], total: number, page: number, pageSize: number, totalPages: number, timestamp: string }
+      expect(json.success).toBe(true)
+      expect(json.data).toHaveLength(2)
+      expect(json.total).toBe(2)
+      expect(json.page).toBe(1)
+      expect(json.pageSize).toBe(20)
     })
 
     it('should return empty array when no posts exist', async () => {
@@ -111,8 +115,9 @@ describe('Posts Router', () => {
       const res = await app.request('/api/posts')
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { posts: any[]; total: number }
-      expect(json.posts).toEqual([])
+      const json = await res.json() as { success: boolean, data: any[], total: number, page: number, pageSize: number, totalPages: number }
+      expect(json.success).toBe(true)
+      expect(json.data).toEqual([])
       expect(json.total).toBe(0)
     })
 
@@ -145,8 +150,9 @@ describe('Posts Router', () => {
       const res = await app.request('/api/posts?categoryId=1')
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { posts: any[] }
-      expect(json.posts).toHaveLength(1)
+      const json = await res.json() as { success: boolean, data: any[] }
+      expect(json.success).toBe(true)
+      expect(json.data).toHaveLength(1)
     })
 
     it('should filter by author', async () => {
@@ -178,8 +184,9 @@ describe('Posts Router', () => {
       const res = await app.request('/api/posts?authorId=1')
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { posts: any[] }
-      expect(json.posts).toHaveLength(1)
+      const json = await res.json() as { success: boolean, data: any[] }
+      expect(json.success).toBe(true)
+      expect(json.data).toHaveLength(1)
     })
   })
 
@@ -210,10 +217,17 @@ describe('Posts Router', () => {
 
       const res = await app.request('/api/posts/1')
 
-      expect(res.status).toBe(200)
-      const json = await res.json() as { id: string; title: string }
-      expect(json.id).toBe('1')
-      expect(json.title).toBe('Test Post')
+      
+
+            expect(res.status).toBe(200)
+
+            const json = await res.json() as { success: boolean, data: { id: string; title: string } }
+
+            expect(json.success).toBe(true)
+
+            expect(json.data.id).toBe('1')
+
+            expect(json.data.title).toBe('Test Post')
     })
 
     it('should return 404 for non-existent post', async () => {
@@ -223,8 +237,9 @@ describe('Posts Router', () => {
       const res = await app.request('/api/posts/999')
 
       expect(res.status).toBe(404)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('不存在')
+      const json = await res.json() as { success: boolean, error: { message: string } }
+      expect(json.success).toBe(false)
+      expect(json.error.message).toContain('帖子 / Post')
     })
   })
 
@@ -255,9 +270,11 @@ describe('Posts Router', () => {
         body: JSON.stringify(postData),
       })
 
-      expect(res.status).toBe(200)
-      const json = await res.json() as { title: string }
-      expect(json.title).toBe('New Post')
+      expect(res.status).toBe(201)
+      const json = await res.json() as { success: boolean, data: { title: string }, message: string }
+      expect(json.success).toBe(true)
+      expect(json.data.title).toBe('New Post')
+      expect(json.message).toContain('帖子创建成功')
     })
 
     it('should return 400 when missing required fields', async () => {
@@ -278,8 +295,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('缺少必要字段')
+      const json = await res.json() as { success: boolean, error: { message: string } }
+      expect(json.success).toBe(false)
+      expect(json.error.message).toContain('缺少必要字段 / Missing required fields')
     })
   })
 
@@ -320,8 +338,10 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { title: string }
-      expect(json.title).toBe('Updated Title')
+      const json = await res.json() as { success: boolean, data: { title: string }, message: string }
+      expect(json.success).toBe(true)
+      expect(json.data.title).toBe('Updated Title')
+      expect(json.message).toContain('帖子更新成功')
     })
 
     it('should return 404 when post does not exist', async () => {
@@ -347,8 +367,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(404)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('不存在')
+      const json = await res.json() as { success: boolean, error: { message: string } }
+      expect(json.success).toBe(false)
+      expect(json.error.message).toContain('帖子 / Post')
     })
 
     it('should return 403 when user is not the author', async () => {
@@ -387,8 +408,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(403)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('无权编辑')
+      const json = await res.json() as { success: boolean, error: { message: string } }
+      expect(json.success).toBe(false)
+      expect(json.error.message).toContain('无权编辑此帖子')
     })
   })
 
@@ -421,8 +443,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { message: string }
-      expect(json.message).toBe('删除成功')
+      const json = await res.json() as { success: boolean, message: string }
+      expect(json.success).toBe(true)
+      expect(json.message).toContain('删除成功 / Deleted successfully')
     })
 
     it('should return 404 when post does not exist', async () => {
@@ -440,8 +463,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(404)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('不存在')
+      const json = await res.json() as { success: boolean, error: { message: string } }
+      expect(json.success).toBe(false)
+      expect(json.error.message).toContain('帖子 / Post')
     })
 
     it('should return 403 when user is not the author', async () => {
@@ -472,8 +496,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(403)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('无权删除')
+      const json = await res.json() as { success: boolean, error: { message: string } }
+      expect(json.success).toBe(false)
+      expect(json.error.message).toContain('无权删除此帖子')
     })
   })
 
@@ -514,8 +539,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { message: string }
-      expect(json.message).toBe('点赞成功')
+      const json = await res.json() as { success: boolean, message: string }
+      expect(json.success).toBe(true)
+      expect(json.message).toContain('点赞成功 / Liked successfully')
     })
 
     it('should return 400 when already liked', async () => {
@@ -554,8 +580,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json() as { error: string }
-      expect(json.error).toContain('已经点赞过')
+      const json = await res.json() as { success: boolean, error: { message: string } }
+      expect(json.success).toBe(false)
+      expect(json.error.message).toContain('已经点赞过 / Already liked')
     })
   })
 
@@ -582,8 +609,9 @@ describe('Posts Router', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { message: string }
-      expect(json.message).toBe('取消点赞成功')
+      const json = await res.json() as { success: boolean, message: string }
+      expect(json.success).toBe(true)
+      expect(json.message).toContain('取消点赞成功 / Unliked successfully')
     })
   })
 
@@ -624,8 +652,10 @@ describe('Posts Router', () => {
       const res = await app.request('/api/posts/1/comments')
 
       expect(res.status).toBe(200)
-      const json = await res.json() as any[]
-      expect(json).toHaveLength(2)
+      const json = await res.json() as { success: boolean, data: any[] }
+      expect(json.success).toBe(true)
+      expect(Array.isArray(json.data)).toBe(true)
+      expect(json.data).toHaveLength(2)
     })
 
     it('should return empty array when no comments exist', async () => {
@@ -635,8 +665,10 @@ describe('Posts Router', () => {
       const res = await app.request('/api/posts/1/comments')
 
       expect(res.status).toBe(200)
-      const json = await res.json() as any[]
-      expect(json).toEqual([])
+      const json = await res.json() as { success: boolean, data: any[] }
+      expect(json.success).toBe(true)
+      expect(Array.isArray(json.data)).toBe(true)
+      expect(json.data).toEqual([])
     })
   })
 })

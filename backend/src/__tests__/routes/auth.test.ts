@@ -19,7 +19,7 @@ describe('Auth Router', () => {
   beforeEach(async () => {
     mockDb = createMockD1Database()
     initJWT('A1b2C3d4!E5f6G7h8@I9j0K1l2#M3n4O5p6')
-    testPasswordHash = await hashPassword('MySecurePass456')
+    testPasswordHash = await hashPassword('MySecurePass456!')
     // Initialize disposable email checker with test blocklist
     initEmailChecker(['tempmail.com'], [])
     setupMockEmailService()
@@ -52,7 +52,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'testuser',
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'MySecurePass456!',
         verificationCode: '123456',
       }
 
@@ -92,7 +92,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'a',
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'MySecurePass456!',
         verificationCode: '123456',
       }
 
@@ -112,7 +112,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'testuser',
         email: 'invalid-email',
-        password: 'MySecurePass456',
+        password: 'MySecurePass456!',
         verificationCode: '123456',
       }
 
@@ -152,7 +152,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'testuser',
         email: 'test@tempmail.com',
-        password: 'MySecurePass456',
+        password: 'MySecurePass456!',
         verificationCode: '123456',
       }
 
@@ -185,7 +185,7 @@ describe('Auth Router', () => {
       const userData = {
         username: 'newuser',
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'MySecurePass456!',
         verificationCode: '123456',
       }
 
@@ -219,7 +219,7 @@ describe('Auth Router', () => {
 
       const loginData = {
         email: 'test@example.com',
-        password: 'MySecurePass456',
+        password: 'MySecurePass456!',
       }
 
       const res = await app.request('/api/auth/login', {
@@ -258,7 +258,7 @@ describe('Auth Router', () => {
 
       const loginData = {
         email: 'nonexistent@example.com',
-        password: 'MySecurePass456',
+        password: 'MySecurePass456!',
       }
 
       const res = await app.request('/api/auth/login', {
