@@ -100,6 +100,7 @@
             <img
               :src="user.avatar || '/default-avatar.png'"
               :alt="user.username"
+              loading="lazy"
               class="w-9 h-9 xl:w-10 xl:h-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-primary-400 dark:group-hover:ring-primary-500 transition-all duration-300"
             />
             <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 xl:w-3 xl:h-3 bg-gradient-to-br from-green-400 to-green-500 border-2 border-white dark:border-gray-800 rounded-full shadow-sm"></div>

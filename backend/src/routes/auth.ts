@@ -174,16 +174,38 @@ authRouter.post('/send-verification-code', strictAuthRateLimit, async (c) => {
 
     // 获取邮件服务
     const emailService = (globalThis as any).emailService
-    if (!emailService || !emailService.isAvailable()) {
-      throw createError.internalError('邮件服务不可用')
+    const emailServiceError = (globalThis as any).EMAIL_SERVICE_ERROR
+    
+    console.log('Email service status:', {
+      serviceExists: !!emailService,
+      isAvailable: emailService?.isAvailable?.(),
+      error: emailServiceError
+    })
+    
+    if (!emailService) {
+      console.error('Email service not initialized. Error:', emailServiceError)
+      throw createError.internalError(
+        '邮件服务未初始化，请联系管理员。' +
+        (emailServiceError ? ` 错误信息: ${emailServiceError}` : '')
+      )
+    }
+    
+    if (!emailService.isAvailable()) {
+      console.error('Email service not available. Error:', emailServiceError)
+      throw createError.internalError(
+        '邮件服务当前不可用，请稍后重试。' +
+        (emailServiceError ? ` 错误信息: ${emailServiceError}` : '')
+      )
     }
 
     const verificationCodeService = new VerificationCodeService(c.env.DB, emailService)
 
+    console.log(`Attempting to send verification code to ${email} (type: ${type})`)
     const result = await verificationCodeService.create({ email, type })
 
     if (!result.success) {
       if (result.cooldown) {
+        console.log(`Verification code cooldown for ${email}: ${result.cooldown}s`)
         return c.json({
           success: false,
           error: {
@@ -193,14 +215,17 @@ authRouter.post('/send-verification-code', strictAuthRateLimit, async (c) => {
           }
         }, 429)
       }
+      console.error('Failed to create verification code:', result.error)
       throw createError.internalError(result.error || '发送验证码失败')
     }
 
+    console.log(`Verification code sent successfully to ${email}`)
     return c.json({
       success: true,
       message: '验证码已发送，请查看您的邮箱'
     })
   } catch (error: any) {
+    console.error('Error in send-verification-code:', error)
     const errorInfo = handleError(error)
     const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 500
     return c.json(formatErrorResponse(errorInfo), statusCode)

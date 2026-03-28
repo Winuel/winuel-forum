@@ -22,6 +22,36 @@
 import type { MarketplaceToken } from '@winuel/plugin-system'
 
 /**
+ * OAuth 重定向 URI 白名单
+ * OAuth Redirect URI Whitelist
+ * 
+ * 防止开放重定向攻击，只允许指定的域名作为 OAuth 回调地址
+ * Prevents open redirect attacks, only allows specified domains as OAuth callback addresses
+ */
+const ALLOWED_REDIRECT_URIS: string[] = [
+  'https://hub.winuel.com',
+  'https://www.winuel.com',
+  'https://admin.winuel.com',
+  'https://api.winuel.com/api/auth/github/callback',
+  'http://localhost:5173', // 开发环境
+  'http://localhost:8787', // 开发环境 API
+]
+
+/**
+ * 验证重定向 URI 是否在白名单中
+ * Validate if redirect URI is in whitelist
+ * 
+ * @param redirectUri - 待验证的重定向 URI / Redirect URI to validate
+ * @returns 是否在白名单中 / Whether in whitelist
+ */
+function isRedirectUriAllowed(redirectUri: string): boolean {
+  return ALLOWED_REDIRECT_URIS.some(allowedUri => {
+    // 精确匹配或前缀匹配
+    return redirectUri === allowedUri || redirectUri.startsWith(allowedUri)
+  })
+}
+
+/**
  * 市场认证信息接口
  * Marketplace Authentication Interface
  * 定义 OAuth 认证所需的配置信息
@@ -69,13 +99,25 @@ export class OAuthService {
    * 
    * @param redirectUri - 自定义重定向 URI（可选）/ Custom redirect URI (optional)
    * @returns 授权 URL / Authorization URL
+   * @throws 如果重定向 URI 不在白名单中 / Throws if redirect URI is not in whitelist
    */
   async getAuthorizationUrl(redirectUri?: string): Promise<string> {
+    // 验证重定向 URI 是否在白名单中
+    // Validate if redirect URI is in whitelist
+    const finalRedirectUri = redirectUri || this.auth.redirectUri
+    
+    if (!isRedirectUriAllowed(finalRedirectUri)) {
+      throw new Error(
+        `Invalid redirect URI: ${finalRedirectUri}. ` +
+        `Allowed URIs: ${ALLOWED_REDIRECT_URIS.join(', ')}`
+      )
+    }
+
     // 生成随机 state 参数用于防止 CSRF 攻击 / Generate random state parameter to prevent CSRF attacks
     const state = await this.generateState()
     const params = new URLSearchParams({
       client_id: this.auth.clientId,
-      redirect_uri: redirectUri || this.auth.redirectUri,
+      redirect_uri: finalRedirectUri,
       scope: this.auth.scope.join(' '),
       state: state,
       response_type: 'code',

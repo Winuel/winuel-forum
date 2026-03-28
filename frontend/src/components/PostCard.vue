@@ -8,6 +8,7 @@
             <img
               :src="post.authorAvatar || '/default-avatar.png'"
               :alt="post.authorUsername"
+              loading="lazy"
               class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-800 group-hover:ring-primary-400 dark:group-hover:ring-primary-500 transition-all duration-400 group-hover:scale-110"
             />
             <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gradient-to-br from-green-400 to-green-500 border-2 border-white dark:border-gray-800 rounded-full shadow-sm"></div>

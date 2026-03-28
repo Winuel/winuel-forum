@@ -1,5 +1,6 @@
 import type { JWTPayload } from './db/models'
 import type { DIContainer } from './utils/di'
+import type { CodeAttachmentService } from './services/codeAttachmentService'
 
 export type Env = {
   DB: D1Database
@@ -21,10 +22,10 @@ export type Bindings = Env
 export type Variables = {
   user: JWTPayload
   userId?: string
-  currentUser?: any
+  currentUser?: JWTPayload
   userRole?: string
   container?: DIContainer
-  codeAttachmentService?: any
+  codeAttachmentService?: CodeAttachmentService
 }
 
 export type AppContext = {

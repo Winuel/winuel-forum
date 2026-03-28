@@ -5,6 +5,14 @@ import { PostService } from '../services/postService'
 import { NotificationService } from '../services/notificationService'
 import { authMiddleware } from '../middleware/auth'
 import { csrfProtectionMiddleware } from '../middleware/csrf'
+import { 
+  successResponse, 
+  errorResponse, 
+  notFoundResponse, 
+  forbiddenResponse, 
+  paginatedResponse,
+  ErrorCode 
+} from '../utils/response'
 
 const postsRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -12,7 +20,7 @@ postsRouter.get('/', async (c) => {
   try {
     const container = c.get('container')
     if (!container) {
-      return c.json({ error: 'Service container not initialized' }, 500)
+      return errorResponse(c, ErrorCode.INTERNAL_ERROR, '服务容器未初始化 / Service container not initialized', 500)
     }
 
     const page = parseInt(c.req.query('page') || '1')
@@ -20,12 +28,16 @@ postsRouter.get('/', async (c) => {
     const categoryId = c.req.query('categoryId')
     const authorId = c.req.query('authorId')
 
-    const postService = container.resolve<PostService>(DEPENDENCY_TOKENS.POST_SERVICE)
-    const result = await postService.findAllWithDetails({ page, limit, category_id: categoryId, author_id: authorId })
+    // 获取当前用户ID（如果已登录）/ Get current user ID (if logged in)
+    const user = c.get('user')
+    const userId = user?.userId
 
-    return c.json({ posts: result.posts, total: result.total })
+    const postService = container.resolve<PostService>(DEPENDENCY_TOKENS.POST_SERVICE)
+    const result = await postService.findAllWithDetails({ page, limit, category_id: categoryId, author_id: authorId, user_id: userId })
+
+    return paginatedResponse(c, result.posts, result.total, page, limit)
   } catch (error: any) {
-    return c.json({ error: error.message || '获取帖子列表失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '获取帖子列表失败 / Failed to get posts', 500)
   }
 })
 
@@ -33,7 +45,7 @@ postsRouter.get('/:id', async (c) => {
   try {
     const container = c.get('container')
     if (!container) {
-      return c.json({ error: 'Service container not initialized' }, 500)
+      return errorResponse(c, ErrorCode.INTERNAL_ERROR, '服务容器未初始化 / Service container not initialized', 500)
     }
 
     const id = c.req.param('id')!
@@ -43,12 +55,12 @@ postsRouter.get('/:id', async (c) => {
 
     const post = await postService.findByIdWithDetails(id)
     if (!post) {
-      return c.json({ error: '帖子不存在' }, 404)
+      return notFoundResponse(c, '帖子 / Post')
     }
 
-    return c.json(post)
+    return successResponse(c, post)
   } catch (error: any) {
-    return c.json({ error: error.message || '获取帖子失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '获取帖子失败 / Failed to get post', 500)
   }
 })
 
@@ -58,7 +70,7 @@ postsRouter.post('/', authMiddleware, csrfProtectionMiddleware, async (c) => {
     const { title, content, categoryId, tags } = await c.req.json()
 
     if (!title || !content || !categoryId) {
-      return c.json({ error: '缺少必要字段' }, 400)
+      return errorResponse(c, ErrorCode.INVALID_INPUT, '缺少必要字段 / Missing required fields', 400)
     }
 
     const postService = new PostService(c.env.DB)
@@ -70,9 +82,9 @@ postsRouter.post('/', authMiddleware, csrfProtectionMiddleware, async (c) => {
       tags,
     })
 
-    return c.json(post)
+    return successResponse(c, post, '帖子创建成功 / Post created successfully', 201)
   } catch (error: any) {
-    return c.json({ error: error.message || '创建帖子失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '创建帖子失败 / Failed to create post', 500)
   }
 })
 
@@ -86,17 +98,17 @@ postsRouter.put('/:id', authMiddleware, csrfProtectionMiddleware, async (c) => {
     const existingPost = await postService.findById(id)
 
     if (!existingPost) {
-      return c.json({ error: '帖子不存在' }, 404)
+      return notFoundResponse(c, '帖子 / Post')
     }
 
     if (existingPost.author_id !== user.userId) {
-      return c.json({ error: '无权编辑此帖子' }, 403)
+      return forbiddenResponse(c, '无权编辑此帖子 / No permission to edit this post')
     }
 
     const updatedPost = await postService.update(id, { title, content, category_id: categoryId, tags })
-    return c.json(updatedPost)
+    return successResponse(c, updatedPost, '帖子更新成功 / Post updated successfully')
   } catch (error: any) {
-    return c.json({ error: error.message || '更新帖子失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '更新帖子失败 / Failed to update post', 500)
   }
 })
 
@@ -109,17 +121,17 @@ postsRouter.delete('/:id', authMiddleware, csrfProtectionMiddleware, async (c) =
     const existingPost = await postService.findById(id)
 
     if (!existingPost) {
-      return c.json({ error: '帖子不存在' }, 404)
+      return notFoundResponse(c, '帖子 / Post')
     }
 
     if (existingPost.author_id !== user.userId) {
-      return c.json({ error: '无权删除此帖子' }, 403)
+      return forbiddenResponse(c, '无权删除此帖子 / No permission to delete this post')
     }
 
     await postService.delete(id)
-    return c.json({ message: '删除成功' })
+    return successResponse(c, null, '删除成功 / Deleted successfully')
   } catch (error: any) {
-    return c.json({ error: error.message || '删除帖子失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '删除帖子失败 / Failed to delete post', 500)
   }
 })
 
@@ -134,7 +146,7 @@ postsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c
       .first()
 
     if (existingLike) {
-      return c.json({ error: '已经点赞过' }, 400)
+      return errorResponse(c, ErrorCode.ALREADY_EXISTS, '已经点赞过 / Already liked', 400)
     }
 
     const likeId = crypto.randomUUID()
@@ -165,9 +177,9 @@ postsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c
       }
     }
 
-    return c.json({ message: '点赞成功' })
+    return successResponse(c, null, '点赞成功 / Liked successfully')
   } catch (error: any) {
-    return c.json({ error: error.message || '点赞失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '点赞失败 / Failed to like', 500)
   }
 })
 
@@ -184,9 +196,9 @@ postsRouter.delete('/:id/like', authMiddleware, csrfProtectionMiddleware, async 
     const postService = new PostService(c.env.DB)
     await postService.decrementLikeCount(id)
 
-    return c.json({ message: '取消点赞成功' })
+    return successResponse(c, null, '取消点赞成功 / Unliked successfully')
   } catch (error: any) {
-    return c.json({ error: error.message || '取消点赞失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '取消点赞失败 / Failed to unlike', 500)
   }
 })
 
@@ -196,9 +208,9 @@ postsRouter.get('/:id/comments', async (c) => {
     const postService = new PostService(c.env.DB)
     const comments = await postService.findCommentsWithReplies(id)
 
-    return c.json(comments)
+    return successResponse(c, comments)
   } catch (error: any) {
-    return c.json({ error: error.message || '获取评论失败' }, 500)
+    return errorResponse(c, ErrorCode.INTERNAL_ERROR, error.message || '获取评论失败 / Failed to get comments', 500)
   }
 })
 

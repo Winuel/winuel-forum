@@ -18,6 +18,7 @@
           <img
             :src="userStore.user?.avatar || '/default-avatar.png'"
             :alt="userStore.user?.username"
+            loading="lazy"
             class="w-24 h-24 rounded-2xl object-cover ring-4 ring-gray-200 dark:ring-gray-600 ring-offset-2 ring-offset-white dark:ring-offset-gray-800 transition-all duration-300 group-hover:ring-primary-400"
           >
           <div class="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform duration-300">

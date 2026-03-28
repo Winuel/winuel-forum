@@ -1,5 +1,6 @@
 import type { Context, Next } from 'hono'
 import type { Env, Variables } from '../types'
+import type { JWTPayload } from '../db/models'
 import { DEPENDENCY_TOKENS } from '../utils/di'
 
 export enum Role {
@@ -177,8 +178,12 @@ export function requirePermission(...permissions: Permission[]) {
         }, 403)
       }
       
-      // 将用户信息存储到上下文
-      c.set('currentUser', user)
+      // 将用户信息存储到上下文（转换为 JWTPayload 格式）
+      c.set('currentUser', {
+        userId: user.id,
+        username: user.username,
+        role: user.role
+      } as JWTPayload)
       c.set('userRole', userRole)
       
       await next()
@@ -259,7 +264,11 @@ export function requireModeratorOrAdmin() {
         }, 403)
       }
       
-      c.set('currentUser', user)
+      c.set('currentUser', {
+        userId: user.id,
+        username: user.username,
+        role: user.role
+      } as JWTPayload)
       c.set('userRole', userRole)
       
       await next()

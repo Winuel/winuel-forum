@@ -13,6 +13,7 @@ import { userAuthMiddleware, adminAuthMiddleware } from './middleware/auth'
 import { diMiddleware } from './middleware/di'
 import { handleError, formatErrorResponse, logError } from './utils/errorHandler'
 import { BLOCKLIST_DOMAINS, ALLOWLIST_DOMAINS } from './data/blocklist'
+import { createCache } from './utils/cache'
 import authRouter from './routes/auth'
 import oauthRouter from './routes/auth/oauth'
 import postsRouter from './routes/posts'
@@ -58,19 +59,16 @@ app.use('*', async (c, next) => {
       ;(globalThis as any).JWT_SECRET_INITIALIZED = true
       ;(globalThis as any).JWT_SECRET_VALID = true
       
-      // 初始化 Logger - 使用静态方法
-      const { Logger } = await import('./utils/logger')
-      Logger.init(c.env.ENVIRONMENT || 'production')
-      console.log('✅ JWT initialized successfully')
+      logger.info('JWT initialized successfully')
     } catch (error: any) {
-      console.error('❌ Failed to initialize JWT:', error.message)
+      logger.error('Failed to initialize JWT', error)
       ;(globalThis as any).JWT_SECRET_INITIALIZED = false
       ;(globalThis as any).JWT_SECRET_VALID = false
       ;(globalThis as any).JWT_SECRET_ERROR = error.message
       // 不抛出错误，但标记JWT初始化失败
     }
   } else if (!c.env.JWT_SECRET) {
-    console.warn('⚠️ JWT_SECRET is not configured')
+    logger.warn('JWT_SECRET is not configured')
     ;(globalThis as any).JWT_SECRET_INITIALIZED = false
     ;(globalThis as any).JWT_SECRET_VALID = false
     ;(globalThis as any).JWT_SECRET_ERROR = 'JWT_SECRET not configured'
@@ -79,28 +77,59 @@ app.use('*', async (c, next) => {
   // 初始化邮件服务 - 增强错误处理
   if (c.env.RESEND_API_KEY && !(globalThis as any).EMAIL_SERVICE_INITIALIZED) {
     try {
+      // 验证 API 密钥格式
+      if (typeof c.env.RESEND_API_KEY !== 'string' || c.env.RESEND_API_KEY.length < 10) {
+        throw new Error('Invalid RESEND_API_KEY format')
+      }
+
       const emailService = new EmailService(
         c.env.RESEND_API_KEY,
         c.env.RESEND_FROM_EMAIL || 'noreply@mail.winuel.com',
         c.env.RESEND_FROM_NAME || '云纽论坛'
       )
-      ;(globalThis as any).emailService = emailService
-      ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = true
-      ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = true
-      console.log('✅ Email service initialized')
-    } catch (error: any) {
-      console.error('❌ Failed to initialize email service:', error.message)
-      ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = false
-      ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = false
-      ;(globalThis as any).EMAIL_SERVICE_ERROR = error.message
-      // 不抛出错误，允许请求继续进行
-    }
-  } else if (!c.env.RESEND_API_KEY) {
-    console.warn('⚠️ RESEND_API_KEY is not configured')
-    ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = false
-    ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = false
-    ;(globalThis as any).EMAIL_SERVICE_ERROR = 'RESEND_API_KEY not configured'
-  }
+      
+      // 检查邮件服务是否可用
+      if (!emailService.isAvailable()) {
+        throw new Error('Email service initialized but not available')
+      }
+      
+      ; (globalThis as any).emailService = emailService
+      
+            ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = true
+      
+            ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = true
+      
+            ;(globalThis as any).EMAIL_SERVICE_ERROR = null
+      
+            logger.info('Email service initialized successfully')
+      
+          } catch (error: any) {
+      
+            logger.error('Failed to initialize email service', error)
+      
+            ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = false
+      
+            ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = false
+      
+            ;(globalThis as any).EMAIL_SERVICE_ERROR = error.message
+      
+            // 不抛出错误，允许请求继续进行
+      
+          }
+      
+        } else if (!c.env.RESEND_API_KEY) {
+      
+          logger.warn('RESEND_API_KEY is not configured. Email service will not be available.')
+      
+          logger.warn('Please set RESEND_API_KEY using: wrangler secret put RESEND_API_KEY')
+      
+          ;(globalThis as any).EMAIL_SERVICE_INITIALIZED = false
+      
+          ;(globalThis as any).EMAIL_SERVICE_AVAILABLE = false
+      
+          ;(globalThis as any).EMAIL_SERVICE_ERROR = 'RESEND_API_KEY not configured. Please run: wrangler secret put RESEND_API_KEY'
+      
+        }
   
   // 初始化数据库（仅在首次请求时）- 增强错误处理
   if (c.env.DB && !(globalThis as any).DB_INITIALIZED) {
@@ -109,16 +138,16 @@ app.use('*', async (c, next) => {
       await initializeDatabase(c.env.DB)
       ;(globalThis as any).DB_INITIALIZED = true
       ;(globalThis as any).DB_AVAILABLE = true
-      console.log('✅ Database initialized')
+      logger.info('Database initialized')
     } catch (error: any) {
-      console.error('❌ Failed to initialize database:', error.message)
+      logger.error('Failed to initialize database', error)
       ;(globalThis as any).DB_INITIALIZED = false
       ;(globalThis as any).DB_AVAILABLE = false
       ;(globalThis as any).DB_ERROR = error.message
       // 不抛出错误，允许请求继续进行
     }
   } else if (!c.env.DB) {
-    console.warn('⚠️ Database is not configured')
+    logger.warn('Database is not configured')
     ;(globalThis as any).DB_INITIALIZED = false
     ;(globalThis as any).DB_AVAILABLE = false
     ;(globalThis as any).DB_ERROR = 'Database not configured'
@@ -151,6 +180,7 @@ app.get('/health', (c) => {
   const dbError = (globalThis as any).DB_ERROR
   const emailAvailable = (globalThis as any).EMAIL_SERVICE_AVAILABLE === true
   const emailError = (globalThis as any).EMAIL_SERVICE_ERROR
+  const githubOAuthConfigured = !!(c.env.GITHUB_CLIENT_ID && c.env.GITHUB_CLIENT_SECRET)
   
   return c.json({
     status: 'ok',
@@ -166,37 +196,51 @@ app.get('/health', (c) => {
       email: {
         available: emailAvailable,
         error: emailError || null
+      },
+      github_oauth: {
+        available: githubOAuthConfigured,
+        error: githubOAuthConfigured ? null : 'GitHub OAuth credentials not configured'
       }
     }
   })
 })
 
-// 数据库初始化端点（仅用于首次部署）
-app.post('/api/admin/init-db', async (c) => {
+// 数据库初始化端点（仅用于首次部署，需要管理员权限）
+app.post('/api/admin/init-db', adminAuthMiddleware, async (c) => {
+  // 额外的角色检查，确保用户是管理员
+  const user = c.get('user')
+  if (!user || user.role !== 'admin') {
+    return c.json({ 
+      success: false, 
+      error: '权限不足，仅管理员可以初始化数据库 / Insufficient permissions, only admin can initialize database' 
+    }, 403)
+  }
+
   try {
     const { initializeDatabase } = await import('./utils/dbInitializer')
     await initializeDatabase(c.env.DB)
     return c.json({ 
       success: true, 
-      message: '数据库初始化成功' 
+      message: '数据库初始化成功 / Database initialized successfully' 
     })
   } catch (error: any) {
-    console.error('数据库初始化失败:', error)
+    logger.error('数据库初始化失败 / Database initialization failed', error)
     return c.json({ 
       success: false, 
-      error: error.message || '数据库初始化失败' 
+      error: error.message || '数据库初始化失败 / Database initialization failed' 
     }, 500)
   }
 })
 
+// 注册所有路由（必须在 DI 中间件之后）
 app.route('/api/auth', authRouter)
+app.route('/api/auth/github', oauthRouter)
 app.route('/api/posts', postsRouter)
 app.route('/api/comments', commentsRouter)
 app.route('/api/categories', categoriesRouter)
 app.route('/api/notifications', notificationsRouter)
 app.route('/api/attachments', attachmentsRouter)
 app.route('/api/reviews', reviewsRouter)
-app.route('/api/auth/github', oauthRouter)
 
 // Admin routes - 使用管理员认证中间件
 // 需要为每个管理员路由添加认证中间件
@@ -216,10 +260,10 @@ app.post('/api/admin/run-migrations', async (c) => {
     const result = await runMigrations.default(c.env.DB)
     return c.json(result)
   } catch (error: any) {
-    console.error('数据库迁移失败:', error)
+    logger.error('Database migration failed', error)
     return c.json({ 
       success: false, 
-      error: error.message || '数据库迁移失败' 
+      error: error.message || '数据库迁移失败 / Database migration failed' 
     }, 500)
   }
 })

@@ -73,12 +73,23 @@ app.get('/api/admin/audit-logs', requireAdmin, async (c) => {
 
     const logs = await c.env.DB.prepare(query).bind(...params).all()
 
-    // 解析 JSON 字段
-    const parsedLogs = logs.results.map((log: any) => ({
-      ...log,
-      old_values: log.old_values ? JSON.parse(log.old_values) : null,
-      new_values: log.new_values ? JSON.parse(log.new_values) : null,
-    }))
+    // 解析 JSON 字段 / Parse JSON fields
+    const parsedLogs = logs.results.map((log: any) => {
+      try {
+        return {
+          ...log,
+          old_values: log.old_values ? JSON.parse(log.old_values) : null,
+          new_values: log.new_values ? JSON.parse(log.new_values) : null,
+        }
+      } catch (error) {
+        // 如果解析失败，返回原始数据 / If parsing fails, return raw data
+        return {
+          ...log,
+          old_values: null,
+          new_values: null,
+        }
+      }
+    })
 
     return c.json({
       success: true,
@@ -129,14 +140,26 @@ app.get('/api/admin/audit-logs/:id', requireAdmin, async (c) => {
       }, 404)
     }
 
-    return c.json({
-      success: true,
-      data: {
-        ...log,
-        old_values: log.old_values ? JSON.parse(log.old_values as string) : null,
-        new_values: log.new_values ? JSON.parse(log.new_values as string) : null,
-      },
-    })
+    try {
+      return c.json({
+        success: true,
+        data: {
+          ...log,
+          old_values: log.old_values ? JSON.parse(log.old_values as string) : null,
+          new_values: log.new_values ? JSON.parse(log.new_values as string) : null,
+        },
+      })
+    } catch (error) {
+      // 如果解析失败，返回原始数据 / If parsing fails, return raw data
+      return c.json({
+        success: true,
+        data: {
+          ...log,
+          old_values: null,
+          new_values: null,
+        },
+      })
+    }
   } catch (error: any) {
     logger.error('Failed to fetch audit log details:', error)
     return c.json({

@@ -207,7 +207,7 @@ app.post('/api/admin/users/:id/ban', requireModeratorOrAdmin, csrfProtectionMidd
     }
 
     // 管理员不能封禁其他管理员
-    if (currentUser.role === 'moderator' && user.role === 'admin') {
+    if (currentUser?.role === 'moderator' && user.role === 'admin') {
       return c.json({
         success: false,
         error: {
@@ -318,7 +318,7 @@ app.delete('/api/admin/users/:id', requireAdmin, csrfProtectionMiddleware, async
     }
 
     // 不能删除自己
-    if (user.id === currentUser.id) {
+    if (currentUser?.userId && user.id === currentUser.userId) {
       return c.json({
         success: false,
         error: {
@@ -351,6 +351,194 @@ app.delete('/api/admin/users/:id', requireAdmin, csrfProtectionMiddleware, async
       error: {
         code: 'INTERNAL_SERVER_ERROR',
         message: '删除用户失败',
+      },
+    }, 500)
+  }
+})
+
+// 批量删除用户
+app.post('/api/admin/users/batch-delete', requireAdmin, csrfProtectionMiddleware, async (c) => {
+  try {
+    const { ids, reason } = await c.req.json()
+    const currentUser = c.get('currentUser')
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '用户ID列表无效 / Invalid user ID list',
+        },
+      }, 400)
+    }
+
+    if (ids.length > 100) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '一次最多删除100个用户 / Maximum 100 users can be deleted at once',
+        },
+      }, 400)
+    }
+
+    // 不能删除自己
+    if (currentUser?.userId && ids.includes(currentUser.userId)) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '不能删除自己 / Cannot delete yourself',
+        },
+      }, 400)
+    }
+
+    // 获取要删除的用户信息
+    const placeholders = ids.map(() => '?').join(',')
+    const users = await c.env.DB.prepare(
+      `SELECT id, username, email FROM users WHERE id IN (${placeholders})`
+    ).bind(...ids).all()
+
+    // 检查是否有管理员
+    for (const user of users.results || []) {
+      if ((user as any).role === 'admin') {
+        return c.json({
+          success: false,
+          error: {
+            code: 'FORBIDDEN',
+            message: '不能删除管理员 / Cannot delete admin users',
+          },
+        }, 403)
+      }
+    }
+
+    // 批量软删除
+    await c.env.DB.prepare(
+      `UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`
+    ).bind(...ids).run()
+
+    // 记录审计日志
+    for (const user of users.results || []) {
+      await createAuditLog(c, {
+        action: 'user.batch_delete',
+        entity_type: 'user',
+        entity_id: (user as any).id,
+        old_values: JSON.stringify({ username: user.username, email: user.email }),
+        new_values: JSON.stringify({ deleted: true, reason: reason || '批量删除' })
+      })
+    }
+
+    logger.info(`Batch deleted ${ids.length} users by ${currentUser?.username}`)
+
+    return c.json({
+      success: true,
+      message: `成功删除 ${ids.length} 个用户 / Successfully deleted ${ids.length} users`,
+      data: {
+        deleted_count: ids.length,
+        deleted_ids: ids
+      }
+    })
+  } catch (error: any) {
+    logger.error('Failed to batch delete users:', error)
+    return c.json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: '批量删除用户失败 / Failed to batch delete users',
+      },
+    }, 500)
+  }
+})
+
+// 批量更新用户角色
+app.post('/api/admin/users/batch-update-role', requireAdmin, csrfProtectionMiddleware, async (c) => {
+  try {
+    const { ids, role, reason } = await c.req.json()
+    const currentUser = c.get('currentUser')
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '用户ID列表无效 / Invalid user ID list',
+        },
+      }, 400)
+    }
+
+    if (!['user', 'moderator', 'admin'].includes(role)) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '无效的角色值 / Invalid role value',
+        },
+      }, 400)
+    }
+
+    if (ids.length > 100) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '一次最多更新100个用户 / Maximum 100 users can be updated at once',
+        },
+      }, 400)
+    }
+
+    // 获取要更新的用户信息
+    const placeholders = ids.map(() => '?').join(',')
+    const users = await c.env.DB.prepare(
+      `SELECT id, role FROM users WHERE id IN (${placeholders})`
+    ).bind(...ids).all()
+
+    // 检查是否有管理员
+    for (const user of users.results || []) {
+      if ((user as any).role === 'admin' && (user as any).id !== currentUser?.userId) {
+        return c.json({
+          success: false,
+          error: {
+            code: 'FORBIDDEN',
+            message: '不能修改其他管理员的角色 / Cannot modify role of other admins',
+          },
+        }, 403)
+      }
+    }
+
+    // 批量更新角色
+    await c.env.DB.prepare(
+      `UPDATE users SET role = ? WHERE id IN (${placeholders})`
+    ).bind(role, ...ids).run()
+
+    // 记录审计日志
+    for (const user of users.results || []) {
+      await createAuditLog(c, {
+        action: 'user.batch_update_role',
+        entity_type: 'user',
+        entity_id: (user as any).id,
+        old_values: JSON.stringify({ role: (user as any).role }),
+        new_values: JSON.stringify({ role: role, reason: reason || '批量更新角色' })
+      })
+    }
+
+    logger.info(`Batch updated ${ids.length} users to role '${role}' by ${currentUser?.username}`)
+
+    return c.json({
+      success: true,
+      message: `成功更新 ${ids.length} 个用户角色 / Successfully updated ${ids.length} users role`,
+      data: {
+        updated_count: ids.length,
+        updated_ids: ids,
+        new_role: role
+      }
+    })
+  } catch (error: any) {
+    logger.error('Failed to batch update user role:', error)
+    return c.json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: '批量更新用户角色失败 / Failed to batch update user role',
       },
     }, 500)
   }

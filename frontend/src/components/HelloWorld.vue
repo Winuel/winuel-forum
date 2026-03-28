@@ -12,6 +12,7 @@ const count = ref(0)
     <div class="hero">
       <img
         :src="heroImg"
+        loading="lazy"
         class="base"
         width="170"
         height="179"
@@ -19,11 +20,13 @@ const count = ref(0)
       >
       <img
         :src="vueLogo"
+        loading="lazy"
         class="framework"
         alt="Vue logo"
       >
       <img
         :src="viteLogo"
+        loading="lazy"
         class="vite"
         alt="Vite logo"
       >
@@ -62,6 +65,7 @@ const count = ref(0)
             <img
               class="logo"
               :src="viteLogo"
+              loading="lazy"
               alt=""
             >
             Explore Vite
@@ -75,6 +79,7 @@ const count = ref(0)
             <img
               class="button-icon"
               :src="vueLogo"
+              loading="lazy"
               alt=""
             >
             Learn more

@@ -89,6 +89,7 @@
                     v-if="user.avatar"
                     :src="user.avatar"
                     :alt="user.username"
+                    loading="lazy"
                     class="w-10 h-10 rounded-full"
                   />
                   <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">

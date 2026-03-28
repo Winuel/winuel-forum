@@ -43,7 +43,13 @@ function getAllowedOrigins(environment: string, env?: any): string[] {
       'http://localhost:5174',
       'http://127.0.0.1:5174',
     ],
-    production: [],
+    production: [
+      'https://hub.winuel.com',
+      'https://www.winuel.com',
+      'https://admin.winuel.com',
+      'https://winuel.pages.dev',
+      'https://winuel-admin.pages.dev',
+    ],
   }
 
   return defaults[environment] || defaults.production

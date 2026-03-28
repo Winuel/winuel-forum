@@ -5,6 +5,7 @@
         <img
           :src="comment.authorAvatar || '/default-avatar.png'"
           :alt="comment.authorUsername"
+          loading="lazy"
           class="w-11 h-11 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-600 group-hover:ring-primary-300 dark:group-hover:ring-primary-600 transition-all duration-300"
         />
       </div>
@@ -104,6 +105,7 @@
           <img
             :src="currentUser?.avatar || '/default-avatar.png'"
             :alt="currentUser?.username"
+            loading="lazy"
             class="w-8 h-8 rounded-full object-cover flex-shrink-0"
           />
           <div class="flex-1">
@@ -177,9 +179,20 @@ const isAttachmentOwner = computed(() => {
   return currentUser.value?.id === props.comment.codeReview?.attachmentOwnerId
 })
 
-function toggleLike() {
-  isLiked.value = !isLiked.value
-  // TODO: 调用 API 点赞/取消点赞
+async function toggleLike() {
+  try {
+    if (isLiked.value) {
+      // 取消点赞
+      await apiClient.delete(`/api/comments/${props.comment.id}/like`)
+    } else {
+      // 点赞
+      await apiClient.post(`/api/comments/${props.comment.id}/like`)
+    }
+    isLiked.value = !isLiked.value
+  } catch (error) {
+    // Error handling is managed by the error handler
+    console.error('Failed to toggle like:', error)
+  }
 }
 
 async function submitReply() {
@@ -188,12 +201,12 @@ async function submitReply() {
   isSubmitting.value = true
 
   try {
-    // TODO: 调用 API 提交回复
-    // await api.comments.create({
-    //   postId: props.postId,
-    //   content: replyContent.value,
-    //   parentId: props.comment.id
-    // })
+    // 调用 API 提交回复
+    await apiClient.post('/api/comments', {
+      post_id: props.postId,
+      content: replyContent.value,
+      parent_id: props.comment.id
+    })
 
     // 清空表单
     replyContent.value = ''

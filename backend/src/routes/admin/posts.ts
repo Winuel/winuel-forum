@@ -106,7 +106,7 @@ app.delete('/api/admin/posts/:id', requireModeratorOrAdmin, csrfProtectionMiddle
     }
 
     // 检查权限（moderator 不能删除管理员帖子）
-    if (currentUser.role === 'moderator') {
+    if (currentUser?.role === 'moderator') {
       const author = await c.env.DB.prepare(
         'SELECT role FROM users WHERE id = ?'
       ).bind(post.author_id).first()
@@ -381,7 +381,7 @@ app.post('/api/posts/:id/appeal', async (c) => {
     }
 
     const postService = new PostService(c.env.DB)
-    const post = await postService.appeal(id, currentUser.id, reason.trim())
+    const post = await postService.appeal(id, currentUser?.userId || '', reason.trim())
 
     return c.json({
       success: true,
@@ -528,7 +528,7 @@ app.put('/api/admin/posts/:id/audit', requireModeratorOrAdmin, csrfProtectionMid
     ).bind(
       generateId(),
       id,
-      currentUser.id,
+      currentUser?.userId || '',
       status === 'approved' ? 'approve' : 'reject',
       post.audit_status,
       status,
@@ -578,6 +578,188 @@ app.get('/api/admin/posts/:id/audit-logs', requireModeratorOrAdmin, async (c) =>
       error: {
         code: 'INTERNAL_SERVER_ERROR',
         message: '获取审核历史失败',
+      },
+    }, 500)
+  }
+})
+
+// 批量删除帖子
+app.post('/api/admin/posts/batch-delete', requireModeratorOrAdmin, csrfProtectionMiddleware, async (c) => {
+  try {
+    const { ids, reason } = await c.req.json()
+    const currentUser = c.get('currentUser')
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '帖子ID列表无效 / Invalid post ID list',
+        },
+      }, 400)
+    }
+
+    if (ids.length > 100) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '一次最多删除100个帖子 / Maximum 100 posts can be deleted at once',
+        },
+      }, 400)
+    }
+
+    // 获取要删除的帖子信息
+    const placeholders = ids.map(() => '?').join(',')
+    const posts = await c.env.DB.prepare(
+      `SELECT id, title, author_id FROM posts WHERE id IN (${placeholders}) AND deleted_at IS NULL`
+    ).bind(...ids).all()
+
+    // 检查权限
+    if (currentUser?.role === 'moderator') {
+      for (const post of posts.results || []) {
+        const author = await c.env.DB.prepare(
+          'SELECT role FROM users WHERE id = ?'
+        ).bind(post.author_id).first()
+
+        if (author?.role === 'admin') {
+          return c.json({
+            success: false,
+            error: {
+              code: 'FORBIDDEN',
+              message: '审核员不能删除管理员的帖子 / Moderators cannot delete admin posts',
+            },
+          }, 403)
+        }
+      }
+    }
+
+    // 批量软删除
+    await c.env.DB.prepare(
+      `UPDATE posts SET deleted_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`
+    ).bind(...ids).run()
+
+    // 记录审计日志
+    for (const post of posts.results || []) {
+      await c.env.DB.prepare(`
+        INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, old_values, new_values, reason)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        generateId(),
+        currentUser?.userId || '',
+        'post.batch_delete',
+        'post',
+        post.id,
+        JSON.stringify({ title: post.title, author_id: post.author_id }),
+        JSON.stringify({ deleted: true }),
+        reason || '批量删除'
+      ).run()
+    }
+
+    logger.info(`Batch deleted ${ids.length} posts by ${currentUser?.username}`)
+
+    return c.json({
+      success: true,
+      message: `成功删除 ${ids.length} 个帖子 / Successfully deleted ${ids.length} posts`,
+      data: {
+        deleted_count: ids.length,
+        deleted_ids: ids
+      }
+    })
+  } catch (error: any) {
+    logger.error('Failed to batch delete posts:', error)
+    return c.json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: '批量删除帖子失败 / Failed to batch delete posts',
+      },
+    }, 500)
+  }
+})
+
+// 批量更新帖子状态
+app.post('/api/admin/posts/batch-update-status', requireModeratorOrAdmin, csrfProtectionMiddleware, async (c) => {
+  try {
+    const { ids, status, reason } = await c.req.json()
+    const currentUser = c.get('currentUser')
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '帖子ID列表无效 / Invalid post ID list',
+        },
+      }, 400)
+    }
+
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '无效的状态值 / Invalid status value',
+        },
+      }, 400)
+    }
+
+    if (ids.length > 100) {
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: '一次最多更新100个帖子 / Maximum 100 posts can be updated at once',
+        },
+      }, 400)
+    }
+
+    // 获取要更新的帖子信息
+    const placeholders = ids.map(() => '?').join(',')
+    const posts = await c.env.DB.prepare(
+      `SELECT id, audit_status FROM posts WHERE id IN (${placeholders}) AND deleted_at IS NULL`
+    ).bind(...ids).all()
+
+    // 批量更新状态
+    await c.env.DB.prepare(
+      `UPDATE posts SET audit_status = ?, audit_reason = ? WHERE id IN (${placeholders})`
+    ).bind(status, reason || '', ...ids).run()
+
+    // 记录审计日志
+    for (const post of posts.results || []) {
+      await c.env.DB.prepare(`
+        INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, old_values, new_values, reason)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        generateId(),
+        currentUser?.userId || '',
+        'post.batch_update_status',
+        'post',
+        post.id,
+        JSON.stringify({ audit_status: post.audit_status }),
+        JSON.stringify({ audit_status: status }),
+        reason || '批量更新状态'
+      ).run()
+    }
+
+    logger.info(`Batch updated ${ids.length} posts to status '${status}' by ${currentUser?.username}`)
+
+    return c.json({
+      success: true,
+      message: `成功更新 ${ids.length} 个帖子状态 / Successfully updated ${ids.length} posts status`,
+      data: {
+        updated_count: ids.length,
+        updated_ids: ids,
+        new_status: status
+      }
+    })
+  } catch (error: any) {
+    logger.error('Failed to batch update post status:', error)
+    return c.json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: '批量更新帖子状态失败 / Failed to batch update post status',
       },
     }, 500)
   }

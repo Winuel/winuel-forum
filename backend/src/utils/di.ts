@@ -193,6 +193,7 @@ export const DEPENDENCY_TOKENS = {
   AUDIT_SERVICE: 'AuditService',
   CODE_ATTACHMENT_SERVICE: 'CodeAttachmentService',
   PLUGIN_SERVICE: 'PluginService',
+  KV_CACHE: 'KV_CACHE',
 } as const
 
 export type DependencyToken = typeof DEPENDENCY_TOKENS[keyof typeof DEPENDENCY_TOKENS]

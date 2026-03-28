@@ -131,7 +131,7 @@ export class UserService {
 
     // 返回用户信息（不含密码哈希）和令牌 / Return user info (without password hash) and token
     const { password_hash: _, ...userWithoutPassword } = user
-    return { userWithoutPassword, token }
+    return { user: userWithoutPassword, token }
   }
 
   /**
@@ -168,7 +168,7 @@ export class UserService {
 
     // 返回用户信息（不含密码哈希）和令牌 / Return user info (without password hash) and token
     const { password_hash: _, ...userWithoutPassword } = result
-    return { userWithoutPassword, token }
+    return { user: userWithoutPassword, token }
   }
 
   /**
@@ -211,7 +211,7 @@ export class UserService {
 
     // 返回用户信息（不含密码哈希）和令牌 / Return user info (without password hash) and token
     const { password_hash: _, ...userWithoutPassword } = result
-    return { userWithoutPassword, token }
+    return { user: userWithoutPassword, token }
   }
 
   /**
@@ -352,7 +352,7 @@ export class UserService {
 
     // 返回用户信息（不含密码哈希）和令牌 / Return user info (without password hash) and token
     const { password_hash: _, ...userWithoutPassword } = user
-    return { userWithoutPassword, token }
+    return { user: userWithoutPassword, token }
   }
 
   /**

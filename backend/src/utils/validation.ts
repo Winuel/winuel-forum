@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export interface ValidationResult {
   isValid: boolean
   errors: string[]
@@ -117,7 +119,7 @@ export function initEmailChecker(blocklist: string[], allowlist: string[] = []):
 
   } catch (error) {
 
-    console.error('Failed to initialize email checker:', error)
+    logger.error('Failed to initialize email checker', error)
 
     // 即使初始化失败，也不抛出错误，继续运行
 
@@ -141,7 +143,7 @@ export function isDisposableEmail(email: string): boolean {
 
   if (!globalEmailChecker) {
 
-    console.warn('Email checker not initialized. Please call initEmailChecker first.')
+    logger.warn('Email checker not initialized. Please call initEmailChecker first.')
 
     return false
 
@@ -153,7 +155,7 @@ export function isDisposableEmail(email: string): boolean {
 
   } catch (error) {
 
-    console.error('Error checking disposable email:', error)
+    logger.error('Error checking disposable email', error)
 
     return false
 
@@ -175,7 +177,7 @@ export function validateDisposableEmail(email: string): ValidationResult {
 
   if (!globalEmailChecker) {
 
-    console.warn('Email checker not initialized. Skipping disposable email check.')
+    logger.warn('Email checker not initialized. Skipping disposable email check.')
 
     return {
 
@@ -205,7 +207,7 @@ export function validateDisposableEmail(email: string): ValidationResult {
 
   } catch (error) {
 
-    console.error('Error validating disposable email:', error)
+    logger.error('Error validating disposable email', error)
 
     // 验证失败时，为了安全起见，允许通过
 
@@ -228,27 +230,27 @@ export function validatePassword(password: string): ValidationResult {
 
   // 最小长度检查（至少8位）
   if (password.length < 8) {
-    errors.push('密码长度至少为8个字符')
+    errors.push('密码长度至少为8个字符 / Password must be at least 8 characters')
   }
 
   // 最大长度检查
   if (password.length > 128) {
-    errors.push('密码长度不能超过128个字符')
+    errors.push('密码长度不能超过128个字符 / Password must not exceed 128 characters')
   }
 
   // 检查是否包含字母
   if (!/[a-zA-Z]/.test(password)) {
-    errors.push('密码必须包含至少一个字母')
+    errors.push('密码必须包含至少一个字母 / Password must contain at least one letter')
   }
 
   // 检查是否包含数字
   if (!/[0-9]/.test(password)) {
-    errors.push('密码必须包含至少一个数字')
+    errors.push('密码必须包含至少一个数字 / Password must contain at least one number')
   }
 
-  // 检查是否只包含字母和数字
-  if (!/^[a-zA-Z0-9]+$/.test(password)) {
-    errors.push('密码只能包含字母和数字')
+  // 检查是否包含特殊字符
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    errors.push('密码必须包含至少一个特殊字符（如：!@#$%^&*等）/ Password must contain at least one special character (e.g., !@#$%^&*)')
   }
 
   // 检查常见弱密码
@@ -257,10 +259,11 @@ export function validatePassword(password: string): ValidationResult {
     'password123', '123456789', 'admin', 'letmein',
     'welcome', 'monkey', 'dragon', 'master',
     '12345678', '11111111', 'qwerty123', 'test1234',
-    '123456ab', '123abc12', 'password1', '1234qwer'
+    '123456ab', '123abc12', 'password1', '1234qwer',
+    'Password123!', 'Admin123!', 'Qwerty123!', 'Test1234!'
   ]
   if (commonPasswords.includes(password.toLowerCase())) {
-    errors.push('密码过于简单，请使用更复杂的密码')
+    errors.push('密码过于简单，请使用更复杂的密码 / Password is too weak, please use a stronger password')
   }
 
   return {

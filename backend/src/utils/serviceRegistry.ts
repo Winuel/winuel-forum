@@ -13,6 +13,7 @@ import { CodeAttachmentService } from '../services/codeAttachmentService'
 import { PluginService } from '../services/pluginService'
 import { CodeAttachmentModel, CodeReviewModel } from '../models/codeAttachment'
 import { PluginLoader } from '@winuel/plugin-system'
+import { createCache, KVCache } from './cache'
 
 export type Env = {
   DB: D1Database
@@ -44,6 +45,16 @@ export function initializeServices(env: Env): DIContainer {
   // 注册 JWT 密钥（瞬态，允许动态更新）
   container.registerTransient(DEPENDENCY_TOKENS.JWT_SECRET, () => env.JWT_SECRET)
 
+  // 注册 KV 缓存（单例，整个应用共享）
+  container.registerSingleton(DEPENDENCY_TOKENS.KV_CACHE, () => {
+    return createCache(env.KV, {
+      defaultTTL: 300, // 5分钟缓存 / 5 minute cache
+      prefix: 'winuel:',
+      enabled: true,
+      logHits: false // 生产环境可以关闭日志 / Can disable logs in production
+    })
+  })
+
   // 注册服务（瞬态，每次请求创建新实例以避免状态污染）
   container.registerTransient(DEPENDENCY_TOKENS.USER_SERVICE, (c) => {
     const db = c.resolve<D1Database>(DEPENDENCY_TOKENS.DB)
@@ -52,7 +63,8 @@ export function initializeServices(env: Env): DIContainer {
 
   container.registerTransient(DEPENDENCY_TOKENS.POST_SERVICE, (c) => {
     const db = c.resolve<D1Database>(DEPENDENCY_TOKENS.DB)
-    return new PostService(db)
+    const cache = c.resolve<KVCache>(DEPENDENCY_TOKENS.KV_CACHE)
+    return new PostService(db, cache)
   })
 
   container.registerTransient(DEPENDENCY_TOKENS.CATEGORY_SERVICE, (c) => {

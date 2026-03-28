@@ -15,7 +15,7 @@ export interface AuditLogData {
  */
 export async function createAuditLog(c: Context<{ Bindings: Env; Variables: Variables }>, data: AuditLogData) {
   try {
-    const userId = c.get('userId') || c.get('currentUser')?.id || null
+    const userId = c.get('userId') || c.get('currentUser')?.userId || null
     const userAgent = c.req.header('user-agent') || null
     const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || null
 

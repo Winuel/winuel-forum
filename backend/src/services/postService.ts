@@ -20,6 +20,7 @@
  */
 
 import type { Post, Comment } from '../db/models'
+import type { KVCache } from '../utils/cache'
 import { generateId } from '../utils/crypto'
 
 /**
@@ -103,8 +104,9 @@ export class PostService {
    * Constructor
    * 
    * @param db - D1 数据库实例 / D1 database instance
+   * @param cache - 可选的 KV 缓存实例 / Optional KV cache instance
    */
-  constructor(private db: D1Database) {}
+  constructor(private db: D1Database, private cache?: KVCache) {}
 
   /**
    * 创建帖子
@@ -163,6 +165,15 @@ export class PostService {
    * @returns 帖子对象或 null / Post object or null
    */
   async findById(id: string): Promise<Post | null> {
+    if (this.cache) {
+      return this.cache.getOrSet(
+        `post:${id}`,
+        async () => {
+          return this.db.prepare('SELECT id, title, content, author_id, category_id, view_count, like_count, comment_count, created_at, updated_at FROM posts WHERE id = ? AND deleted_at IS NULL').bind(id).first<Post>()
+        },
+        300 // 5分钟缓存 / 5 minute cache
+      )
+    }
     return this.db.prepare('SELECT id, title, content, author_id, category_id, view_count, like_count, comment_count, created_at, updated_at FROM posts WHERE id = ? AND deleted_at IS NULL').bind(id).first<Post>()
   }
 
@@ -245,8 +256,9 @@ export class PostService {
     limit?: number
     category_id?: string
     author_id?: string
+    user_id?: string  // 添加用户ID参数，用于查询点赞状态 / Add user_id parameter for querying like status
   } = {}): Promise<{ posts: any[]; total: number }> {
-    const { page = 1, limit = 20, category_id, author_id } = options
+    const { page = 1, limit = 20, category_id, author_id, user_id } = options
     const offset = (page - 1) * limit
 
     // 使用 JOIN 查询一次性获取帖子、作者和分类信息 / Use JOIN query to get post, author, and category info at once
@@ -301,6 +313,22 @@ export class PostService {
       })
     }
 
+    // 一次性获取当前用户的点赞状态（避免 N+1 查询）/ Get current user's like status at once (avoid N+1 queries)
+    let likesMap: Record<string, boolean> = {}
+    if (postIds.length > 0 && user_id) {
+      const placeholders = postIds.map(() => '?').join(',')
+      const likesQuery = `
+        SELECT target_id 
+        FROM likes 
+        WHERE user_id = ? AND target_type = 'post' AND target_id IN (${placeholders})
+      `
+      const likesResult = await this.db.prepare(likesQuery).bind(user_id, ...postIds).all()
+      
+      likesResult.results?.forEach((like: any) => {
+        likesMap[like.target_id] = true
+      })
+    }
+
     // 组装结果 / Assemble results
     const posts = postsResult.results?.map((post: any) => ({
       id: post.id,
@@ -322,7 +350,8 @@ export class PostService {
         id: post.category_id,
         name: post.category_name
       },
-      tags: tagsMap[post.id] || []
+      tags: tagsMap[post.id] || [],
+      is_liked: likesMap[post.id] || false  // 添加用户点赞状态 / Add user like status
     })) || []
 
     // 计算总数 / Calculate total count
@@ -348,68 +377,126 @@ export class PostService {
   }
 
   /**
-   * 根据 ID 查找帖子（包含详细信息）
-   * Find Post by ID with Details
-   * 
-   * 返回包含作者、分类和标签的详细信息
-   * Returns detailed info including author, category, and tags
-   * 
-   * @param id - 帖子 ID / Post ID
-   * @returns 帖子对象（含详细信息）或 null / Post object (with details) or null
-   */
-  async findByIdWithDetails(id: string): Promise<any | null> {
-    // 使用 JOIN 查询一次性获取帖子、作者、分类和标签信息 / Use JOIN query to get post, author, category, and tag info at once
-    const query = `
-      SELECT 
-        p.*,
-        u.username as author_username,
-        u.avatar as author_avatar,
-        c.name as category_name
-      FROM posts p
-      LEFT JOIN users u ON p.author_id = u.id AND u.deleted_at IS NULL
-      LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.id = ? AND p.deleted_at IS NULL
-    `
-    
-    const post = await this.db.prepare(query).bind(id).first()
-    
-    if (!post) {
-      return null
+     * 根据 ID 查找帖子（包含详细信息）
+     * Find Post by ID with Details
+     * 
+     * 返回包含作者、分类和标签的详细信息
+     * Returns detailed info including author, category, and tags
+     * 
+     * @param id - 帖子 ID / Post ID
+     * @returns 帖子对象（含详细信息）或 null / Post object (with details) or null
+     */
+    async findByIdWithDetails(id: string): Promise<any | null> {
+      if (this.cache) {
+        return this.cache.getOrSet(
+          `post:${id}:details`,
+          async () => {
+            // 使用 JOIN 查询一次性获取帖子、作者、分类和标签信息 / Use JOIN query to get post, author, category, and tag info at once
+            const query = `
+              SELECT 
+                p.*,
+                u.username as author_username,
+                u.avatar as author_avatar,
+                c.name as category_name
+              FROM posts p
+              LEFT JOIN users u ON p.author_id = u.id AND u.deleted_at IS NULL
+              LEFT JOIN categories c ON p.category_id = c.id
+              WHERE p.id = ? AND p.deleted_at IS NULL
+            `
+            
+            const post = await this.db.prepare(query).bind(id).first()
+            
+            if (!post) {
+              return null
+            }
+            
+            // 获取标签 / Get tags
+            const tagsQuery = `
+              SELECT t.name 
+              FROM post_tags pt
+              JOIN tags t ON pt.tag_id = t.id
+              WHERE pt.post_id = ?
+            `
+            const tagsResult = await this.db.prepare(tagsQuery).bind(id).all()
+            
+            return {
+              id: post.id,
+              title: post.title,
+              content: post.content,
+              author_id: post.author_id,
+              category_id: post.category_id,
+              view_count: post.view_count,
+              like_count: post.like_count,
+              comment_count: post.comment_count,
+              created_at: post.created_at,
+              updated_at: post.updated_at,
+              author: {
+                id: post.author_id,
+                username: post.author_username,
+                avatar: post.author_avatar
+              },
+              category: {
+                id: post.category_id,
+                name: post.category_name
+              },
+              tags: tagsResult.results?.map((t: any) => t.name) || []
+            }
+          },
+          300 // 5分钟缓存 / 5 minute cache
+        )
+      }
+      
+      // 使用 JOIN 查询一次性获取帖子、作者、分类和标签信息 / Use JOIN query to get post, author, category, and tag info at once
+      const query = `
+        SELECT 
+          p.*,
+          u.username as author_username,
+          u.avatar as author_avatar,
+          c.name as category_name
+        FROM posts p
+        LEFT JOIN users u ON p.author_id = u.id AND u.deleted_at IS NULL
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.id = ? AND p.deleted_at IS NULL
+      `
+      
+      const post = await this.db.prepare(query).bind(id).first()
+      
+      if (!post) {
+        return null
+      }
+      
+      // 获取标签 / Get tags
+      const tagsQuery = `
+        SELECT t.name 
+        FROM post_tags pt
+        JOIN tags t ON pt.tag_id = t.id
+        WHERE pt.post_id = ?
+      `
+      const tagsResult = await this.db.prepare(tagsQuery).bind(id).all()
+      
+      return {
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        author_id: post.author_id,
+        category_id: post.category_id,
+        view_count: post.view_count,
+        like_count: post.like_count,
+        comment_count: post.comment_count,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        author: {
+          id: post.author_id,
+          username: post.author_username,
+          avatar: post.author_avatar
+        },
+        category: {
+          id: post.category_id,
+          name: post.category_name
+        },
+        tags: tagsResult.results?.map((t: any) => t.name) || []
+      }
     }
-
-    // 获取标签 / Get tags
-    const tagsQuery = `
-      SELECT t.name 
-      FROM post_tags pt
-      JOIN tags t ON pt.tag_id = t.id
-      WHERE pt.post_id = ?
-    `
-    const tagsResult = await this.db.prepare(tagsQuery).bind(id).all()
-    
-    return {
-      id: post.id,
-      title: post.title,
-      content: post.content,
-      author_id: post.author_id,
-      category_id: post.category_id,
-      view_count: post.view_count,
-      like_count: post.like_count,
-      comment_count: post.comment_count,
-      created_at: post.created_at,
-      updated_at: post.updated_at,
-      author: {
-        id: post.author_id,
-        username: post.author_username,
-        avatar: post.author_avatar
-      },
-      category: {
-        id: post.category_id,
-        name: post.category_name
-      },
-      tags: tagsResult.results?.map((t: any) => t.name) || []
-    }
-  }
-
   /**
    * 更新帖子
    * Update Post

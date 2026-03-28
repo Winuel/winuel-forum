@@ -10,6 +10,7 @@
           <img
             :src="postStore.currentPost.authorAvatar || '/default-avatar.png'"
             :alt="postStore.currentPost.authorUsername"
+            loading="lazy"
             class="w-12 h-12 rounded-full object-cover"
           />
           <div>

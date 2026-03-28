@@ -5,6 +5,7 @@
         <img
           :src="user?.avatar || '/default-avatar.png'"
           :alt="user?.username"
+          loading="lazy"
           class="w-24 h-24 rounded-full object-cover"
         />
         <div>

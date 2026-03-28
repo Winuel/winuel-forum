@@ -21,6 +21,7 @@ import type { D1Database } from '@cloudflare/workers-types'
 import type { PluginRecord, PluginConfigRecord } from '../models/plugin.js'
 import type { PluginPackage, PluginManifest, PluginConfig } from '@winuel/plugin-system'
 import { PluginLoader, PluginValidator, PluginStatus } from '@winuel/plugin-system'
+import { logger } from '../utils/logger'
 
 /**
  * 插件管理服务类
@@ -211,7 +212,13 @@ export class PluginService {
       return null
     }
 
-    return JSON.parse(plugin.config)
+    try {
+      return JSON.parse(plugin.config)
+    } catch (error) {
+      // 记录错误并返回 null / Log error and return null
+      logger.error('Failed to parse plugin config', error)
+      return null
+    }
   }
 
   /**

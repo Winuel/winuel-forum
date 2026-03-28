@@ -18,17 +18,34 @@ app.get('/', async (c) => {
 
   return c.json({
     success: true,
-    data: plugins.map((plugin: PluginRecord) => ({
-      id: plugin.id,
-      manifest: JSON.parse(plugin.manifest),
-      status: plugin.status,
-      enabled: plugin.enabled,
-      version: plugin.version,
-      config: JSON.parse(plugin.config),
-      installedAt: plugin.installed_at,
-      updatedAt: plugin.updated_at,
-      error: plugin.error
-    }))
+    data: plugins.map((plugin: PluginRecord) => {
+      try {
+        return {
+          id: plugin.id,
+          manifest: JSON.parse(plugin.manifest),
+          status: plugin.status,
+          enabled: plugin.enabled,
+          version: plugin.version,
+          config: JSON.parse(plugin.config),
+          installedAt: plugin.installed_at,
+          updatedAt: plugin.updated_at,
+          error: plugin.error
+        }
+      } catch (error) {
+        // 如果解析失败，返回基本信息 / If parsing fails, return basic info
+        return {
+          id: plugin.id,
+          manifest: null,
+          status: plugin.status,
+          enabled: plugin.enabled,
+          version: plugin.version,
+          config: null,
+          installedAt: plugin.installed_at,
+          updatedAt: plugin.updated_at,
+          error: plugin.error
+        }
+      }
+    })
   })
 })
 
@@ -47,20 +64,38 @@ app.get('/:pluginId', async (c) => {
     return c.json({ success: false, error: { code: 'NOT_FOUND', message: '插件未找到' } }, 404)
   }
 
-  return c.json({
-    success: true,
-    data: {
-      id: plugin.id,
-      manifest: JSON.parse(plugin.manifest),
-      status: plugin.status,
-      enabled: plugin.enabled,
-      version: plugin.version,
-      config: JSON.parse(plugin.config),
-      installedAt: plugin.installed_at,
-      updatedAt: plugin.updated_at,
-      error: plugin.error
-    }
-  })
+  try {
+    return c.json({
+      success: true,
+      data: {
+        id: plugin.id,
+        manifest: JSON.parse(plugin.manifest),
+        status: plugin.status,
+        enabled: plugin.enabled,
+        version: plugin.version,
+        config: JSON.parse(plugin.config),
+        installedAt: plugin.installed_at,
+        updatedAt: plugin.updated_at,
+        error: plugin.error
+      }
+    })
+  } catch (error) {
+    // 如果解析失败，返回基本信息 / If parsing fails, return basic info
+    return c.json({
+      success: true,
+      data: {
+        id: plugin.id,
+        manifest: null,
+        status: plugin.status,
+        enabled: plugin.enabled,
+        version: plugin.version,
+        config: null,
+        installedAt: plugin.installed_at,
+        updatedAt: plugin.updated_at,
+        error: plugin.error
+      }
+    })
+  }
 })
 
 /**获取已激活的插件*/
@@ -75,17 +110,34 @@ app.get('/active/list', async (c) => {
 
   return c.json({
     success: true,
-    data: plugins.map((plugin: PluginRecord) => ({
-      id: plugin.id,
-      manifest: JSON.parse(plugin.manifest),
-      status: plugin.status,
-      enabled: plugin.enabled,
-      version: plugin.version,
-      config: JSON.parse(plugin.config),
-      installedAt: plugin.installed_at,
-      updatedAt: plugin.updated_at,
-      error: plugin.error
-    }))
+    data: plugins.map((plugin: PluginRecord) => {
+      try {
+        return {
+          id: plugin.id,
+          manifest: JSON.parse(plugin.manifest),
+          status: plugin.status,
+          enabled: plugin.enabled,
+          version: plugin.version,
+          config: JSON.parse(plugin.config),
+          installedAt: plugin.installed_at,
+          updatedAt: plugin.updated_at,
+          error: plugin.error
+        }
+      } catch (error) {
+        // 如果解析失败，返回基本信息 / If parsing fails, return basic info
+        return {
+          id: plugin.id,
+          manifest: null,
+          status: plugin.status,
+          enabled: plugin.enabled,
+          version: plugin.version,
+          config: null,
+          installedAt: plugin.installed_at,
+          updatedAt: plugin.updated_at,
+          error: plugin.error
+        }
+      }
+    })
   })
 })
 

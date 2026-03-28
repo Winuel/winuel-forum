@@ -112,7 +112,7 @@ describe('Error Handler Utils', () => {
       const result = handleError(error)
 
       expect(result.code).toBe('NOT_FOUND')
-      expect(result.message).toBe('资源不存在')
+      expect(result.message).toBe('资源不存在 / Resource not found')
       expect(result.details).toBe('User not found')
     })
 
@@ -129,7 +129,7 @@ describe('Error Handler Utils', () => {
       const result = handleError(error as any)
 
       expect(result.code).toBe('INTERNAL_ERROR')
-      expect(result.message).toBe('服务器内部错误')
+      expect(result.message).toBe('服务器内部错误 / Internal server error')
     })
 
     it('should include stack trace in development', () => {

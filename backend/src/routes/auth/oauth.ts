@@ -25,7 +25,11 @@ app.get('/', async (c) => {
 app.get('/test', async (c) => {
   const container = c.get('container')
   if (!container) {
-    return c.json({ success: false, error: '容器未初始化' }, 500)
+    console.error('OAuth test: Container not initialized')
+    return c.json({ 
+      success: false, 
+      error: '服务容器未初始化，请检查 DI 中间件配置' 
+    }, 500)
   }
 
   try {
@@ -33,7 +37,7 @@ app.get('/test', async (c) => {
     const kv = container.resolve<KVNamespace>(DEPENDENCY_TOKENS.KV)
     const db = container.resolve<D1Database>(DEPENDENCY_TOKENS.DB)
 
-    return c.json({
+    const result = {
       success: true,
       data: {
         hasClientId: !!env.GITHUB_CLIENT_ID,
@@ -41,10 +45,15 @@ app.get('/test', async (c) => {
         hasApiUrl: !!env.API_URL,
         hasKV: !!kv,
         hasDB: !!db,
-        envKeys: Object.keys(env).filter(key => key.includes('GITHUB') || key.includes('API'))
+        envKeys: Object.keys(env).filter(key => key.includes('GITHUB') || key.includes('API')),
+        environment: env.ENVIRONMENT || 'unknown'
       }
-    })
+    }
+    
+    console.log('OAuth test result:', result.data)
+    return c.json(result)
   } catch (error: any) {
+    console.error('OAuth test error:', error)
     return c.json({
       success: false,
       error: error.message || '测试失败'
@@ -67,7 +76,14 @@ function getGitHubAuth(env: any): MarketplaceAuth {
 app.get('/github/authorize', async (c) => {
   const container = c.get('container')
   if (!container) {
-    return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
+    console.error('OAuth authorize: Container not initialized')
+    return c.json({ 
+      success: false, 
+      error: { 
+        code: 'INTERNAL_ERROR', 
+        message: '服务容器未初始化，请检查 DI 中间件配置' 
+      } 
+    }, 500)
   }
 
   try {
@@ -75,20 +91,39 @@ app.get('/github/authorize', async (c) => {
     const env = container.resolve(DEPENDENCY_TOKENS.ENV) as any
     const auth = getGitHubAuth(env)
 
-    console.log('GitHub配置:', {
+    console.log('GitHub配置检查:', {
       hasClientId: !!auth.clientId,
       hasClientSecret: !!auth.clientSecret,
-      redirectUri: auth.redirectUri
+      redirectUri: auth.redirectUri,
+      environment: env.ENVIRONMENT
     })
 
     if (!auth.clientId || !auth.clientSecret) {
+      console.error('GitHub OAuth配置缺失:', {
+        hasClientId: !!auth.clientId,
+        hasClientSecret: !!auth.clientSecret
+      })
       return c.json({
         success: false,
-        error: { code: 'CONFIG_ERROR', message: 'GitHub OAuth配置缺失' }
+        error: { 
+          code: 'CONFIG_ERROR', 
+          message: 'GitHub OAuth配置缺失，请联系管理员配置 GITHUB_CLIENT_ID 和 GITHUB_CLIENT_SECRET' 
+        }
       }, 500)
     }
 
     const kv = container.resolve<KVNamespace>(DEPENDENCY_TOKENS.KV)
+    if (!kv) {
+      console.error('KV绑定获取失败')
+      return c.json({
+        success: false,
+        error: { 
+          code: 'CONFIG_ERROR', 
+          message: 'KV 存储未配置，请联系管理员' 
+        }
+      }, 500)
+    }
+    
     console.log('KV绑定获取成功')
     const storage = new KVTokenStorage(kv)
     const oauthService = new OAuthService(auth, storage)
