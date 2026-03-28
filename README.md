@@ -31,6 +31,7 @@ This project was split and migrated on **March 26, 2026**. Please visit the new 
 |---------------------------|-----------|----------------|
 | **winuel-packages** | [github.com/Winuel/winuel-packages](https://github.com/Winuel/winuel-packages) | Shared Packages / 共享包库 |
 | **winuel-forum** | [github.com/Winuel/winuel-forum](https://github.com/Winuel/winuel-forum) | Forum System / 论坛系统 |
+| **winuel-admin** | [github.com/Winuel/winuel-admin](https://github.com/Winuel/winuel-admin) | Admin Dashboard / 管理员后台 |
 | **winuel-docs** | [github.com/Winuel/winuel-docs](https://github.com/Winuel/winuel-docs) | Documentation Site / 文档站点 |
 | **winuel-website** | [github.com/Winuel/winuel-website](https://github.com/Winuel/winuel-website) | Official Website / 官方网站 |
 
@@ -46,9 +47,10 @@ To better manage the project and promote collaboration, we split the project int
 ### How to Use After Migration? / 迁移后如何使用？
 
 1. **Develop Forum System / 开发论坛系统**: Visit [Winuel/winuel-forum](https://github.com/Winuel/winuel-forum)
-2. **Use Shared Packages / 使用共享包**: Visit [Winuel/winuel-packages](https://github.com/Winuel/winuel-packages)
-3. **View Documentation / 查看文档**: Visit [docs.winuel.com](https://docs.winuel.com)
-4. **Learn About Product / 了解产品**: Visit [www.winuel.com](https://www.winuel.com)
+2. **Manage Forum / 管理论坛**: Visit [Winuel/winuel-admin](https://github.com/Winuel/winuel-admin) (Admin Dashboard / 管理员后台)
+3. **Use Shared Packages / 使用共享包**: Visit [Winuel/winuel-packages](https://github.com/Winuel/winuel-packages)
+4. **View Documentation / 查看文档**: Visit [docs.winuel.com](https://docs.winuel.com)
+5. **Learn About Product / 了解产品**: Visit [www.winuel.com](https://www.winuel.com)
 
 > **Note / 注意**: This repository only retains historical records. For future development, please visit the new repositories above.
 > 此仓库仅保留历史记录，后续开发请访问上述新仓库。
