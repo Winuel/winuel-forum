@@ -19,6 +19,7 @@
 
 import { CodeAttachmentModel, CodeReviewModel } from '../models/codeAttachment'
 import { DiffTool } from '../utils/diff'
+import { logger } from '../utils/logger'
 import type { 
   CreateCodeAttachmentInput, 
   UpdateCodeAttachmentInput,
@@ -93,7 +94,7 @@ export class CodeAttachmentService {
         attachment
       }
     } catch (error) {
-      console.error('Failed to upload code attachment:', error, '上传代码附件失败:', error)
+      logger.error('Failed to upload code attachment / 上传代码附件失败', error)
       return {
         success: false,
         error: '上传失败 / Upload failed'
@@ -131,7 +132,7 @@ export class CodeAttachmentService {
         attachment
       }
     } catch (error) {
-      console.error('Failed to get code attachment:', error, '获取代码附件失败:', error)
+      logger.error('Failed to get code attachment / 获取代码附件失败', error)
       return {
         success: false,
         error: '获取失败 / Get failed'

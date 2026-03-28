@@ -33,9 +33,28 @@ const ALLOWED_REDIRECT_URIS: string[] = [
   'https://www.winuel.com',
   'https://admin.winuel.com',
   'https://api.winuel.com/api/auth/github/callback',
-  'http://localhost:5173', // 开发环境
+]
+
+// 开发环境额外允许的地址 / Additional allowed origins for development
+const DEV_REDIRECT_URIS: string[] = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
   'http://localhost:8787', // 开发环境 API
 ]
+
+/**
+ * 获取允许的重定向URI列表
+ * Get allowed redirect URI list
+ */
+function getAllowedRedirectUris(): string[] {
+  const environment = (globalThis as any).ENVIRONMENT || 'production'
+  if (environment === 'development') {
+    return [...ALLOWED_REDIRECT_URIS, ...DEV_REDIRECT_URIS]
+  }
+  return ALLOWED_REDIRECT_URIS
+}
 
 /**
  * 验证重定向 URI 是否在白名单中
@@ -44,9 +63,10 @@ const ALLOWED_REDIRECT_URIS: string[] = [
  * @param redirectUri - 待验证的重定向 URI / Redirect URI to validate
  * @returns 是否在白名单中 / Whether in whitelist
  */
-function isRedirectUriAllowed(redirectUri: string): boolean {
-  return ALLOWED_REDIRECT_URIS.some(allowedUri => {
-    // 精确匹配或前缀匹配
+export function isRedirectUriAllowed(redirectUri: string): boolean {
+  const allowedUris = getAllowedRedirectUris()
+  return allowedUris.some(allowedUri => {
+    // 支持精确匹配和前缀匹配 / Support exact match and prefix match
     return redirectUri === allowedUri || redirectUri.startsWith(allowedUri)
   })
 }
@@ -107,9 +127,10 @@ export class OAuthService {
     const finalRedirectUri = redirectUri || this.auth.redirectUri
     
     if (!isRedirectUriAllowed(finalRedirectUri)) {
+      const allowedUris = getAllowedRedirectUris()
       throw new Error(
         `Invalid redirect URI: ${finalRedirectUri}. ` +
-        `Allowed URIs: ${ALLOWED_REDIRECT_URIS.join(', ')}`
+        `Allowed URIs: ${allowedUris.join(', ')}`
       )
     }
 

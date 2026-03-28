@@ -86,7 +86,8 @@ const copyCode = async () => {
     await navigator.clipboard.writeText(props.attachment.content)
     alert('代码已复制到剪贴板')
   } catch (error) {
-    console.error('复制失败:', error)
+    // 复制失败是用户操作错误，不需要详细日志
+    // Copy failure is user action error, no detailed logging needed
   }
 }
 

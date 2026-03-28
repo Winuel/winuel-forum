@@ -18,6 +18,7 @@
  */
 
 import { generateId } from '../utils/crypto'
+import { logger } from '../utils/logger'
 import {
   generateVerificationCode,
   isValidVerificationCode,
@@ -149,7 +150,7 @@ export class VerificationCodeService {
         'INSERT INTO verification_codes (id, email, code, type, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)'
       ).bind(id, email, code, type, expiresAt, now).run()
     } catch (error: any) {
-      console.error('Failed to save verification code:', error, '保存验证码失败:', error)
+      logger.error('Failed to save verification code / 保存验证码失败', error)
       return {
         success: false,
         error: '验证码保存失败 / Failed to save verification code'
@@ -159,7 +160,7 @@ export class VerificationCodeService {
     // 发送邮件 / Send email
     const emailResult = await this.emailService.sendVerificationCode(email, code)
     if (!emailResult.success) {
-      console.error('Failed to send verification email:', emailResult.error, '发送验证码邮件失败:', emailResult.error)
+      logger.error('Failed to send verification email / 发送验证码邮件失败', emailResult.error)
       // 即使邮件发送失败，验证码也已保存，用户可以尝试重新发送 / Even if email sending fails, verification code is saved, user can try resending
       return {
         success: false,
@@ -324,7 +325,7 @@ export class VerificationCodeService {
       'DELETE FROM verification_codes WHERE expires_at < ?'
     ).bind(now).run()
 
-    console.log(`Cleaned up ${result.meta.changes || 0} expired verification codes / 清理了 ${result.meta.changes || 0} 个过期验证码`)
+    logger.info(`Cleaned up ${result.meta.changes || 0} expired verification codes / 清理了 ${result.meta.changes || 0} 个过期验证码`)
     return result.meta.changes || 0
   }
 }

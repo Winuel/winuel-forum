@@ -155,7 +155,7 @@ onMounted(async () => {
       codeAttachments.value = attachments || []
     } catch (error) {
       // Ignore error if attachments endpoint doesn't exist yet
-      console.log('Failed to load code attachments:', error)
+      // Code attachments feature may not be available yet
     }
   } catch (error) {
     // Error handling is managed by the error handler

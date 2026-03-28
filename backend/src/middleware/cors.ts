@@ -16,6 +16,7 @@
  */
 
 import { cors } from 'hono/cors'
+import { logger } from '../utils/logger'
 
 /**
  * 从环境变量或默认配置中获取允许的域名列表
@@ -55,11 +56,6 @@ function getAllowedOrigins(environment: string, env?: any): string[] {
   return defaults[environment] || defaults.production
 }
 
-// 需要移除的域名（仅供参考，不要添加到允许列表）
-// Domains to remove (for reference only, do not add to allowed list)
-// ❌ https://api.winuel.com - 后端 API 不应在前端允许列表中 / Backend API should not be in frontend allowed list
-// ❌ https://www.winuel.com - 生产环境域名 / Production domain
-
 /**
  * CORS 中间件实例
  * CORS Middleware Instance
@@ -97,7 +93,7 @@ export const corsMiddleware = cors({
         return undefined
       }
     } catch (error) {
-      console.error('CORS middleware error:', error, 'CORS 中间件错误:', error)
+      logger.error('CORS middleware error / CORS 中间件错误', error)
       // 出错时拒绝请求 / Reject request on error
       return undefined
     }

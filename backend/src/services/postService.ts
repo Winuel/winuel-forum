@@ -527,6 +527,12 @@ export class PostService {
 
     await this.db.prepare(`UPDATE posts SET ${updates.join(', ')} WHERE id = ?`).bind(...params).run()
 
+    // 清除相关缓存 / Clear related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:comments`)
+    }
+
     if (input.tags) {
       await this.updatePostTags(id, input.tags)
     }
@@ -615,6 +621,12 @@ export class PostService {
     // 增加帖子评论数 / Increment post comment count
     await this.incrementCommentCount(input.post_id)
 
+    // 清除相关缓存 / Clear related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${input.post_id}:comments`)
+      await this.cache.delete(`post:${input.post_id}`)
+    }
+
     return this.findCommentById(id) as Promise<Comment>
   }
 
@@ -637,6 +649,20 @@ export class PostService {
    * @returns 评论列表 / Comment list
    */
   async findCommentsByPostId(postId: string): Promise<Comment[]> {
+    if (this.cache) {
+      return this.cache.getOrSet(
+        `post:${postId}:comments`,
+        async () => {
+          const result = await this.db
+            .prepare('SELECT id, post_id, author_id, content, parent_id, like_count, created_at, updated_at FROM comments WHERE post_id = ? AND deleted_at IS NULL ORDER BY created_at ASC')
+            .bind(postId)
+            .all<Comment>()
+          return result.results || []
+        },
+        180 // 3分钟缓存 / 3 minute cache
+      )
+    }
+
     const result = await this.db
       .prepare('SELECT id, post_id, author_id, content, parent_id, like_count, created_at, updated_at FROM comments WHERE post_id = ? AND deleted_at IS NULL ORDER BY created_at ASC')
       .bind(postId)

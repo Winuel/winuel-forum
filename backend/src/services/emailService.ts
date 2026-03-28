@@ -17,6 +17,7 @@
 
 import { Resend } from 'resend'
 import { generateVerificationEmailTemplate, generateNotificationEmailTemplate } from '../templates/emailTemplates'
+import { logger } from '../utils/logger'
 
 /**
  * 邮件服务类
@@ -43,7 +44,7 @@ export class EmailService {
    */
   constructor(apiKey: string, fromEmail: string, fromName: string = '云纽论坛') {
     if (!apiKey) {
-      console.warn('Resend API key not provided. Email service will not be available. / 未提供 Resend API 密钥。邮件服务将不可用。')
+      logger.warn('Resend API key not provided. Email service will not be available. / 未提供 Resend API 密钥。邮件服务将不可用。')
       return
     }
     this.resend = new Resend(apiKey)
@@ -99,7 +100,7 @@ export class EmailService {
 
       // 处理 Resend API 响应 / Handle Resend API response
       if (result.error) {
-        console.error('Failed to send verification email:', result.error, '发送验证码邮件失败:', result.error)
+        logger.error('Failed to send verification email / 发送验证码邮件失败', result.error)
         return {
           success: false,
           error: result.error.message || '发送失败 / Send failed'
@@ -107,13 +108,13 @@ export class EmailService {
       }
 
       // 成功发送 / Successfully sent
-      console.log(`Verification email sent to ${to}, message ID: ${result.data?.id} / 验证码邮件已发送至 ${to}，消息 ID: ${result.data?.id}`)
+      logger.info(`Verification email sent to ${to}, message ID: ${result.data?.id} / 验证码邮件已发送至 ${to}，消息 ID: ${result.data?.id}`)
       return {
         success: true,
         messageId: result.data?.id
       }
     } catch (error: any) {
-      console.error('Error sending verification email:', error, '发送验证码邮件时出错:', error)
+      logger.error('Error sending verification email / 发送验证码邮件时出错', error)
       return {
         success: false,
         error: error.message || '发送失败 / Send failed'
@@ -164,20 +165,20 @@ export class EmailService {
       })
 
       if (error) {
-        console.error('Failed to send notification email:', error, '发送通知邮件失败:', error)
+        logger.error('Failed to send notification email / 发送通知邮件失败', error)
         return {
           success: false,
           error: error.message || '发送失败 / Send failed'
         }
       }
 
-      console.log(`Notification email sent to ${to}, message ID: ${data?.id} / 通知邮件已发送至 ${to}，消息 ID: ${data?.id}`)
+      logger.info(`Notification email sent to ${to}, message ID: ${data?.id} / 通知邮件已发送至 ${to}，消息 ID: ${data?.id}`)
       return {
         success: true,
         messageId: data?.id
       }
     } catch (error: any) {
-      console.error('Error sending notification email:', error, '发送通知邮件时出错:', error)
+      logger.error('Error sending notification email / 发送通知邮件时出错', error)
       return {
         success: false,
         error: error.message || '发送失败 / Send failed'
@@ -227,20 +228,20 @@ export class EmailService {
       })
 
       if (error) {
-        console.error('Failed to send email:', error, '发送邮件失败:', error)
+        logger.error('Failed to send email / 发送邮件失败', error)
         return {
           success: false,
           error: error.message || '发送失败 / Send failed'
         }
       }
 
-      console.log(`Email sent to ${to}, message ID: ${data?.id} / 邮件已发送至 ${to}，消息 ID: ${data?.id}`)
+      logger.info(`Email sent to ${to}, message ID: ${data?.id} / 邮件已发送至 ${to}，消息 ID: ${data?.id}`)
       return {
         success: true,
         messageId: data?.id
       }
     } catch (error: any) {
-      console.error('Error sending email:', error, '发送邮件时出错:', error)
+      logger.error('Error sending email / 发送邮件时出错', error)
       return {
         success: false,
         error: error.message || '发送失败 / Send failed'

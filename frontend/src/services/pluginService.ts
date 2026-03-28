@@ -1,5 +1,6 @@
 import { PluginLoader } from '@winuel/plugin-system'
 import type { PluginPackage, PluginManifest, PluginStatus } from '@winuel/plugin-system'
+import { logger } from '../utils/logger'
 
 /**前端插件管理服务*/
 export class FrontendPluginService {
@@ -22,19 +23,19 @@ export class FrontendPluginService {
     const eventBus = this.loader.getEventBus()
 
     eventBus.on('plugin:installed', (data) => {
-      console.log('Plugin installed:', data.pluginId)
+      logger.info('Plugin installed:', data.pluginId)
     })
 
     eventBus.on('plugin:activated', (data) => {
-      console.log('Plugin activated:', data.pluginId)
+      logger.info('Plugin activated:', data.pluginId)
     })
 
     eventBus.on('plugin:deactivated', (data) => {
-      console.log('Plugin deactivated:', data.pluginId)
+      logger.info('Plugin deactivated:', data.pluginId)
     })
 
     eventBus.on('plugin:error', (data) => {
-      console.error('Plugin error:', data.pluginId, data.error)
+      logger.error('Plugin error:', data.pluginId, data.error)
     })
   }
 
@@ -50,7 +51,7 @@ export class FrontendPluginService {
         await this.registerPluginComponents(plugin)
       }
     } catch (error) {
-      console.error('Failed to load plugin:', error)
+      logger.error('Failed to load plugin', error)
       throw error
     }
   }
@@ -70,7 +71,7 @@ export class FrontendPluginService {
     try {
       await this.loader.activatePlugin(pluginId)
     } catch (error) {
-      console.error('Failed to activate plugin:', error)
+      logger.error('Failed to activate plugin', error)
       throw error
     }
   }
@@ -80,7 +81,7 @@ export class FrontendPluginService {
     try {
       await this.loader.deactivatePlugin(pluginId)
     } catch (error) {
-      console.error('Failed to deactivate plugin:', error)
+      logger.error('Failed to deactivate plugin', error)
       throw error
     }
   }
@@ -98,7 +99,7 @@ export class FrontendPluginService {
         }
       }
     } catch (error) {
-      console.error('Failed to uninstall plugin:', error)
+      logger.error('Failed to uninstall plugin', error)
       throw error
     }
   }
