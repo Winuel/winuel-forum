@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { OAuthService, KVTokenStorage, type MarketplaceAuth, type GitHubUser } from '../../services/oauthService'
 import { UserService } from '../../services/userService'
 import { DEPENDENCY_TOKENS } from '../../utils/di'
+import { logger } from '../../utils/logger'
 import type { Variables } from '../../types'
 
 const app = new Hono<{ Variables: Variables }>()
@@ -25,10 +26,10 @@ app.get('/', async (c) => {
 app.get('/test', async (c) => {
   const container = c.get('container')
   if (!container) {
-    console.error('OAuth test: Container not initialized')
-    return c.json({ 
-      success: false, 
-      error: '服务容器未初始化，请检查 DI 中间件配置' 
+    logger.error('OAuth test: Container not initialized')
+    return c.json({
+      success: false,
+      error: '服务容器未初始化，请检查 DI 中间件配置'
     }, 500)
   }
 
@@ -49,11 +50,11 @@ app.get('/test', async (c) => {
         environment: env.ENVIRONMENT || 'unknown'
       }
     }
-    
-    console.log('OAuth test result:', result.data)
+
+    logger.debug('OAuth test result', result.data)
     return c.json(result)
   } catch (error: any) {
-    console.error('OAuth test error:', error)
+    logger.error('OAuth test error', error)
     return c.json({
       success: false,
       error: error.message || '测试失败'
@@ -76,22 +77,22 @@ function getGitHubAuth(env: any): MarketplaceAuth {
 app.get('/github/authorize', async (c) => {
   const container = c.get('container')
   if (!container) {
-    console.error('OAuth authorize: Container not initialized')
-    return c.json({ 
-      success: false, 
-      error: { 
-        code: 'INTERNAL_ERROR', 
-        message: '服务容器未初始化，请检查 DI 中间件配置' 
-      } 
+    logger.error('OAuth authorize: Container not initialized')
+    return c.json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: '服务容器未初始化，请检查 DI 中间件配置'
+      }
     }, 500)
   }
 
   try {
-    console.log('开始处理OAuth授权请求')
+    logger.debug('开始处理OAuth授权请求')
     const env = container.resolve(DEPENDENCY_TOKENS.ENV) as any
     const auth = getGitHubAuth(env)
 
-    console.log('GitHub配置检查:', {
+    logger.debug('GitHub配置检查', {
       hasClientId: !!auth.clientId,
       hasClientSecret: !!auth.clientSecret,
       redirectUri: auth.redirectUri,
@@ -99,51 +100,50 @@ app.get('/github/authorize', async (c) => {
     })
 
     if (!auth.clientId || !auth.clientSecret) {
-      console.error('GitHub OAuth配置缺失:', {
+      logger.error('GitHub OAuth配置缺失', {
         hasClientId: !!auth.clientId,
         hasClientSecret: !!auth.clientSecret
       })
       return c.json({
         success: false,
-        error: { 
-          code: 'CONFIG_ERROR', 
-          message: 'GitHub OAuth配置缺失，请联系管理员配置 GITHUB_CLIENT_ID 和 GITHUB_CLIENT_SECRET' 
+        error: {
+          code: 'CONFIG_ERROR',
+          message: 'GitHub OAuth配置缺失，请联系管理员配置 GITHUB_CLIENT_ID 和 GITHUB_CLIENT_SECRET'
         }
       }, 500)
     }
 
     const kv = container.resolve<KVNamespace>(DEPENDENCY_TOKENS.KV)
     if (!kv) {
-      console.error('KV绑定获取失败')
+      logger.error('KV绑定获取失败')
       return c.json({
         success: false,
-        error: { 
-          code: 'CONFIG_ERROR', 
-          message: 'KV 存储未配置，请联系管理员' 
+        error: {
+          code: 'CONFIG_ERROR',
+          message: 'KV 存储未配置，请联系管理员'
         }
       }, 500)
     }
-    
-    console.log('KV绑定获取成功')
+
+    logger.debug('KV绑定获取成功')
     const storage = new KVTokenStorage(kv)
     const oauthService = new OAuthService(auth, storage)
 
     const redirectUri = c.req.query('redirect_uri') || undefined
-    console.log('开始生成授权URL, redirectUri:', redirectUri)
+    logger.debug('开始生成授权URL', { redirectUri })
     const authUrl = await oauthService.getAuthorizationUrl(redirectUri)
-    console.log('授权URL生成成功:', authUrl.substring(0, 50) + '...')
+    logger.debug('授权URL生成成功', { authUrl: authUrl.substring(0, 50) + '...' })
 
     return c.json({
       success: true,
       data: { authUrl }
     })
   } catch (error: any) {
-    console.error('OAuth authorize error:', error)
-    console.error('Error stack:', error.stack)
-    
+    logger.error('OAuth authorize error', error)
+
     // 生产环境不暴露详细错误信息
     const isProduction = (globalThis as any).ENVIRONMENT === 'production'
-    
+
     return c.json({
       success: false,
       error: {
@@ -165,12 +165,29 @@ app.get('/github/callback', async (c) => {
   try {
     const code = c.req.query('code')
     const state = c.req.query('state')
+    const requestRedirectUri = c.req.query('redirect_uri')
 
     if (!code || !state) {
       return c.json({
         success: false,
         error: { code: 'INVALID_REQUEST', message: '缺少必要参数' }
       }, 400)
+    }
+
+    // 验证重定向URI是否在白名单中（如果请求中提供了）
+    // Validate redirect URI is in whitelist (if provided in request)
+    if (requestRedirectUri) {
+      const { isRedirectUriAllowed } = await import('../../services/oauthService')
+      if (!isRedirectUriAllowed(requestRedirectUri)) {
+        logger.error('OAuth callback: Invalid redirect URI', { redirectUri: requestRedirectUri })
+        return c.json({
+          success: false,
+          error: {
+            code: 'INVALID_REDIRECT_URI',
+            message: '非法的重定向URI'
+          }
+        }, 400)
+      }
     }
 
     const env = container.resolve(DEPENDENCY_TOKENS.ENV) as any
@@ -225,7 +242,7 @@ app.get('/github/callback', async (c) => {
       }
     })
   } catch (error: any) {
-    console.error('OAuth callback error:', error)
+    logger.error('OAuth callback error', error)
     return c.json({
       success: false,
       error: {

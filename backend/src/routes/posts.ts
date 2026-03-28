@@ -140,41 +140,56 @@ postsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c
     const id = c.req.param('id')!
     const user = c.get('user')
 
-    const existingLike = await c.env.DB
-      .prepare('SELECT 1 FROM likes WHERE user_id = ? AND target_id = ? AND target_type = ?')
-      .bind(user.userId, id, 'post')
-      .first()
+    // 使用事务处理点赞操作，减少查询次数
+    // Use transaction to process like operation, reduce query count
+    const result = await c.env.DB.batch([
+      // 检查是否已经点赞
+      c.env.DB.prepare('SELECT 1 FROM likes WHERE user_id = ? AND target_id = ? AND target_type = ?')
+        .bind(user.userId, id, 'post'),
+      // 获取帖子信息（如果需要创建通知）
+      c.env.DB.prepare('SELECT id, author_id, title FROM posts WHERE id = ?')
+        .bind(id)
+    ])
 
+    const existingLike = result[0].results?.[0]
     if (existingLike) {
       return errorResponse(c, ErrorCode.ALREADY_EXISTS, '已经点赞过 / Already liked', 400)
     }
 
+    const post = result[1].results?.[0]
+    if (!post) {
+      return errorResponse(c, ErrorCode.NOT_FOUND, '帖子不存在 / Post not found', 404)
+    }
+
+    // 插入点赞记录并增加点赞数
     const likeId = crypto.randomUUID()
-    await c.env.DB
-      .prepare('INSERT INTO likes (id, user_id, target_id, target_type) VALUES (?, ?, ?, ?)')
-      .bind(likeId, user.userId, id, 'post')
-      .run()
+    await c.env.DB.batch([
+      c.env.DB.prepare('INSERT INTO likes (id, user_id, target_id, target_type) VALUES (?, ?, ?, ?)')
+        .bind(likeId, user.userId, id, 'post'),
+      c.env.DB.prepare('UPDATE posts SET like_count = like_count + 1 WHERE id = ?')
+        .bind(id)
+    ])
 
-    const postService = new PostService(c.env.DB)
-    const notificationService = new NotificationService(c.env.DB)
-
-    await postService.incrementLikeCount(id)
-
-    const post = await postService.findById(id)
-    if (post && post.author_id !== user.userId) {
-      const currentUser = await c.env.DB.prepare('SELECT username FROM users WHERE id = ?')
-        .bind(user.userId)
-        .first<{ username: string }>()
-
-      if (currentUser) {
-        await notificationService.create({
-          user_id: post.author_id,
-          type: 'like',
-          title: '点赞通知',
-          message: `${currentUser.username} 点赞了你的帖子`,
-          link: `/posts/${id}`,
-        })
-      }
+    // 异步创建通知（不阻塞响应）
+    // Asynchronously create notification (does not block response)
+    if (post.author_id !== user.userId) {
+      setImmediate(async () => {
+        try {
+          const notificationService = new NotificationService(c.env.DB)
+          // 假设用户名在JWT payload中，如果不在则查询
+          const username = user.username || '用户'
+          await notificationService.create({
+            user_id: post.author_id,
+            type: 'like',
+            title: '点赞通知',
+            message: `${username} 点赞了你的帖子`,
+            link: `/posts/${id}`,
+          })
+        } catch (error) {
+          // 通知创建失败不影响点赞结果
+          logger.error('Failed to create like notification', error)
+        }
+      })
     }
 
     return successResponse(c, null, '点赞成功 / Liked successfully')

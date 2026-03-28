@@ -35,6 +35,7 @@ export interface CodeAttachment {
   id: string;
   post_id: string;
   file_name: string;
+  original_file_name?: string; // 原始文件名 / Original file name
   language: CodeLanguage;
   content: string;
   version: string;
@@ -87,6 +88,7 @@ export interface CodeReview {
 export interface CreateCodeAttachmentInput {
   post_id: string;
   file_name: string;
+  original_file_name?: string; // 原始文件名 / Original file name
   language: CodeLanguage;
   content: string;
 }

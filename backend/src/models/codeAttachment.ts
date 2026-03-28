@@ -15,9 +15,9 @@ export class CodeAttachmentModel {
     const version = 'v1.0'
 
     await this.db.prepare(`
-      INSERT INTO code_attachments (id, post_id, file_name, language, content, version)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).bind(id, input.post_id, input.file_name, input.language, input.content, version).run()
+      INSERT INTO code_attachments (id, post_id, file_name, original_file_name, language, content, version)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(id, input.post_id, input.file_name, input.original_file_name || null, input.language, input.content, version).run()
 
     // 创建初始版本记录
     await this.createVersion(id, version, input.content, null, 'Initial version')
@@ -30,7 +30,7 @@ export class CodeAttachmentModel {
    */
   async findById(id: string): Promise<CodeAttachment | null> {
     const result = await this.db.prepare(`
-      SELECT id, post_id, file_name, language, content, version, created_at, updated_at
+      SELECT id, post_id, file_name, original_file_name, language, content, version, created_at, updated_at
       FROM code_attachments
       WHERE id = ?
     `).bind(id).first<CodeAttachment>()
@@ -43,7 +43,7 @@ export class CodeAttachmentModel {
    */
   async findByPostId(postId: string): Promise<CodeAttachment[]> {
     const results = await this.db.prepare(`
-      SELECT id, post_id, file_name, language, content, version, created_at, updated_at
+      SELECT id, post_id, file_name, original_file_name, language, content, version, created_at, updated_at
       FROM code_attachments
       WHERE post_id = ?
       ORDER BY created_at ASC

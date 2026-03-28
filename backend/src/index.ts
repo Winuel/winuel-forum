@@ -210,24 +210,49 @@ app.post('/api/admin/init-db', adminAuthMiddleware, async (c) => {
   // 额外的角色检查，确保用户是管理员
   const user = c.get('user')
   if (!user || user.role !== 'admin') {
-    return c.json({ 
-      success: false, 
-      error: '权限不足，仅管理员可以初始化数据库 / Insufficient permissions, only admin can initialize database' 
+    return c.json({
+      success: false,
+      error: '权限不足，仅管理员可以初始化数据库 / Insufficient permissions, only admin can initialize database'
     }, 403)
   }
 
   try {
     const { initializeDatabase } = await import('./utils/dbInitializer')
     await initializeDatabase(c.env.DB)
-    return c.json({ 
-      success: true, 
-      message: '数据库初始化成功 / Database initialized successfully' 
+
+    // 记录审计日志 / Record audit log
+    await createAuditLog(c, {
+      action: 'database.initialize',
+      entity_type: 'database',
+      entity_id: 'system',
+      old_values: JSON.stringify({ initialized: false }),
+      new_values: JSON.stringify({ initialized: true }),
+      reason: '手动初始化数据库 / Manual database initialization'
+    })
+
+    return c.json({
+      success: true,
+      message: '数据库初始化成功 / Database initialized successfully'
     })
   } catch (error: any) {
     logger.error('数据库初始化失败 / Database initialization failed', error)
-    return c.json({ 
-      success: false, 
-      error: error.message || '数据库初始化失败 / Database initialization failed' 
+
+    // 记录失败审计日志 / Record failure audit log
+    await createAuditLog(c, {
+      action: 'database.initialize',
+      entity_type: 'database',
+      entity_id: 'system',
+      old_values: JSON.stringify({ initialized: false }),
+      new_values: JSON.stringify({ initialized: false, error: error.message }),
+      reason: `数据库初始化失败 / Database initialization failed: ${error.message}`
+    }).catch(e => {
+      // 审计日志记录失败不影响错误响应
+      logger.error('Failed to create audit log for database initialization failure', e)
+    })
+
+    return c.json({
+      success: false,
+      error: error.message || '数据库初始化失败 / Database initialization failed'
     }, 500)
   }
 })

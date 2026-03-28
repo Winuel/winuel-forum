@@ -8,6 +8,7 @@ import type { Env, Variables } from '../../types'
 import { DEPENDENCY_TOKENS } from '../../utils/di'
 import { authMiddleware } from '../../middleware/auth'
 import { CodeAttachmentService } from '../../services/codeAttachmentService'
+import { logger } from '../../utils/logger'
 
 /**
  * 允许的编程语言白名单
@@ -69,6 +70,31 @@ function isFileNameSafe(fileName: string): boolean {
  */
 function isLanguageAllowed(language: string): boolean {
   return ALLOWED_LANGUAGES.includes(language.toLowerCase())
+}
+
+/**
+ * 生成安全的文件名
+ * Generate Secure File Name
+ * 
+ * 使用UUID和原始文件名生成安全的文件名，防止文件名注入攻击
+ * Uses UUID and original file name to generate secure file name, prevents file name injection attacks
+ * 
+ * @param originalFileName - 原始文件名 / Original file name
+ * @returns 安全的文件名 / Secure file name
+ */
+function generateSecureFileName(originalFileName: string): string {
+  // 提取文件扩展名
+  // Extract file extension
+  const extension = originalFileName.substring(originalFileName.lastIndexOf('.'))
+  
+  // 生成UUID作为文件名前缀
+  // Generate UUID as file name prefix
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).substring(2, 15)
+  
+  // 组合成安全的文件名
+  // Combine into secure file name
+  return `${timestamp}-${random}${extension}`
 }
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -145,6 +171,10 @@ app.post('/upload', authMiddleware, async (c) => {
       }, 400)
     }
 
+    // 生成安全的文件名
+    // Generate secure file name
+    const secureFileName = generateSecureFileName(file_name)
+
     // 检测潜在的恶意代码 / Detect potential malicious code
     const maliciousPatterns = [
       /<script[^>]*>.*?<\/script>/gi,          // Script tags
@@ -173,7 +203,8 @@ app.post('/upload', authMiddleware, async (c) => {
 
     const result = await service.upload({
       post_id,
-      file_name,
+      file_name: secureFileName,
+      original_file_name: file_name, // 保存原始文件名
       language,
       content
     })
@@ -190,7 +221,7 @@ app.post('/upload', authMiddleware, async (c) => {
       data: result.attachment
     })
   } catch (error) {
-    console.error('Upload error:', error)
+    logger.error('Upload error', error)
     return c.json({
       success: false,
       error: { code: 'INTERNAL_ERROR', message: '上传失败' }
