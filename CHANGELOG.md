@@ -5,6 +5,58 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.1.0] - 2026-03-28
+
+### 🎉 正式版发布
+
+Winuel Forum v0.1.0 正式版发布，这是项目的首个正式版本，包含完整的论坛功能。
+
+### ✨ 新增功能
+
+#### 📦 共享包发布
+- 发布6个共享包到 npm（latest 标签）
+  - `@winuel/plugin-system@0.1.0` - 插件系统核心
+  - `@winuel/shared-api@0.1.0` - API 客户端
+  - `@winuel/shared-config@0.1.0` - 配置管理
+  - `@winuel/shared-core@0.1.0` - 核心类型
+  - `@winuel/shared-stores@0.1.0` - 状态管理
+  - `@winuel/shared-ui@0.1.0` - UI 组件库
+
+#### 📚 文档完善
+- 文档中英文分离（README.md / README_EN.md）
+- 新增完整的发布说明（RELEASE_NOTES.md）
+- 所有文档内容更新到最新版本
+
+#### 🔧 工具脚本
+- 新增依赖模式切换脚本（switch-dependency-mode.sh）
+- 完善的发布脚本（publish-packages-final.sh）
+
+### 🔄 改进
+
+- 版本号从 0.1.0-beta 升级到 0.1.0
+- 所有包统一使用 latest 标签发布
+- 代码质量和性能优化
+
+### 🐛 修复
+
+- 修复 npm 包发布配置问题
+- 修复版本号不一致问题
+- 修复缓存导致的标签指向问题
+
+### 📝 文档
+
+- API 文档完善
+- 部署指南更新
+- 贡献指南优化
+- 新增发布说明文档
+
+### 🎯 后续计划
+
+- v0.2.0：搜索功能、文件上传、用户关注系统
+- v0.3.0：推荐算法、PWA 支持、多语言支持
+
+---
+
 ## [0.1.0-beta] - 2026-03-22
 
 ### 🎉 首个Beta版本发布
