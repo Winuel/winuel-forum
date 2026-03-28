@@ -859,7 +859,7 @@ X-API-Version: 1.0.0
 
 如有问题或建议，请通过以下方式联系：
 
-- GitHub Issues：[https://github.com/LemonStudio-hub/winuel/issues](https://github.com/LemonStudio-hub/winuel/issues)
+- GitHub Issues：[https://github.com/Winuel/winuel/issues](https://github.com/Winuel/winuel/issues)
 - 邮箱：support@winuel.dev
 
 ---

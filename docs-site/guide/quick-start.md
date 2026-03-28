@@ -15,7 +15,7 @@
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/LemonStudio-hub/yunniu.git
+git clone https://github.com/Winuel/winuel.git
 cd yunniu
 ```
 
@@ -121,6 +121,6 @@ pnpm dev
 
 如果遇到问题，请访问：
 
-- [问题反馈](https://github.com/LemonStudio-hub/yunniu/issues)
-- [讨论区](https://github.com/LemonStudio-hub/yunniu/discussions)
+- [问题反馈](https://github.com/Winuel/winuel/issues)
+- [讨论区](https://github.com/Winuel/winuel/discussions)
 - [在线文档](https://docs.winuel.com)

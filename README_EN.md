@@ -158,7 +158,7 @@ Winuel Forum is a modern lightweight forum system with a front-end and back-end 
 
 ```bash
 # Clone project
-git clone git@github.com:LemonStudio-hub/winuel.git
+git clone git@github.com:Winuel/winuel.git
 cd winuel
 
 # Install frontend dependencies
@@ -374,8 +374,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-- Project Homepage: [https://github.com/LemonStudio-hub/winuel](https://github.com/LemonStudio-hub/winuel)
-- Issue Tracker: [Issues](https://github.com/LemonStudio-hub/winuel/issues)
+- Project Homepage: [https://github.com/Winuel/winuel](https://github.com/Winuel/winuel)
+- Issue Tracker: [Issues](https://github.com/Winuel/winuel/issues)
 
 ---
 

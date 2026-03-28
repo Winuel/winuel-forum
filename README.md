@@ -158,7 +158,7 @@
 
 ```bash
 # 克隆项目
-git clone git@github.com:LemonStudio-hub/winuel.git
+git clone git@github.com:Winuel/winuel.git
 cd winuel
 
 # 安装前端依赖
@@ -374,8 +374,8 @@ wrangler deploy
 
 ## 联系方式
 
-- 项目主页：[https://github.com/LemonStudio-hub/winuel](https://github.com/LemonStudio-hub/winuel)
-- 问题反馈：[Issues](https://github.com/LemonStudio-hub/winuel/issues)
+- 项目主页：[https://github.com/Winuel/winuel](https://github.com/Winuel/winuel)
+- 问题反馈：[Issues](https://github.com/Winuel/winuel/issues)
 
 ---
 

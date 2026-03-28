@@ -23,7 +23,7 @@
 
 ```bash
 # 克隆项目
-git clone git@github.com:LemonStudio-hub/winuel.git
+git clone git@github.com:Winuel/winuel.git
 cd winuel
 
 # 安装所有依赖
@@ -315,7 +315,7 @@ onMounted(() => {
 
 如有问题或建议，请通过以下方式联系：
 
-- [GitHub Issues](https://github.com/LemonStudio-hub/winuel/issues)
+- [GitHub Issues](https://github.com/Winuel/winuel/issues)
 - [项目文档](./README.md)
 
 ---

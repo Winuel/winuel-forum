@@ -262,7 +262,7 @@ const icons = {
             <p class="text-sm text-gray-500 mb-4 font-medium">关注我们</p>
             <div class="flex space-x-3">
               <a
-                href="https://github.com/LemonStudio-hub/yunniu"
+                href="https://github.com/Winuel/winuel"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-all duration-300 hover:scale-110 hover:shadow-lg touch-manipulation"

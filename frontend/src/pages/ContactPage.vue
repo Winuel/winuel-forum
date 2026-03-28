@@ -74,9 +74,8 @@
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">GitHub</h3>
-                <a href="https://github.com/LemonStudio-hub/winuel" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-                      LemonStudio-hub/winuel                </a>
-              </div>
+                <a href="https://github.com/Winuel/winuel" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                Winuel/winuel                </a>              </div>
             </div>
           </div>
         </div>

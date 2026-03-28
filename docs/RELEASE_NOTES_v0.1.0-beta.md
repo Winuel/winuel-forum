@@ -241,8 +241,8 @@ pnpm build:admin
 ### 本地开发
 ```bash
 # 克隆仓库
-git clone https://github.com/LemonStudio-hub/yunniu.git
-cd yunniu
+git clone https://github.com/Winuel/winuel.git
+cd winuel
 
 # 切换到 develop 分支
 git checkout develop
@@ -267,11 +267,11 @@ pnpm dev
 
 ## 📞 联系方式
 
-- **项目主页**: https://github.com/LemonStudio-hub/yunniu
+- **项目主页**: https://github.com/Winuel/winuel
 - **官方文档**: https://docs.winuel.com
-- **问题反馈**: https://github.com/LemonStudio-hub/yunniu/issues
+- **问题反馈**: https://github.com/Winuel/winuel/issues
 - **演示站点**: https://www.winuel.com
-- **讨论区**: https://github.com/LemonStudio-hub/yunniu/discussions
+- **讨论区**: https://github.com/Winuel/winuel/discussions
 
 ---
 

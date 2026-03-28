@@ -30,7 +30,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/LemonStudio-hub/winuel.git
+git clone https://github.com/Winuel/winuel.git
 cd winuel
 
 # 检出版本
@@ -73,8 +73,8 @@ pnpm build
 
 ### 📞 获取帮助
 
-- **问题反馈**: https://github.com/LemonStudio-hub/winuel/issues
-- **讨论区**: https://github.com/LemonStudio-hub/winuel/discussions
+- **问题反馈**: https://github.com/Winuel/winuel/issues
+- **讨论区**: https://github.com/Winuel/winuel/discussions
 - **演示站点**: https://www.winuel.com
 
 ---

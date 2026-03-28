@@ -200,7 +200,7 @@ onMounted(() => {
                 <h3 class="font-bold text-lg mb-4">关注我们</h3>
                 <div class="flex space-x-4">
                   <a
-                    href="https://github.com/LemonStudio-hub/yunniu"
+                    href="https://github.com/Winuel/winuel"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="w-12 h-12 rounded-lg bg-gray-900 text-white flex items-center justify-center hover:bg-primary-500 transition-colors"

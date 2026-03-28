@@ -24,11 +24,11 @@ describe('Footer Component', () => {
     
     const githubLink = socialLinks.find((link: any) => link.attributes('aria-label') === 'GitHub')
     expect(githubLink).toBeDefined()
-    expect(githubLink.attributes('href')).toBe('https://github.com/LemonStudio-hub/winuel')
+    expect(githubLink.attributes('href')).toBe('https://github.com/Winuel/winuel')
     
     const studioLink = socialLinks.find((link: any) => link.attributes('aria-label') === '工作室主页')
     expect(studioLink).toBeDefined()
-    expect(studioLink.attributes('href')).toBe('https://github.com/LemonStudio-hub')
+    expect(studioLink.attributes('href')).toBe('https://github.com/Winuel')
     
     const emailLink = socialLinks.find((link: any) => link.attributes('aria-label') === '联系我们')
     expect(emailLink).toBeDefined()
