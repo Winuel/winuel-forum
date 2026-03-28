@@ -145,5 +145,5 @@ jobs:
       - name: Build frontend
         run: pnpm build:frontend
 
-      - name: Build admin pages
-        run: pnpm build:admin
+      - name: Build official website
+        run: pnpm build:official
