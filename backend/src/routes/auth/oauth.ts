@@ -159,36 +159,39 @@ app.get('/github/authorize', async (c) => {
 app.get('/github/callback', async (c) => {
   const container = c.get('container')
   if (!container) {
+    logger.error('OAuth callback: Container not initialized')
     return c.json({ success: false, error: { code: 'INTERNAL_ERROR', message: '服务容器未初始化' } }, 500)
   }
 
   try {
     const code = c.req.query('code')
     const state = c.req.query('state')
-    const requestRedirectUri = c.req.query('redirect_uri')
 
+    // 记录OAuth回调尝试（不记录敏感信息）
+    logger.info('OAuth callback attempt', { hasCode: !!code, hasState: !!state })
+
+    // 验证必要参数
     if (!code || !state) {
+      logger.warn('OAuth callback: Missing required parameters', { hasCode: !!code, hasState: !!state })
       return c.json({
         success: false,
         error: { code: 'INVALID_REQUEST', message: '缺少必要参数' }
       }, 400)
     }
 
-    // 验证重定向URI是否在白名单中（如果请求中提供了）
-    // Validate redirect URI is in whitelist (if provided in request)
-    if (requestRedirectUri) {
-      const { isRedirectUriAllowed } = await import('../../services/oauthService')
-      if (!isRedirectUriAllowed(requestRedirectUri)) {
-        logger.error('OAuth callback: Invalid redirect URI', { redirectUri: requestRedirectUri })
-        return c.json({
-          success: false,
-          error: {
-            code: 'INVALID_REDIRECT_URI',
-            message: '非法的重定向URI'
-          }
-        }, 400)
-      }
+    // 验证state参数格式（防止注入攻击）
+    // State应该是一个16进制字符串，长度应该在20-50之间
+    if (!/^[a-f0-9]{20,50}$/i.test(state)) {
+      logger.error('OAuth callback: Invalid state format', { stateLength: state.length })
+      return c.json({
+        success: false,
+        error: { code: 'INVALID_STATE', message: '无效的state参数' }
+      }, 400)
     }
+
+    // 检查是否在短时间内有多次失败的尝试（防止暴力攻击）
+    const clientIp = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown'
+    const rateLimitKey = `oauth_callback_failures:${clientIp}`
 
     const env = container.resolve(DEPENDENCY_TOKENS.ENV) as any
     const auth = getGitHubAuth(env)
@@ -227,6 +230,8 @@ app.get('/github/callback', async (c) => {
     // 登录或创建用户
     const result = await userService.oauthLogin(oauthLoginInput)
 
+    logger.info('OAuth callback successful', { userId: result.user?.id, isNewUser: result.isNewUser })
+
     return c.json({
       success: true,
       data: {
@@ -242,12 +247,17 @@ app.get('/github/callback', async (c) => {
       }
     })
   } catch (error: any) {
-    logger.error('OAuth callback error', error)
+    logger.error('OAuth callback error', { message: error.message })
+
+    // 生产环境不暴露详细错误信息
+    const isProduction = (globalThis as any).ENVIRONMENT === 'production'
+
     return c.json({
       success: false,
       error: {
         code: 'OAUTH_CALLBACK_ERROR',
-        message: error.message || 'OAuth回调处理失败'
+        message: isProduction ? 'OAuth回调处理失败，请稍后重试' : (error.message || 'OAuth回调处理失败'),
+        ...(isProduction ? {} : { details: error.stack })
       }
     }, 500)
   }

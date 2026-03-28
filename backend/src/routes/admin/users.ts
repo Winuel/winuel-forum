@@ -361,7 +361,9 @@ app.post('/api/admin/users/batch-delete', requireAdmin, csrfProtectionMiddleware
   try {
     const { ids, reason } = await c.req.json()
     const currentUser = c.get('currentUser')
+    const clientIp = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown'
 
+    // 验证输入
     if (!Array.isArray(ids) || ids.length === 0) {
       return c.json({
         success: false,
@@ -372,6 +374,7 @@ app.post('/api/admin/users/batch-delete', requireAdmin, csrfProtectionMiddleware
       }, 400)
     }
 
+    // 限制一次最多删除的用户数量
     if (ids.length > 100) {
       return c.json({
         success: false,
@@ -382,26 +385,43 @@ app.post('/api/admin/users/batch-delete', requireAdmin, csrfProtectionMiddleware
       }, 400)
     }
 
-    // 不能删除自己
-    if (currentUser?.userId && ids.includes(currentUser.userId)) {
+    // 强制要求提供删除原因
+    if (!reason || reason.trim().length === 0) {
       return c.json({
         success: false,
         error: {
           code: 'INVALID_INPUT',
-          message: '不能删除自己 / Cannot delete yourself',
+          message: '必须提供删除原因 / Deletion reason is required',
         },
       }, 400)
     }
 
-    // 获取要删除的用户信息
+    // 不能删除自己
+    if (currentUser?.userId && ids.includes(currentUser.userId)) {
+      logger.warn('Batch delete attempt: Trying to delete self', { userId: currentUser.userId })
+      return c.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: '不能删除自己 / Cannot delete yourself',
+        },
+      }, 403)
+    }
+
+    // 获取要删除的用户信息（包括角色）
     const placeholders = ids.map(() => '?').join(',')
     const users = await c.env.DB.prepare(
-      `SELECT id, username, email FROM users WHERE id IN (${placeholders})`
+      `SELECT id, username, email, role FROM users WHERE id IN (${placeholders})`
     ).bind(...ids).all()
 
     // 检查是否有管理员
     for (const user of users.results || []) {
       if ((user as any).role === 'admin') {
+        logger.error('Batch delete attempt: Trying to delete admin', { 
+          adminId: (user as any).id,
+          requestedBy: currentUser?.userId,
+          clientIp 
+        })
         return c.json({
           success: false,
           error: {
@@ -412,27 +432,69 @@ app.post('/api/admin/users/batch-delete', requireAdmin, csrfProtectionMiddleware
       }
     }
 
-    // 批量软删除
-    await c.env.DB.prepare(
-      `UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`
-    ).bind(...ids).run()
+    // 检查用户是否有关联数据（可选：根据需求决定是否允许删除有关联数据的用户）
+    const postsCount = await c.env.DB.prepare(
+      `SELECT COUNT(*) as count FROM posts WHERE author_id IN (${placeholders})`
+    ).bind(...ids).first<{ count: number }>()
 
-    // 记录审计日志
+    const commentsCount = await c.env.DB.prepare(
+      `SELECT COUNT(*) as count FROM comments WHERE author_id IN (${placeholders})`
+    ).bind(...ids).first<{ count: number }>()
+
+    // 记录审计日志（操作前）
     for (const user of users.results || []) {
       await createAuditLog(c, {
-        action: 'user.batch_delete',
+        action: 'user.batch_delete_start',
         entity_type: 'user',
         entity_id: (user as any).id,
-        old_values: JSON.stringify({ username: user.username, email: user.email }),
-        new_values: JSON.stringify({ deleted: true, reason: reason || '批量删除' })
+        old_values: JSON.stringify({ 
+          username: user.username, 
+          email: user.email,
+          role: (user as any).role,
+          posts_count: postsCount?.count || 0,
+          comments_count: commentsCount?.count || 0
+        }),
+        new_values: JSON.stringify({ 
+          deleted: true, 
+          reason: reason,
+          deleted_by: currentUser?.username,
+          client_ip: clientIp
+        })
       })
     }
 
-    logger.info(`Batch deleted ${ids.length} users by ${currentUser?.username}`)
+    // 批量软删除
+    await c.env.DB.prepare(
+      `UPDATE users SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`
+    ).bind(...ids).run()
+
+    // 记录审计日志（操作后）
+    logger.info(`Batch deleted ${ids.length} users`, { 
+      deletedBy: currentUser?.username, 
+      reason: reason,
+      clientIp: clientIp 
+    })
 
     return c.json({
       success: true,
       message: `成功删除 ${ids.length} 个用户 / Successfully deleted ${ids.length} users`,
+      data: {
+        deleted_count: ids.length,
+        posts_affected: postsCount?.count || 0,
+        comments_affected: commentsCount?.count || 0
+      },
+    })
+  } catch (error: any) {
+    logger.error('Failed to batch delete users', error)
+    return c.json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: '批量删除失败 / Batch delete failed',
+      },
+    }, 500)
+  }
+})
       data: {
         deleted_count: ids.length,
         deleted_ids: ids

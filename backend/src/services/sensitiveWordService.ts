@@ -140,8 +140,46 @@ export class SensitiveWordService {
    */
   private loadBuiltinWords(): void {
     const builtinWords = [
+      // 政治相关
       '政治',
       '习近平',
+      '领导人',
+      '政府',
+      '党',
+      '军队',
+      '国家机密',
+      
+      // 暴力和违法相关
+      '杀人',
+      '自杀',
+      '爆炸',
+      '恐怖主义',
+      '毒品',
+      '赌博',
+      '卖淫',
+      '色情',
+      '裸聊',
+      '性交易',
+      
+      // 诈骗相关
+      '诈骗',
+      '传销',
+      '非法集资',
+      '洗钱',
+      '高利贷',
+      '网络诈骗',
+      '电信诈骗',
+      
+      // 侮辱性词汇
+      '傻逼',
+      '操你',
+      '去死',
+      '废物',
+      '垃圾',
+      '弱智',
+      '白痴',
+      
+      // 其他
       '敏感词示例'
     ]
 
@@ -150,7 +188,12 @@ export class SensitiveWordService {
       this.sensitiveWords.add(word)
     }
 
-    console.log(`✓ 内置敏感词库加载完成，共 ${builtinWords.length} 个敏感词 / Built-in sensitive word library loaded, total ${builtinWords.length} words`)
+    logger.warn(`✓ 内置敏感词库加载完成，共 ${builtinWords.length} 个敏感词 / Built-in sensitive word library loaded, total ${builtinWords.length} words`)
+    
+    // 如果是从文件系统加载失败降级到内置词库，记录警告
+    if (!this.filesystemAvailable) {
+      logger.warn('⚠ 文件系统不可用，使用内置敏感词库。建议检查文件系统权限。/ Filesystem not available, using built-in sensitive word library. Please check filesystem permissions.')
+    }
   }
 
   /**

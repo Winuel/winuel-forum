@@ -11,6 +11,7 @@ import { csrfMiddleware, csrfProtectionMiddleware } from './middleware/csrf'
 import { normalRateLimit } from './middleware/rateLimit'
 import { userAuthMiddleware, adminAuthMiddleware } from './middleware/auth'
 import { diMiddleware } from './middleware/di'
+import { strictBodySizeLimit, codeAttachmentBodySizeLimit } from './middleware/bodySizeLimit'
 import { handleError, formatErrorResponse, logError } from './utils/errorHandler'
 import { BLOCKLIST_DOMAINS, ALLOWLIST_DOMAINS } from './data/blocklist'
 import { createCache } from './utils/cache'
@@ -164,6 +165,7 @@ app.use('*', httpsRedirect)
 app.use('*', hsts)
 app.use('*', csrfMiddleware)
 app.use('*', csrfProtectionMiddleware)
+app.use('*', strictBodySizeLimit)
 
 app.get('/', (c) => {
   return c.json({
@@ -264,7 +266,7 @@ app.route('/api/posts', postsRouter)
 app.route('/api/comments', commentsRouter)
 app.route('/api/categories', categoriesRouter)
 app.route('/api/notifications', notificationsRouter)
-app.route('/api/attachments', attachmentsRouter)
+app.route('/api/attachments', codeAttachmentBodySizeLimit, attachmentsRouter)
 app.route('/api/reviews', reviewsRouter)
 
 // Admin routes - 使用管理员认证中间件
@@ -277,18 +279,76 @@ app.route('/api/admin/audit-logs', adminAuditLogsRouter)
 app.route('/api/admin/stats', adminStatsRouter)
 app.route('/api/admin/plugins', adminPluginsRouter)
 
-// 数据库迁移端点（移到管理员中间件之前，因为可能需要在不依赖认证的情况下执行）
-app.post('/api/admin/run-migrations', async (c) => {
+// 数据库迁移端点（仅限管理员，生产环境禁用）
+app.post('/api/admin/run-migrations', csrfProtectionMiddleware, async (c) => {
+  const environment = (globalThis as any).ENVIRONMENT || 'production'
+
+  // 生产环境完全禁用此端点
+  if (environment === 'production') {
+    logger.warn('Attempted to run migrations in production environment')
+    return c.json({
+      success: false,
+      error: '此功能在生产环境中已禁用 / This feature is disabled in production environment'
+    }, 403)
+  }
+
+  // 额外的角色检查
+  const user = c.get('user')
+  if (!user || user.role !== 'admin') {
+    logger.error('Unauthorized migration attempt', { userId: user?.userId, role: user?.role })
+    return c.json({
+      success: false,
+      error: '权限不足，仅管理员可以执行数据库迁移 / Insufficient permissions, only admin can run migrations'
+    }, 403)
+  }
+
   try {
+    // 记录审计日志
+    await createAuditLog(c, {
+      action: 'database.migrations.run',
+      entity_type: 'database',
+      entity_id: 'system',
+      old_values: JSON.stringify({ status: 'not_executed' }),
+      new_values: JSON.stringify({ status: 'executing' }),
+      reason: '手动执行数据库迁移 / Manual database migration execution'
+    })
+
     // 动态导入迁移脚本
     const runMigrations = await import('./utils/runMigrations')
     const result = await runMigrations.default(c.env.DB)
+
+    // 记录成功审计日志
+    await createAuditLog(c, {
+      action: 'database.migrations.run',
+      entity_type: 'database',
+      entity_id: 'system',
+      old_values: JSON.stringify({ status: 'executing' }),
+      new_values: JSON.stringify({ status: 'completed', result }),
+      reason: '数据库迁移执行成功 / Database migration completed successfully'
+    }).catch(e => {
+      logger.error('Failed to create audit log for migration success', e)
+    })
+
+    logger.info('Database migrations executed successfully', { user: user.userId })
     return c.json(result)
   } catch (error: any) {
     logger.error('Database migration failed', error)
-    return c.json({ 
-      success: false, 
-      error: error.message || '数据库迁移失败 / Database migration failed' 
+
+    // 记录失败审计日志
+    await createAuditLog(c, {
+      action: 'database.migrations.run',
+      entity_type: 'database',
+      entity_id: 'system',
+      old_values: JSON.stringify({ status: 'executing' }),
+      new_values: JSON.stringify({ status: 'failed', error: error.message }),
+      reason: `数据库迁移失败 / Database migration failed: ${error.message}`
+    }).catch(e => {
+      logger.error('Failed to create audit log for migration failure', e)
+    })
+
+    return c.json({
+      success: false,
+      error: error.message || '数据库迁移失败 / Database migration failed'
     }, 500)
   }
 })

@@ -314,3 +314,164 @@ export function validateUsername(username: string): ValidationResult {
     errors
   }
 }
+
+/**
+ * 验证帖子标题
+ * Validate Post Title
+ */
+export function validatePostTitle(title: string): ValidationResult {
+  const errors: string[] = []
+
+  // 检查标题长度
+  if (!title || title.trim().length === 0) {
+    errors.push('标题不能为空 / Title cannot be empty')
+  }
+  if (title.length < 5) {
+    errors.push('标题至少为5个字符 / Title must be at least 5 characters')
+  }
+  if (title.length > 200) {
+    errors.push('标题不能超过200个字符 / Title cannot exceed 200 characters')
+  }
+
+  // 检查是否包含恶意HTML标签
+  const htmlTags = /<[^>]*>/g
+  if (htmlTags.test(title)) {
+    errors.push('标题不能包含HTML标签 / Title cannot contain HTML tags')
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+
+/**
+ * 验证帖子内容
+ * Validate Post Content
+ */
+export function validatePostContent(content: string): ValidationResult {
+  const errors: string[] = []
+
+  // 检查内容长度
+  if (!content || content.trim().length === 0) {
+    errors.push('内容不能为空 / Content cannot be empty')
+  }
+  if (content.length < 10) {
+    errors.push('内容至少为10个字符 / Content must be at least 10 characters')
+  }
+  if (content.length > 50000) {
+    errors.push('内容不能超过50000个字符 / Content cannot exceed 50000 characters')
+  }
+
+  // 检查是否包含危险的脚本标签
+  const dangerousPatterns = [
+    /<script[^>]*>.*?<\/script>/gi,
+    /<iframe[^>]*>.*?<\/iframe>/gi,
+    /javascript:/gi,
+    /on\w+\s*=/gi,
+    /eval\s*\(/gi,
+    /<object[^>]*>.*?<\/object>/gi,
+    /<embed[^>]*>.*?<\/embed>/gi
+  ]
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(content)) {
+      errors.push('内容包含潜在的恶意代码 / Content contains potentially malicious code')
+      break
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+
+/**
+ * 验证标签
+ * Validate Tags
+ */
+export function validateTags(tags: string[]): ValidationResult {
+  const errors: string[] = []
+
+  // 检查标签数量
+  if (!Array.isArray(tags)) {
+    errors.push('标签必须是数组 / Tags must be an array')
+    return { isValid: false, errors }
+  }
+
+  if (tags.length > 10) {
+    errors.push('最多10个标签 / Maximum 10 tags allowed')
+  }
+
+  // 检查每个标签
+  for (const tag of tags) {
+    if (typeof tag !== 'string') {
+      errors.push('每个标签必须是字符串 / Each tag must be a string')
+      continue
+    }
+
+    if (tag.length === 0) {
+      errors.push('标签不能为空 / Tag cannot be empty')
+      continue
+    }
+
+    if (tag.length > 30) {
+      errors.push(`标签"${tag}"过长，最多30个字符 / Tag "${tag}" is too long, maximum 30 characters`)
+      continue
+    }
+
+    // 检查标签格式（允许中文、字母、数字、下划线和连字符）
+    if (!/^[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaffa-zA-Z0-9_-]+$/.test(tag)) {
+      errors.push(`标签"${tag}"包含非法字符 / Tag "${tag}" contains invalid characters`)
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+
+/**
+ * 验证评论内容
+ * Validate Comment Content
+ */
+export function validateCommentContent(content: string): ValidationResult {
+  const errors: string[] = []
+
+  // 检查内容长度
+  if (!content || content.trim().length === 0) {
+    errors.push('评论内容不能为空 / Comment cannot be empty')
+  }
+  if (content.length < 2) {
+    errors.push('评论至少为2个字符 / Comment must be at least 2 characters')
+  }
+  if (content.length > 10000) {
+    errors.push('评论不能超过10000个字符 / Comment cannot exceed 10000 characters')
+  }
+
+  // 检查是否包含危险的脚本标签（与帖子验证相同）
+  const dangerousPatterns = [
+    /<script[^>]*>.*?<\/script>/gi,
+    /<iframe[^>]*>.*?<\/iframe>/gi,
+    /javascript:/gi,
+    /on\w+\s*=/gi,
+    /eval\s*\(/gi,
+    /<object[^>]*>.*?<\/object>/gi,
+    /<embed[^>]*>.*?<\/embed>/gi
+  ]
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(content)) {
+      errors.push('评论包含潜在的恶意代码 / Comment contains potentially malicious code')
+      break
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+}

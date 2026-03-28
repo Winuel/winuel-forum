@@ -244,6 +244,20 @@ export interface TokenPayload extends JWTPayload {
 }
 
 /**
+ * 令牌类型枚举
+ * Token Type Enum
+ * 
+ * 定义JWT令牌的类型
+ * Defines the types of JWT tokens
+ */
+export enum TokenType {
+  /** 访问令牌 / Access token */
+  ACCESS = 'access',
+  /** 刷新令牌 / Refresh token */
+  REFRESH = 'refresh'
+}
+
+/**
  * 生成 JWT 令牌
  * Generate JWT Token
  * 
@@ -252,22 +266,56 @@ export interface TokenPayload extends JWTPayload {
  * 
  * @param payload - 令牌负载数据 / Token payload data
  * @param audience - 受众类型 / Audience type
+ * @param tokenType - 令牌类型 / Token type (默认为访问令牌)
  * @returns JWT 令牌字符串 / JWT token string
  */
-export async function generateToken(payload: JWTPayload, audience: Audience = Audience.USER): Promise<string> {
+export async function generateToken(
+  payload: JWTPayload,
+  audience: Audience = Audience.USER,
+  tokenType: TokenType = TokenType.ACCESS
+): Promise<string> {
   const secret = getSecret()
   const tokenPayload = {
     ...payload,
-    aud: audience
+    aud: audience,
+    type: tokenType
   }
-  
+
+  // 访问令牌1小时过期，刷新令牌7天过期
+  // Access token expires in 1 hour, refresh token expires in 7 days
+  const expirationTime = tokenType === TokenType.ACCESS ? '1h' : '7d'
+
   return new SignJWT(tokenPayload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime(expirationTime)
     .setAudience(audience)
     .setIssuer('winuel-api')
     .sign(secret)
+}
+
+/**
+ * 生成令牌对（访问令牌和刷新令牌）
+ * Generate Token Pair (Access Token and Refresh Token)
+ * 
+ * 同时生成访问令牌和刷新令牌
+ * Generates both access token and refresh token simultaneously
+ * 
+ * @param payload - 令牌负载数据 / Token payload data
+ * @param audience - 受众类型 / Audience type
+ * @returns 令牌对对象 / Token pair object
+ */
+export async function generateTokenPair(
+  payload: JWTPayload,
+  audience: Audience = Audience.USER
+): Promise<{ accessToken: string; refreshToken: string }> {
+  const accessToken = await generateToken(payload, audience, TokenType.ACCESS)
+  const refreshToken = await generateToken(payload, audience, TokenType.REFRESH)
+
+  return {
+    accessToken,
+    refreshToken
+  }
 }
 
 /**
@@ -279,22 +327,33 @@ export async function generateToken(payload: JWTPayload, audience: Audience = Au
  * 
  * @param token - JWT 令牌字符串 / JWT token string
  * @param expectedAudience - 期望的受众（可选）/ Expected audience (optional)
+ * @param expectedTokenType - 期望的令牌类型（可选）/ Expected token type (optional)
  * @returns 令牌负载数据或 null / Token payload data or null
  */
-export async function verifyToken(token: string, expectedAudience?: Audience): Promise<TokenPayload | null> {
+export async function verifyToken(
+  token: string,
+  expectedAudience?: Audience,
+  expectedTokenType?: TokenType
+): Promise<TokenPayload | null> {
   try {
     const secret = getSecret()
     const { payload } = await jwtVerify(token, secret, {
       issuer: 'winuel-api',
       audience: expectedAudience
     })
-    
+
     // 如果指定了受众，验证是否匹配 / If audience is specified, verify it matches
     if (expectedAudience && payload.aud !== expectedAudience) {
       console.warn(`Token audience mismatch: expected ${expectedAudience}, got ${payload.aud} / 令牌受众不匹配：期望 ${expectedAudience}，实际 ${payload.aud}`)
       return null
     }
-    
+
+    // 如果指定了令牌类型，验证是否匹配 / If token type is specified, verify it matches
+    if (expectedTokenType && (payload as any).type !== expectedTokenType) {
+      console.warn(`Token type mismatch: expected ${expectedTokenType}, got ${(payload as any).type} / 令牌类型不匹配：期望 ${expectedTokenType}，实际 ${(payload as any).type}`)
+      return null
+    }
+
     return payload as unknown as TokenPayload
   } catch (error) {
     return null
