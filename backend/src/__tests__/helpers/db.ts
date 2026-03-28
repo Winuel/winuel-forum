@@ -1,6 +1,9 @@
 import type { D1Database } from '@cloudflare/workers-types'
 
 export function createMockD1Database(): D1Database {
+  // Store batched statements with their SQL and params
+  const batchedStatements: Array<{ sql: string; params: any[] }> = []
+
   const db = {
     tables: new Map<string, any[]>(),
 
@@ -15,7 +18,7 @@ export function createMockD1Database(): D1Database {
         // Handle COUNT queries
         if (sql.includes('COUNT(*) as count')) {
           let count = filteredRows.length
-          
+
           if (sql.includes('WHERE category_id = ?') || sql.includes('AND category_id = ?')) {
             const categoryIdIndex = sql.indexOf('category_id = ?')
             const paramIndex = getParamIndex(sql, categoryIdIndex)
@@ -32,7 +35,7 @@ export function createMockD1Database(): D1Database {
               count = filteredRows.filter((r: any) => r.user_id === params[paramIndex] && !r.is_read).length
             }
           }
-          
+
           return [{ count }]
         }
 
@@ -136,19 +139,23 @@ export function createMockD1Database(): D1Database {
       }
 
       return {
-        bind: (...params: any[]) => {
+        bind: (...bindParams: any[]) => {
+          // Store the SQL and params for batch execution
+          const statementIndex = batchedStatements.length
+          batchedStatements.push({ sql, params: bindParams })
+
           return {
             first: async <T = any>() => {
-              return executeFirst(params) as T
+              return executeFirst(bindParams) as T
             },
             all: async <T = any>() => {
-              return { results: executeQuery(params) as T[] }
+              return { results: executeQuery(bindParams) as T[] }
             },
             run: async () => {
               if (operation === 'INSERT') {
                 const newRecord = {
-                  id: params[0],
-                  ...createRecordFromParams(tableName, params),
+                  id: bindParams[0],
+                  ...createRecordFromParams(tableName, bindParams),
                 }
                 const currentRows = db.tables.get(tableName) || []
                 db.tables.set(tableName, [...currentRows, newRecord])
@@ -157,33 +164,33 @@ export function createMockD1Database(): D1Database {
                 const updatedRows = currentRows.map((row: any) => {
                   // Check if this row should be updated
                   let shouldUpdate = true
-                  
+
                   if (sql.includes('WHERE id = ?')) {
                     const idIndex = sql.indexOf('id = ?')
                     const idParamIndex = getParamIndex(sql, idIndex)
-                    if (row.id !== params[idParamIndex]) {
+                    if (row.id !== bindParams[idParamIndex]) {
                       shouldUpdate = false
                     }
                   }
-                  
+
                   if (shouldUpdate && sql.includes('AND user_id = ?')) {
                     const userIdIndex = sql.indexOf('AND user_id = ?')
                     const userIdParamIndex = getParamIndex(sql, userIdIndex)
-                    if (row.user_id !== params[userIdParamIndex]) {
+                    if (row.user_id !== bindParams[userIdParamIndex]) {
                       shouldUpdate = false
                     }
                   }
-                  
+
                   if (sql.includes('WHERE user_id = ?') && sql.includes('is_read = ?')) {
-                    if (row.user_id !== params[0]) {
+                    if (row.user_id !== bindParams[0]) {
                       shouldUpdate = false
                     }
                   } else if (sql.includes('WHERE user_id = ?') && sql.includes('is_read = 0')) {
-                    if (row.user_id !== params[0] || row.is_read) {
+                    if (row.user_id !== bindParams[0] || row.is_read) {
                       shouldUpdate = false
                     }
                   }
-                  
+
                   if (!shouldUpdate) {
                     return row
                   }
@@ -194,17 +201,17 @@ export function createMockD1Database(): D1Database {
                   if (sql.includes('title = ?')) {
                     const titleIndex = sql.indexOf('title = ?')
                     const paramIndex = getParamIndex(sql, titleIndex)
-                    updatedRow.title = params[paramIndex]
+                    updatedRow.title = bindParams[paramIndex]
                   }
                   if (sql.includes('content = ?')) {
                     const contentIndex = sql.indexOf('content = ?')
                     const paramIndex = getParamIndex(sql, contentIndex)
-                    updatedRow.content = params[paramIndex]
+                    updatedRow.content = bindParams[paramIndex]
                   }
                   if (sql.includes('category_id = ?')) {
                     const categoryIndex = sql.indexOf('category_id = ?')
                     const paramIndex = getParamIndex(sql, categoryIndex)
-                    updatedRow.category_id = params[paramIndex]
+                    updatedRow.category_id = bindParams[paramIndex]
                   }
                   if (sql.includes('view_count = view_count + 1')) {
                     updatedRow.view_count = (row.view_count || 0) + 1
@@ -230,7 +237,7 @@ export function createMockD1Database(): D1Database {
                   if (sql.includes('is_read = ?')) {
                     const readIndex = sql.indexOf('is_read = ?')
                     const paramIndex = getParamIndex(sql, readIndex)
-                    updatedRow.is_read = params[paramIndex] === 1 || params[paramIndex] === true
+                    updatedRow.is_read = bindParams[paramIndex] === 1 || bindParams[paramIndex] === true
                   }
                   if (sql.includes('is_read = 1')) {
                     updatedRow.is_read = true
@@ -250,13 +257,13 @@ export function createMockD1Database(): D1Database {
                 let filteredRows = currentRows
 
                 if (sql.includes('WHERE id = ?')) {
-                  filteredRows = currentRows.filter((row: any) => row.id !== params[0])
+                  filteredRows = currentRows.filter((row: any) => row.id !== bindParams[0])
                 } else if (sql.includes('WHERE target_type = ?') && sql.includes('AND target_id = ?') && sql.includes('AND user_id = ?')) {
-                  filteredRows = currentRows.filter((row: any) => 
-                    !(row.target_type === params[0] && row.target_id === params[1] && row.user_id === params[2])
+                  filteredRows = currentRows.filter((row: any) =>
+                    !(row.target_type === bindParams[0] && row.target_id === bindParams[1] && row.user_id === bindParams[2])
                   )
                 } else if (sql.includes('WHERE user_id = ?')) {
-                  filteredRows = currentRows.filter((row: any) => row.user_id !== params[0])
+                  filteredRows = currentRows.filter((row: any) => row.user_id !== bindParams[0])
                 }
 
                 db.tables.set(tableName, filteredRows)
@@ -274,7 +281,71 @@ export function createMockD1Database(): D1Database {
       }
     },
     batch: async (statements: any[]) => {
-      return statements.map(() => ({ success: true, meta: {} }))
+      // Get the statements data before clearing the array
+      const statementsData = [...batchedStatements]
+
+      // Clear the batched statements array
+      batchedStatements.length = 0
+
+      return statements.map((stmt: any, index: number) => {
+        // Get the SQL and params from the stored batched statements
+        const { sql, params } = statementsData[index] || { sql: '', params: [] }
+
+        if (!sql) {
+          return { results: [] }
+        }
+
+        const tableName = extractTableName(sql)
+        const operation = extractOperation(sql)
+
+        const executeQuery = () => {
+          const rows = db.tables.get(tableName) || []
+          let filteredRows = [...rows]
+
+          // Handle SELECT queries
+          if (operation === 'SELECT') {
+            if (sql.includes('WHERE user_id = ?') && sql.includes('AND target_id = ?') && sql.includes('AND target_type = ?')) {
+              filteredRows = filteredRows.filter((r: any) =>
+                r.user_id === params[0] && r.target_id === params[1] && r.target_type === params[2]
+              )
+            }
+            if (sql.includes('WHERE id = ?')) {
+              filteredRows = filteredRows.filter((r: any) => r.id === params[0])
+            }
+            return { results: filteredRows }
+          }
+
+          // Handle INSERT queries
+          if (operation === 'INSERT') {
+            const newRecord = createRecordFromParams(tableName, params)
+            const currentRows = db.tables.get(tableName) || []
+            db.tables.set(tableName, [...currentRows, newRecord])
+          }
+
+          // Handle UPDATE queries
+          if (operation === 'UPDATE') {
+            const currentRows = db.tables.get(tableName) || []
+            const updatedRows = currentRows.map((row: any) => {
+              if (sql.includes('WHERE id = ?') && row.id === params[1]) {
+                const updatedRow = { ...row }
+                if (sql.includes('like_count = like_count + 1')) {
+                  updatedRow.like_count = (row.like_count || 0) + 1
+                }
+                if (sql.includes('updated_at = CURRENT_TIMESTAMP')) {
+                  updatedRow.updated_at = new Date().toISOString()
+                }
+                return updatedRow
+              }
+              return row
+            })
+            db.tables.set(tableName, updatedRows)
+          }
+
+          return { results: filteredRows }
+        }
+
+        return executeQuery()
+      })
     },
     exec: async (sql: string) => {
       return { success: true, meta: {} }

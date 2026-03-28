@@ -5,14 +5,15 @@ import { PostService } from '../services/postService'
 import { NotificationService } from '../services/notificationService'
 import { authMiddleware } from '../middleware/auth'
 import { csrfProtectionMiddleware } from '../middleware/csrf'
-import { 
-  successResponse, 
-  errorResponse, 
-  notFoundResponse, 
-  forbiddenResponse, 
+import {
+  successResponse,
+  errorResponse,
+  notFoundResponse,
+  forbiddenResponse,
   paginatedResponse,
-  ErrorCode 
+  ErrorCode
 } from '../utils/response'
+import { logger } from '../utils/logger'
 
 const postsRouter = new Hono<{ Bindings: Env; Variables: Variables }>()
 
@@ -156,7 +157,7 @@ postsRouter.post('/:id/like', authMiddleware, csrfProtectionMiddleware, async (c
       return errorResponse(c, ErrorCode.ALREADY_EXISTS, '已经点赞过 / Already liked', 400)
     }
 
-    const post = result[1].results?.[0]
+    const post = result[1].results?.[0] as { id: string; author_id: string; title: string } | undefined
     if (!post) {
       return errorResponse(c, ErrorCode.NOT_FOUND, '帖子不存在 / Post not found', 404)
     }

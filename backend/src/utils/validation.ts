@@ -474,4 +474,3 @@ export function validateCommentContent(content: string): ValidationResult {
     errors
   }
 }
-}

@@ -21,6 +21,7 @@
 
 import { readFileSync, readdirSync } from 'fs'
 import { join } from 'path'
+import { logger } from '../utils/logger'
 
 /**
  * Trie 树节点接口
@@ -64,6 +65,8 @@ export class SensitiveWordService {
   private sensitiveWords: Set<string>
   /** 敏感词数据目录 / Sensitive word data directory */
   private dataDir: string
+  /** 文件系统是否可用 / Whether file system is available */
+  private filesystemAvailable: boolean
 
   /**
    * 构造函数
@@ -75,6 +78,7 @@ export class SensitiveWordService {
     this.trieRoot = { children: new Map(), isEnd: false }
     this.sensitiveWords = new Set()
     this.dataDir = dataDir
+    this.filesystemAvailable = false
     this.loadSensitiveWords()
   }
 
@@ -114,6 +118,7 @@ export class SensitiveWordService {
           }
         }
 
+        this.filesystemAvailable = true
         console.log(`✓ 敏感词库加载完成，共 ${totalWords} 个敏感词 / Sensitive word library loaded, total ${totalWords} words`)
       } else {
         // Cloudflare Workers 环境 - 使用内置的基本敏感词 / Cloudflare Workers environment - use built-in basic sensitive words

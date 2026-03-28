@@ -495,22 +495,6 @@ app.post('/api/admin/users/batch-delete', requireAdmin, csrfProtectionMiddleware
     }, 500)
   }
 })
-      data: {
-        deleted_count: ids.length,
-        deleted_ids: ids
-      }
-    })
-  } catch (error: any) {
-    logger.error('Failed to batch delete users:', error)
-    return c.json({
-      success: false,
-      error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: '批量删除用户失败 / Failed to batch delete users',
-      },
-    }, 500)
-  }
-})
 
 // 批量更新用户角色
 app.post('/api/admin/users/batch-update-role', requireAdmin, csrfProtectionMiddleware, async (c) => {

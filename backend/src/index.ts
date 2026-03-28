@@ -10,6 +10,7 @@ import { auditLog } from './middleware/audit'
 import { csrfMiddleware, csrfProtectionMiddleware } from './middleware/csrf'
 import { normalRateLimit } from './middleware/rateLimit'
 import { userAuthMiddleware, adminAuthMiddleware } from './middleware/auth'
+import { createAuditLog } from './utils/audit'
 import { diMiddleware } from './middleware/di'
 import { strictBodySizeLimit, codeAttachmentBodySizeLimit } from './middleware/bodySizeLimit'
 import { handleError, formatErrorResponse, logError } from './utils/errorHandler'
@@ -228,8 +229,7 @@ app.post('/api/admin/init-db', adminAuthMiddleware, async (c) => {
       entity_type: 'database',
       entity_id: 'system',
       old_values: JSON.stringify({ initialized: false }),
-      new_values: JSON.stringify({ initialized: true }),
-      reason: '手动初始化数据库 / Manual database initialization'
+      new_values: JSON.stringify({ initialized: true, reason: '手动初始化数据库 / Manual database initialization' })
     })
 
     return c.json({
@@ -245,8 +245,7 @@ app.post('/api/admin/init-db', adminAuthMiddleware, async (c) => {
       entity_type: 'database',
       entity_id: 'system',
       old_values: JSON.stringify({ initialized: false }),
-      new_values: JSON.stringify({ initialized: false, error: error.message }),
-      reason: `数据库初始化失败 / Database initialization failed: ${error.message}`
+      new_values: JSON.stringify({ initialized: false, error: error.message, reason: `数据库初始化失败 / Database initialization failed: ${error.message}` })
     }).catch(e => {
       // 审计日志记录失败不影响错误响应
       logger.error('Failed to create audit log for database initialization failure', e)
@@ -266,7 +265,8 @@ app.route('/api/posts', postsRouter)
 app.route('/api/comments', commentsRouter)
 app.route('/api/categories', categoriesRouter)
 app.route('/api/notifications', notificationsRouter)
-app.route('/api/attachments', codeAttachmentBodySizeLimit, attachmentsRouter)
+app.use('/api/attachments/*', codeAttachmentBodySizeLimit)
+app.route('/api/attachments', attachmentsRouter)
 app.route('/api/reviews', reviewsRouter)
 
 // Admin routes - 使用管理员认证中间件
@@ -309,8 +309,7 @@ app.post('/api/admin/run-migrations', csrfProtectionMiddleware, async (c) => {
       entity_type: 'database',
       entity_id: 'system',
       old_values: JSON.stringify({ status: 'not_executed' }),
-      new_values: JSON.stringify({ status: 'executing' }),
-      reason: '手动执行数据库迁移 / Manual database migration execution'
+      new_values: JSON.stringify({ status: 'executing', reason: '手动执行数据库迁移 / Manual database migration execution' })
     })
 
     // 动态导入迁移脚本
@@ -323,8 +322,7 @@ app.post('/api/admin/run-migrations', csrfProtectionMiddleware, async (c) => {
       entity_type: 'database',
       entity_id: 'system',
       old_values: JSON.stringify({ status: 'executing' }),
-      new_values: JSON.stringify({ status: 'completed', result }),
-      reason: '数据库迁移执行成功 / Database migration completed successfully'
+      new_values: JSON.stringify({ status: 'completed', result, reason: '数据库迁移执行成功 / Database migration completed successfully' })
     }).catch(e => {
       logger.error('Failed to create audit log for migration success', e)
     })
@@ -340,8 +338,7 @@ app.post('/api/admin/run-migrations', csrfProtectionMiddleware, async (c) => {
       entity_type: 'database',
       entity_id: 'system',
       old_values: JSON.stringify({ status: 'executing' }),
-      new_values: JSON.stringify({ status: 'failed', error: error.message }),
-      reason: `数据库迁移失败 / Database migration failed: ${error.message}`
+      new_values: JSON.stringify({ status: 'failed', error: error.message, reason: `数据库迁移失败 / Database migration failed: ${error.message}` })
     }).catch(e => {
       logger.error('Failed to create audit log for migration failure', e)
     })
