@@ -84,9 +84,15 @@ export const useUserStore = defineStore('user', () => {
     token.value = newToken
     // 将令牌保存到 localStorage / Save token to localStorage
     if (newToken) {
-      localStorage.setItem('auth_token', newToken)
+      try {
+        localStorage.setItem('auth_token', newToken)
+        localStorage.setItem('auth_token_timestamp', Date.now().toString())
+      } catch (error) {
+        console.error('Failed to save token to localStorage:', error)
+      }
     } else {
       localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_token_timestamp')
     }
   }
 
@@ -101,6 +107,23 @@ export const useUserStore = defineStore('user', () => {
     user.value = null
     token.value = null
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_token_timestamp')
+  }
+
+  /**
+   * 检查令牌是否过期
+   * Check if token is expired
+   * 
+   * @returns 是否过期 / Whether token is expired
+   */
+  function isTokenExpired(): boolean {
+    const timestamp = localStorage.getItem('auth_token_timestamp')
+    if (!timestamp) return true
+    
+    const tokenAge = Date.now() - parseInt(timestamp, 10)
+    const maxAge = 7 * 24 * 60 * 60 * 1000 // 7天
+    
+    return tokenAge > maxAge
   }
 
   /**
@@ -112,8 +135,12 @@ export const useUserStore = defineStore('user', () => {
    */
   function loadFromStorage() {
     const savedToken = localStorage.getItem('auth_token')
-    if (savedToken) {
+    if (savedToken && !isTokenExpired()) {
       token.value = savedToken
+    } else {
+      // 清理过期或无效的令牌
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_token_timestamp')
     }
   }
 

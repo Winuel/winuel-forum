@@ -259,10 +259,19 @@ app.delete('/:id', authMiddleware, async (c) => {
     }, 401)
   }
 
-  // 验证权限（附件的作者才能删除）
+  // 验证权限（附件的作者或管理员才能删除）
   const attachment = await service.getAttachment(id)
   if (attachment.success && attachment.attachment) {
-    // TODO: 添加权限检查
+    const user = c.get('user')
+    const isAuthor = attachment.attachment.author_id === user?.userId
+    const isAdmin = user?.role === 'admin'
+    
+    if (!isAuthor && !isAdmin) {
+      return c.json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: '没有权限删除此附件' }
+      }, 403)
+    }
   }
 
   const result = await service.deleteAttachment(id)
