@@ -63,11 +63,12 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { user: any; token: string }
-      expect(json.user).toBeDefined()
-      expect(json.user.username).toBe('testuser')
-      expect(json.user.email).toBe('test@example.com')
-      expect(json.token).toBeDefined()
+      const json = await res.json() as { success: boolean; data: { user: any; token: string } }
+      expect(json.success).toBe(true)
+      expect(json.data.user).toBeDefined()
+      expect(json.data.user.username).toBe('testuser')
+      expect(json.data.user.email).toBe('test@example.com')
+      expect(json.data.token).toBeDefined()
     })
 
     it('should return 400 when missing fields', async () => {
@@ -229,10 +230,11 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { user: any; token: string }
-      expect(json.user).toBeDefined()
-      expect(json.user.email).toBe('test@example.com')
-      expect(json.token).toBeDefined()
+      const json = await res.json() as { success: boolean; data: { user: any; token: string } }
+      expect(json.success).toBe(true)
+      expect(json.data.user).toBeDefined()
+      expect(json.data.user.email).toBe('test@example.com')
+      expect(json.data.token).toBeDefined()
     })
 
     it('should return 400 when missing fields', async () => {
@@ -339,8 +341,9 @@ describe('Auth Router', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json() as { username: string }
-      expect(json.username).toBe('testuser')
+      const json = await res.json() as { success: boolean; data: { username: string } }
+      expect(json.success).toBe(true)
+      expect(json.data.username).toBe('testuser')
     })
 
     it('should return 401 when not authenticated', async () => {
