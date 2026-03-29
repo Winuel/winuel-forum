@@ -129,12 +129,24 @@ app.put('/api/admin/users/:id/role', requireAdmin, csrfProtectionMiddleware, asy
     const { role } = await c.req.json()
     const currentUser = c.get('currentUser')
 
+    // 二次验证：确保当前用户是管理员
+    // Secondary verification: ensure current user is admin
+    if (!currentUser || currentUser.role !== 'admin') {
+      return c.json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: '权限不足 / Insufficient permissions',
+        },
+      }, 403)
+    }
+
     if (!['user', 'moderator', 'admin'].includes(role)) {
       return c.json({
         success: false,
         error: {
           code: 'INVALID_ROLE',
-          message: '无效的角色',
+          message: '无效的角色 / Invalid role',
         },
       }, 400)
     }
@@ -149,7 +161,7 @@ app.put('/api/admin/users/:id/role', requireAdmin, csrfProtectionMiddleware, asy
         success: false,
         error: {
           code: 'USER_NOT_FOUND',
-          message: '用户不存在',
+          message: '用户不存在 / User not found',
         },
       }, 404)
     }
@@ -170,7 +182,7 @@ app.put('/api/admin/users/:id/role', requireAdmin, csrfProtectionMiddleware, asy
 
     return c.json({
       success: true,
-      message: '用户角色已更新',
+      message: '用户角色已更新 / User role updated successfully',
       data: { id, role },
     })
   } catch (error: any) {
@@ -179,7 +191,7 @@ app.put('/api/admin/users/:id/role', requireAdmin, csrfProtectionMiddleware, asy
       success: false,
       error: {
         code: 'INTERNAL_SERVER_ERROR',
-        message: '更新用户角色失败',
+        message: '更新用户角色失败 / Failed to update user role',
       },
     }, 500)
   }

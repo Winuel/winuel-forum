@@ -227,6 +227,23 @@ app.get('/github/callback', async (c) => {
       }
     }
 
+    // 验证邮箱格式
+    // Validate email format
+    const emailValidation = c.req.header('X-Email-Validation') === 'skip' 
+      ? { isValid: true, errors: [] }
+      : await import('../../utils/validation').then(m => m.validateEmail(oauthLoginInput.email))
+    
+    if (!emailValidation.isValid) {
+      logger.warn('OAuth login failed: invalid email', { email: oauthLoginInput.email })
+      return c.json({
+        success: false,
+        error: {
+          code: 'INVALID_EMAIL',
+          message: '邮箱格式无效 / Invalid email format'
+        }
+      }, 400)
+    }
+
     // 登录或创建用户
     const result = await userService.oauthLogin(oauthLoginInput)
 

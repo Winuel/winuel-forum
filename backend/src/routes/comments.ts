@@ -111,7 +111,7 @@ commentsRouter.post('/', authMiddleware, csrfProtectionMiddleware, async (c) => 
 
 commentsRouter.put('/:id', authMiddleware, csrfProtectionMiddleware, async (c) => {
   try {
-    const id = c.req.param('id')!!
+    const id = c.req.param('id')!
     const user = c.get('user')
     const { content } = await c.req.json()
 
