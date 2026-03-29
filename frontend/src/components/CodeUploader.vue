@@ -18,7 +18,7 @@
       
       <div class="upload-content">
         <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88 7.5M9 19h6a2 2 0 002-2V7a2 2 0 00-2-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2v-1m0 0c1.5 0 3 .5 4.5 2 3-2 1.5-3 .5-4.5-2-3-1.5-3-.5-4.5-2v-1m0 0c1.5 0 3 .5 4.5 2 3-2 1.5-3 .5-4.5-2-3-1.5-3-.5-4.5-2-3-1.5-3-.5-4.5-2-3-1.5-3-.5-4.5-2-3M7 16a4 4 0 01-.88 7.5M9 19h6a2 2 0 002-2V7a2 2 0 00-2-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2v-1m0 0c1.5 0 3 .5 4.5 2 3-2 1.5-3 .5-4.5-2-3-2 1.5-3 .5-4.5-2-3-1.5-3-.5-4.5-2-3-1.5-3-.5-4.5-2-3M7 16a4 4 0 01-.88 7.5M9 19h6a2 2 0 002-2V7a2 2 0 00-2-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2v-1" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88 7.5M9 19h6a2 2 0 002-2V7a2 2 0 00-2-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2v-1m0 0c1.5 0 3 .5 4.5 2 3-2 1.5-3 .5-4.5-2-3-1.5-3-.5-4.5-2v-1m0 0c1.5 0 3 .5 4.5 2 3-2 1.5-3 .5-4.5-2-3-2 1.5-3 .5-4.5-2-3-1.5-3-.5-4.5-2-3-1.5-3-.5-4.5-2-3M7 16a4 4 0 01-.88 7.5M9 19h6a2 2 0 002-2V7a2 2 0 00-2-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2v-1m0 0c1.5 0 3 .5 4.5 2 3-2 1.5-3 .5-4.5-2-3-2 1.5-3 .5-4.5-2-3-1.5-3-.5-4.5-2-3-1.5-3-.5-4.5-2-3M7 16a4 4 0 01-.88 7.5M9 19h6a2 2 0 002-2V7a2 2 0 00-2-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2a2 2 0 002-2v-1" />
         </svg>
         <p class="upload-text">{{ uploading ? '上传中...' : '点击或拖拽代码文件到此处上传' }}</p>
         <p class="upload-hint">支持 .js, .ts, .py, .java 等代码文件，最大 512KB</p>
@@ -56,6 +56,8 @@ import { ref } from 'vue'
 import type { UploadFile, UploadOptions } from '../types/code'
 import type { CodeAttachment } from '../types/code'
 import { apiClient } from '../api/client'
+import type { AppError } from '../types/error'
+import { getErrorMessage } from '../types/error'
 
 interface UploadedFile extends UploadFile {
   status: 'uploading' | 'success' | 'error'
@@ -77,9 +79,11 @@ const uploadedFiles = ref<UploadedFile[]>([])
 
 const MAX_FILE_SIZE = props.maxFileSize || 512 // KB
 
-const detectLanguage = (fileName: string): any => {
+type Language = 'javascript' | 'typescript' | 'python' | 'java' | 'c' | 'cpp' | 'csharp' | 'go' | 'rust' | 'php' | 'ruby' | 'swift' | 'kotlin' | 'html' | 'css' | 'json' | 'yaml' | 'sql' | 'markdown' | 'bash' | 'other'
+
+const detectLanguage = (fileName: string): Language => {
   const ext = fileName.split('.').pop()?.toLowerCase()
-  const languageMap: Record<string, any> = {
+  const languageMap: Record<string, Language> = {
     js: 'javascript',
     ts: 'typescript',
     py: 'python',
@@ -138,9 +142,9 @@ const uploadFileFunc = async (uploadFile: UploadedFile) => {
     
     props.onUploadSuccess?.(responseData.data)
     emit('upload-success', responseData.data)
-  } catch (error: any) {
+  } catch (error: AppError) {
     uploadFile.status = 'error'
-    uploadFile.error = error.message || '上传失败'
+    uploadFile.error = getErrorMessage(error) || '上传失败'
     
     props.onUploadError?.(uploadFile.error || '上传失败')
     emit('upload-error', uploadFile.error || '上传失败')

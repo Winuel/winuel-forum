@@ -121,6 +121,10 @@ import CodeViewer from '../components/CodeViewer.vue'
 
 import type { CodeAttachment } from '../types/code'
 
+import type { Post } from '../stores/post'
+
+import type { Comment } from '../stores/post'
+
 
 
 const route = useRoute()
@@ -143,11 +147,11 @@ onMounted(async () => {
   const postId = route.params.id as string
   postStore.loading = true
   try {
-    const post = await apiClient.get(`/api/posts/${postId}`) as any
-    postStore.setCurrentPost(post as any)
+    const post = await apiClient.get(`/api/posts/${postId}`) as Post
+    postStore.setCurrentPost(post)
 
-    const comments = await apiClient.get(`/api/posts/${postId}/comments`) as any[]
-    postStore.setComments(comments as any[])
+    const comments = await apiClient.get(`/api/posts/${postId}/comments`) as Comment[]
+    postStore.setComments(comments)
 
     // Load code attachments
     try {

@@ -143,7 +143,7 @@ export function sanitizeJson(jsonString: string): string {
  * 清理用户输入的通用函数
  * 根据输入类型选择适当的清理方法
  */
-export function sanitizeInput(input: any, type: 'text' | 'html' | 'url' | 'username' | 'json'): string {
+export function sanitizeInput(input: unknown, type: 'text' | 'html' | 'url' | 'username' | 'json'): string {
   switch (type) {
     case 'text':
       return sanitizeText(String(input))

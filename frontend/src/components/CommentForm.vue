@@ -40,6 +40,14 @@ const postStore = usePostStore()
 const content = ref('')
 const submitting = ref(false)
 
+interface Comment {
+  id: string
+  postId: string
+  content: string
+  userId: string
+  createdAt: string
+}
+
 async function handleSubmit() {
   if (!content.value.trim()) return
 
@@ -48,7 +56,7 @@ async function handleSubmit() {
     const comment = await apiClient.post('/api/comments', {
       postId: props.postId,
       content: content.value,
-    }) as any
+    }) as Comment
     postStore.addComment(comment)
     content.value = ''
   } catch (error) {

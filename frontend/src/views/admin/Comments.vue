@@ -210,8 +210,23 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import type { AppError } from '../../types/error'
+import { getErrorMessage } from '../../types/error'
 
-const comments = ref<any[]>([])
+interface AdminComment {
+  id: string
+  content: string
+  postId: string
+  postTitle: string
+  authorId: string
+  authorUsername: string
+  authorEmail: string
+  status: 'normal' | 'hidden' | 'deleted'
+  createdAt: string
+  updatedAt: string
+}
+
+const comments = ref<AdminComment[]>([])
 const loading = ref(false)
 const search = ref('')
 const selectedStatus = ref('all')
@@ -224,7 +239,7 @@ const pagination = ref({
 
 // Modals
 const showDeleteModal = ref(false)
-const selectedComment = ref<any>(null)
+const selectedComment = ref<AdminComment | null>(null)
 const deleteAction = ref<'delete' | 'restore'>('delete')
 const deleteReason = ref('')
 
@@ -253,9 +268,9 @@ const fetchComments = async () => {
       comments.value = response.data.data.comments
       pagination.value = response.data.data.pagination
     }
-  } catch (error: any) {
-    console.error('Failed to fetch comments:', error)
-    if (error.response?.status === 403) {
+  } catch (error: AppError) {
+    console.error('Failed to fetch comments:', getErrorMessage(error))
+    if ((error as any).response?.status === 403) {
       alert('权限不足')
     }
   } finally {
@@ -291,14 +306,14 @@ const getPageNumbers = () => {
   return pages
 }
 
-const confirmDeleteComment = (comment: any) => {
+const confirmDeleteComment = (comment: AdminComment) => {
   selectedComment.value = comment
   deleteAction.value = 'delete'
   deleteReason.value = ''
   showDeleteModal.value = true
 }
 
-const confirmRestoreComment = (comment: any) => {
+const confirmRestoreComment = (comment: AdminComment) => {
   selectedComment.value = comment
   deleteAction.value = 'restore'
   showDeleteModal.value = true
@@ -309,19 +324,19 @@ const executeDeleteAction = async () => {
     const endpoint = deleteAction.value === 'delete'
       ? `/api/admin/comments/${selectedComment.value.id}`
       : `/api/admin/comments/${selectedComment.value.id}/restore`
-    
+
     const method = deleteAction.value === 'delete' ? 'delete' : 'post'
-    
+
     const response = await axios[method](endpoint, { reason: deleteReason.value })
-    
+
     if (response.data.success) {
       alert(deleteAction.value === 'delete' ? '评论已删除' : '评论已恢复')
       showDeleteModal.value = false
       fetchComments()
     }
-  } catch (error: any) {
-    console.error('Failed to execute delete action:', error)
-    alert(error.response?.data?.error?.message || '操作失败')
+  } catch (error: AppError) {
+    console.error('Failed to execute delete action:', getErrorMessage(error))
+    alert((error as any).response?.data?.error?.message || '操作失败')
   }
 }
 

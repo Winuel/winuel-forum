@@ -21,6 +21,9 @@ import { CodeAttachmentModel, CodeReviewModel } from '../models/codeAttachment'
 import { DiffTool } from '../utils/diff'
 import { logger } from '../utils/logger'
 import type { 
+  CodeAttachment,
+  CodeVersion,
+  CodeReview,
   CreateCodeAttachmentInput, 
   UpdateCodeAttachmentInput,
   CreateCodeReviewInput,
@@ -59,7 +62,7 @@ export class CodeAttachmentService {
    */
   async upload(input: CreateCodeAttachmentInput): Promise<{
     success: boolean
-    attachment?: any
+    attachment?: CodeAttachment
     error?: string
   }> {
     try {
@@ -114,7 +117,7 @@ export class CodeAttachmentService {
    */
   async getAttachment(id: string): Promise<{
     success: boolean
-    attachment?: any
+    attachment?: CodeAttachment
     error?: string
   }> {
     try {
@@ -149,7 +152,7 @@ export class CodeAttachmentService {
    */
   async getPostAttachments(postId: string): Promise<{
     success: boolean
-    attachments?: any[]
+    attachments?: CodeAttachment[]
     error?: string
   }> {
     try {
@@ -181,7 +184,7 @@ export class CodeAttachmentService {
    */
   async updateAttachment(input: UpdateCodeAttachmentInput, authorId: string): Promise<{
     success: boolean
-    attachment?: any
+    attachment?: CodeAttachment
     error?: string
   }> {
     try {
@@ -207,7 +210,7 @@ export class CodeAttachmentService {
       
       return {
         success: true,
-        attachment: updated
+        attachment: updated || undefined
       }
     } catch (error) {
       console.error('Failed to update code attachment:', error, '更新代码附件失败:', error)
@@ -263,7 +266,7 @@ export class CodeAttachmentService {
    */
   async getVersionHistory(attachmentId: string): Promise<{
     success: boolean
-    versions?: any[]
+    versions?: CodeVersion[]
     error?: string
   }> {
     try {
@@ -295,7 +298,7 @@ export class CodeAttachmentService {
    */
   async submitReview(input: CreateCodeReviewInput, proposerId: string): Promise<{
     success: boolean
-    review?: any
+    review?: CodeReview
     error?: string
   }> {
     try {
@@ -345,7 +348,7 @@ export class CodeAttachmentService {
    */
   async getReviews(attachmentId: string): Promise<{
     success: boolean
-    reviews?: any[]
+    reviews?: CodeReview[]
     error?: string
   }> {
     try {
@@ -377,8 +380,8 @@ export class CodeAttachmentService {
    */
   async acceptReview(input: ReviewDecisionInput, reviewerId: string): Promise<{
     success: boolean
-    attachment?: any
-    review?: any
+    attachment?: CodeAttachment
+    review?: CodeReview
     error?: string
   }> {
     try {
@@ -417,8 +420,8 @@ export class CodeAttachmentService {
       
       return {
         success: true,
-        attachment,
-        review: updatedReview
+        attachment: attachment || undefined,
+        review: updatedReview || undefined
       }
     } catch (error) {
       console.error('Failed to accept review:', error, '接受审查提议失败:', error)
@@ -442,7 +445,7 @@ export class CodeAttachmentService {
    */
   async rejectReview(input: ReviewDecisionInput, reviewerId: string): Promise<{
     success: boolean
-    review?: any
+    review?: CodeReview
     error?: string
   }> {
     try {
@@ -472,7 +475,7 @@ export class CodeAttachmentService {
       
       return {
         success: true,
-        review: updatedReview
+        review: updatedReview || undefined
       }
     } catch (error) {
       console.error('Failed to reject review:', error, '拒绝审查提议失败:', error)
@@ -495,7 +498,7 @@ export class CodeAttachmentService {
    */
   async getUserReviews(proposerId: string): Promise<{
     success: boolean
-    reviews?: any[]
+    reviews?: CodeReview[]
     error?: string
   }> {
     try {

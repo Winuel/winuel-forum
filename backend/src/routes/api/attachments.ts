@@ -294,13 +294,16 @@ app.delete('/:id', authMiddleware, async (c) => {
   const attachment = await service.getAttachment(id)
   if (attachment.success && attachment.attachment) {
     const user = c.get('user')
-    const isAuthor = attachment.attachment.author_id === user?.userId
+    
+    // 检查用户是否是帖子的作者或管理员
+    // 由于 CodeAttachment 没有 author_id，我们需要通过 post_id 来验证
+    // 这里暂时只检查管理员权限，未来可以通过查询帖子来验证作者
     const isAdmin = user?.role === 'admin'
     
-    if (!isAuthor && !isAdmin) {
+    if (!isAdmin) {
       return c.json({
         success: false,
-        error: { code: 'FORBIDDEN', message: '没有权限删除此附件' }
+        error: { code: 'FORBIDDEN', message: '只有管理员可以删除此附件' }
       }, 403)
     }
   }

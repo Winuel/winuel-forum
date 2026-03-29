@@ -295,6 +295,8 @@
 import { ref, reactive } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useUIStore } from '../stores/ui'
+import type { AppError } from '../types/error'
+import { getErrorMessage } from '../types/error'
 
 const userStore = useUserStore()
 const uiStore = useUIStore()
@@ -477,7 +479,12 @@ function resetTheme() {
 }
 
 // 更新主题颜色
-function updateThemeColors(colors: any) {
+function updateThemeColors(colors: {
+  primary: string
+  secondary: string
+  accent: string
+  background: string
+}) {
   const root = document.documentElement
   root.style.setProperty('--primary-color', colors.primary)
   root.style.setProperty('--secondary-color', colors.secondary)
@@ -486,7 +493,7 @@ function updateThemeColors(colors: any) {
 }
 
 // 显示主题预览
-function showThemePreview(theme: any) {
+function showThemePreview(theme: typeof presetThemes.value[0]) {
   themePreview.colors = { ...theme.colors }
   themePreview.show = true
   
@@ -510,8 +517,9 @@ function loadSavedTheme() {
       } else {
         uiStore.theme = 'light'
       }
-    } catch (error) {
+    } catch (error: AppError) {
       // Error handling is managed by the error handler
+      console.error(getErrorMessage(error))
     }
   }
 }

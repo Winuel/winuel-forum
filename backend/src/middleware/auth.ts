@@ -6,11 +6,13 @@
  * - JWT 令牌验证
  * - 用户角色验证
  * - 支持 USER 和 ADMIN 两种受众
+ * - 令牌黑名单检查
  * 
  * Provides user and admin authentication functionality, including:
  * - JWT token verification
  * - User role verification
  * - Supports USER and ADMIN audiences
+ * - Token blacklist checking
  * 
  * @package backend/src/middleware
  */
@@ -18,6 +20,13 @@
 import type { Context, Next } from 'hono'
 import { verifyToken, Audience } from '../utils/jwt'
 import type { JWTPayload, TokenPayload } from '../db/models'
+import type { TokenBlacklist } from '../utils/tokenBlacklist'
+
+// 全局令牌黑名单实例（在 index.ts 中初始化）
+// Global token blacklist instance (initialized in index.ts)
+declare global {
+  var tokenBlacklist: TokenBlacklist | undefined
+}
 
 /**
  * 用户认证中间件（使用 USER 受众）
@@ -40,9 +49,18 @@ export async function userAuthMiddleware(c: Context, next: Next) {
 
   // 提取令牌 / Extract token
   const token = authHeader.substring(7)
-  const payload = await verifyToken(token, Audience.USER)
+
+  // 检查令牌是否在黑名单中 / Check if token is in blacklist
+  if ((globalThis as any).tokenBlacklist) {
+    const isBlacklisted = await (globalThis as any).tokenBlacklist.isTokenBlacklisted(token)
+    if (isBlacklisted) {
+      return c.json({ error: '令牌已撤销 / Token has been revoked' }, 401)
+    }
+  }
 
   // 验证令牌 / Verify token
+  const payload = await verifyToken(token, Audience.USER)
+
   if (!payload) {
     return c.json({ error: '无效的令牌 / Invalid token' }, 401)
   }
@@ -74,9 +92,18 @@ export async function adminAuthMiddleware(c: Context, next: Next) {
 
   // 提取令牌 / Extract token
   const token = authHeader.substring(7)
-  const payload = await verifyToken(token, Audience.ADMIN)
+
+  // 检查令牌是否在黑名单中 / Check if token is in blacklist
+  if ((globalThis as any).tokenBlacklist) {
+    const isBlacklisted = await (globalThis as any).tokenBlacklist.isTokenBlacklisted(token)
+    if (isBlacklisted) {
+      return c.json({ error: '令牌已撤销 / Token has been revoked' }, 401)
+    }
+  }
 
   // 验证令牌 / Verify token
+  const payload = await verifyToken(token, Audience.ADMIN)
+
   if (!payload) {
     return c.json({ error: '无效的令牌 / Invalid token' }, 401)
   }

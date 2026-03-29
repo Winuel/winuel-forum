@@ -138,6 +138,8 @@ import { apiClient } from '../api/client'
 import CodeUploader from '../components/CodeUploader.vue'
 import AppealDialog from '../components/AppealDialog.vue'
 import type { CodeAttachment } from '../types/code'
+import type { AppError } from '../types/error'
+import { getErrorMessage } from '../types/error'
 
 const router = useRouter()
 const uiStore = useUIStore()
@@ -203,11 +205,11 @@ async function handleSubmit() {
       })
       router.push(`/post/${post.id}`)
     }
-  } catch (error: any) {
+  } catch (error: AppError) {
     uiStore.addNotification({
       type: 'error',
       title: '发布失败',
-      message: error?.message || '发布失败，请稍后重试',
+      message: getErrorMessage(error) || '发布失败，请稍后重试',
     })
   } finally {
     loading.value = false
@@ -228,11 +230,11 @@ const handleAppealSubmit = async (reason: string) => {
     })
     
     router.push(`/post/${appealingPostId.value}`)
-  } catch (error: any) {
+  } catch (error: AppError) {
     uiStore.addNotification({
       type: 'error',
       title: '申诉失败',
-      message: error?.message || '申诉失败，请稍后重试',
+      message: getErrorMessage(error) || '申诉失败，请稍后重试',
     })
   } finally {
     appealLoading.value = false

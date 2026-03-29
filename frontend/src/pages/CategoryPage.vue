@@ -41,10 +41,14 @@ const posts = ref<Post[]>([])
 const categoryName = ref('')
 const loading = ref(false)
 
+interface PostsResponse {
+  posts: Post[]
+}
+
 onMounted(async () => {
   loading.value = true
   try {
-    const data = await apiClient.get(`/api/posts?categoryId=${route.params.id}`) as any
+    const data = await apiClient.get(`/api/posts?categoryId=${route.params.id}`) as PostsResponse
     posts.value = data.posts || []
     categoryName.value = '分类'
   } catch (error) {

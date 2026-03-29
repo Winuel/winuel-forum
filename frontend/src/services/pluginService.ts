@@ -5,8 +5,8 @@ import { logger } from '../utils/logger'
 /**前端插件管理服务*/
 export class FrontendPluginService {
   private loader: PluginLoader
-  private loadedPlugins: Map<string, any> = new Map()
-  private componentRegistry: Map<string, any> = new Map()
+  private loadedPlugins: Map<string, PluginManifest> = new Map()
+  private componentRegistry: Map<string, unknown> = new Map()
 
   constructor() {
     this.loader = new PluginLoader({
@@ -57,7 +57,7 @@ export class FrontendPluginService {
   }
 
   /**注册插件组件*/
-  private async registerPluginComponents(plugin: any): Promise<void> {
+  private async registerPluginComponents(plugin: PluginManifest): Promise<void> {
     const api = this.loader.getAPI()
     const components = api.getAllComponents()
 
@@ -105,27 +105,27 @@ export class FrontendPluginService {
   }
 
   /**获取插件状态*/
-  getPluginState(pluginId: string): any {
-    return this.loader.getPluginState(pluginId)
+  getPluginState(pluginId: string): Record<string, unknown> | undefined {
+    return this.loader.getPluginState(pluginId) as Record<string, unknown> | undefined
   }
 
   /**获取所有插件状态*/
-  getAllPluginStates(): any[] {
-    return this.loader.getAllPluginStates()
+  getAllPluginStates(): Record<string, unknown>[] {
+    return this.loader.getAllPluginStates() as Record<string, unknown>[]
   }
 
   /**获取已安装的插件*/
-  getInstalledPlugins(): any[] {
+  getInstalledPlugins(): PluginManifest[] {
     return this.loader.getInstalledPlugins()
   }
 
   /**获取注册的组件*/
-  getComponent(name: string): any {
+  getComponent(name: string): unknown {
     return this.componentRegistry.get(name)
   }
 
   /**获取所有组件*/
-  getAllComponents(): Map<string, any> {
+  getAllComponents(): Map<string, unknown> {
     return new Map(this.componentRegistry)
   }
 

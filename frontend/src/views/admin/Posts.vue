@@ -256,9 +256,33 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import type { AppError } from '../../types/error'
+import { getErrorMessage } from '../../types/error'
 
-const posts = ref<any[]>([])
-const categories = ref<any[]>([])
+interface AdminPost {
+  id: string
+  title: string
+  content: string
+  categoryId: string
+  categoryName: string
+  authorId: string
+  authorUsername: string
+  status: 'normal' | 'hidden' | 'deleted'
+  isPinned: boolean
+  viewCount: number
+  likeCount: number
+  commentCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+interface Category {
+  id: string
+  name: string
+}
+
+const posts = ref<AdminPost[]>([])
+const categories = ref<Category[]>([])
 const loading = ref(false)
 const search = ref('')
 const selectedCategory = ref('')
@@ -272,7 +296,7 @@ const pagination = ref({
 
 // Modals
 const showDeleteModal = ref(false)
-const selectedPost = ref<any>(null)
+const selectedPost = ref<AdminPost | null>(null)
 const deleteAction = ref<'delete' | 'restore'>('delete')
 const deleteReason = ref('')
 
@@ -302,9 +326,9 @@ const fetchPosts = async () => {
       posts.value = response.data.data.posts
       pagination.value = response.data.data.pagination
     }
-  } catch (error: any) {
-    console.error('Failed to fetch posts:', error)
-    if (error.response?.status === 403) {
+  } catch (error: AppError) {
+    console.error('Failed to fetch posts:', getErrorMessage(error))
+    if ((error as any).response?.status === 403) {
       alert('权限不足')
     }
   } finally {
@@ -351,30 +375,30 @@ const getPageNumbers = () => {
   return pages
 }
 
-const togglePin = async (post: any) => {
+const togglePin = async (post: AdminPost) => {
   try {
     const response = await axios.put(`/api/admin/posts/${post.id}/pin`, {
-      pinned: !post.pinned,
+      pinned: !post.isPinned,
     })
-    
+
     if (response.data.success) {
-      alert(post.pinned ? '已取消置顶' : '已置顶')
+      alert(post.isPinned ? '已取消置顶' : '已置顶')
       fetchPosts()
     }
-  } catch (error: any) {
-    console.error('Failed to toggle pin:', error)
-    alert(error.response?.data?.error?.message || '操作失败')
+  } catch (error: AppError) {
+    console.error('Failed to toggle pin:', getErrorMessage(error))
+    alert((error as any).response?.data?.error?.message || '操作失败')
   }
 }
 
-const confirmDeletePost = (post: any) => {
+const confirmDeletePost = (post: AdminPost) => {
   selectedPost.value = post
   deleteAction.value = 'delete'
   deleteReason.value = ''
   showDeleteModal.value = true
 }
 
-const confirmRestorePost = (post: any) => {
+const confirmRestorePost = (post: AdminPost) => {
   selectedPost.value = post
   deleteAction.value = 'restore'
   showDeleteModal.value = true
@@ -385,19 +409,19 @@ const executeDeleteAction = async () => {
     const endpoint = deleteAction.value === 'delete'
       ? `/api/admin/posts/${selectedPost.value.id}`
       : `/api/admin/posts/${selectedPost.value.id}/restore`
-    
+
     const method = deleteAction.value === 'delete' ? 'delete' : 'post'
-    
+
     const response = await axios[method](endpoint, { reason: deleteReason.value })
-    
+
     if (response.data.success) {
       alert(deleteAction.value === 'delete' ? '帖子已删除' : '帖子已恢复')
       showDeleteModal.value = false
       fetchPosts()
     }
-  } catch (error: any) {
-    console.error('Failed to execute delete action:', error)
-    alert(error.response?.data?.error?.message || '操作失败')
+  } catch (error: AppError) {
+    console.error('Failed to execute delete action:', getErrorMessage(error))
+    alert((error as any).response?.data?.error?.message || '操作失败')
   }
 }
 

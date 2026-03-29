@@ -100,6 +100,7 @@ import { useUserStore } from '../stores/user'
 import { usePostStore } from '../stores/post'
 import { apiClient } from '../api/client'
 import PostCard from '../components/PostCard.vue'
+import type { Post } from '../stores/post'
 
 const userStore = useUserStore()
 const postStore = usePostStore()
@@ -115,10 +116,14 @@ const filteredPosts = computed(() => {
   return postStore.posts
 })
 
+interface PostsResponse {
+  posts: Post[]
+}
+
 onMounted(async () => {
   postStore.loading = true
   try {
-    const data = await apiClient.get('/api/posts') as any
+    const data = await apiClient.get('/api/posts') as PostsResponse
     postStore.setPosts(data.posts || [])
   } catch (error) {
     // Error handling is managed by the error handler

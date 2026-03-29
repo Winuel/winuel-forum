@@ -159,10 +159,27 @@ authRouter.get('/me', authMiddleware, async (c) => {
 })
 
 authRouter.post('/logout', authMiddleware, csrfProtectionMiddleware, async (c) => {
-  return c.json({
-    success: true,
-    message: '退出成功'
-  })
+  try {
+    const authHeader = c.req.header('Authorization')
+    const token = authHeader?.substring(7)
+
+    // 将令牌添加到黑名单
+    // Add token to blacklist
+    if (token && (globalThis as any).tokenBlacklist) {
+      // 令牌过期时间为 1 小时（与 JWT 访问令牌过期时间一致）
+      // Token expiration time is 1 hour (consistent with JWT access token expiration)
+      await (globalThis as any).tokenBlacklist.addToken(token, 3600)
+    }
+
+    return c.json({
+      success: true,
+      message: '退出成功 / Logout successful'
+    })
+  } catch (error: any) {
+    const errorInfo = handleError(error)
+    const statusCode = error instanceof Error && 'statusCode' in error ? (error as any).statusCode : 500
+    return c.json(formatErrorResponse(errorInfo), statusCode)
+  }
 })
 
 /**

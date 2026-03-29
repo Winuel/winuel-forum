@@ -243,10 +243,66 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const stats = ref<any>(null)
-const trends = ref<any>(null)
-const recentActivity = ref<any>(null)
-const popularContent = ref<any>(null)
+interface StatsData {
+  users: {
+    total: number
+    last7days: number
+  }
+  posts: {
+    total: number
+    last7days: number
+  }
+  comments: {
+    total: number
+    last7days: number
+  }
+  categories: {
+    total: number
+  }
+}
+
+interface TrendsData {
+  users: number[]
+  posts: number[]
+  comments: number[]
+  dates: string[]
+}
+
+interface RecentActivityUser {
+  id: string
+  username: string
+  created_at: string
+}
+
+interface RecentActivityPost {
+  id: string
+  author_username: string
+  title: string
+  created_at: string
+}
+
+interface RecentActivityData {
+  users: RecentActivityUser[]
+  posts: RecentActivityPost[]
+}
+
+interface PopularPost {
+  id: string
+  title: string
+  author_username: string
+  view_count: number
+  like_count: number
+  comment_count: number
+}
+
+interface PopularContentData {
+  popularPostsByViews: PopularPost[]
+}
+
+const stats = ref<StatsData | null>(null)
+const trends = ref<TrendsData | null>(null)
+const recentActivity = ref<RecentActivityData | null>(null)
+const popularContent = ref<PopularContentData | null>(null)
 
 const loadingStats = ref(false)
 const loadingTrends = ref(false)

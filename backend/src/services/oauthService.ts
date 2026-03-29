@@ -60,15 +60,17 @@ function getAllowedRedirectUris(): string[] {
  * 验证重定向 URI 是否在白名单中
  * Validate if redirect URI is in whitelist
  * 
+ * 改为精确匹配，防止开放重定向攻击
+ * Changed to exact match to prevent open redirect attacks
+ * 
  * @param redirectUri - 待验证的重定向 URI / Redirect URI to validate
  * @returns 是否在白名单中 / Whether in whitelist
  */
 export function isRedirectUriAllowed(redirectUri: string): boolean {
   const allowedUris = getAllowedRedirectUris()
-  return allowedUris.some(allowedUri => {
-    // 支持精确匹配和前缀匹配 / Support exact match and prefix match
-    return redirectUri === allowedUri || redirectUri.startsWith(allowedUri)
-  })
+  // 改为精确匹配，只允许白名单中的完整域名
+  // Changed to exact match, only allow complete domains in whitelist
+  return allowedUris.some(allowedUri => redirectUri === allowedUri)
 }
 
 /**

@@ -13,6 +13,8 @@ import { userAuthMiddleware, adminAuthMiddleware } from './middleware/auth'
 import { createAuditLog } from './utils/audit'
 import { diMiddleware } from './middleware/di'
 import { strictBodySizeLimit, codeAttachmentBodySizeLimit } from './middleware/bodySizeLimit'
+import { databaseAvailabilityMiddleware } from './middleware/database'
+import { TokenBlacklist } from './utils/tokenBlacklist'
 import { handleError, formatErrorResponse, logError } from './utils/errorHandler'
 import { BLOCKLIST_DOMAINS, ALLOWLIST_DOMAINS } from './data/blocklist'
 import { createCache } from './utils/cache'
@@ -49,19 +51,45 @@ app.use('*', async (c, next) => {
     ;(globalThis as any).ENVIRONMENT = c.env.ENVIRONMENT
   }
   
-  // 初始化JWT - 增强错误处理
+  // 初始化JWT - 使用 Promise 锁防止竞争条件
+  // Initialize JWT with Promise lock to prevent race conditions
   if (c.env.JWT_SECRET && !(globalThis as any).JWT_SECRET_INITIALIZED) {
+    // 确保 JWT_SECRET 不是 undefined
+    // Ensure JWT_SECRET is not undefined
+    const jwtSecret = c.env.JWT_SECRET
+    // 获取或创建初始化锁
+    // Get or create initialization lock
+    if (!(globalThis as any).JWT_INIT_LOCK) {
+      ;(globalThis as any).JWT_INIT_LOCK = Promise.resolve()
+    }
+
     try {
-      // 验证JWT密钥强度
-      if (c.env.JWT_SECRET.length < 32) {
-        throw new Error('JWT_SECRET must be at least 32 characters long')
-      }
-      
-      initJWT(c.env.JWT_SECRET)
-      ;(globalThis as any).JWT_SECRET_INITIALIZED = true
-      ;(globalThis as any).JWT_SECRET_VALID = true
-      
-      logger.info('JWT initialized successfully')
+      // 等待锁释放，然后执行初始化
+      // Wait for lock to release, then execute initialization
+      ;(globalThis as any).JWT_INIT_LOCK = (globalThis as any).JWT_INIT_LOCK.then(async () => {
+        // 再次检查是否已初始化（双重检查）
+        // Check again if already initialized (double-check)
+        if ((globalThis as any).JWT_SECRET_INITIALIZED) {
+          return
+        }
+
+        // 验证JWT密钥强度
+        // Validate JWT secret strength
+        if (jwtSecret.length < 32) {
+          throw new Error('JWT_SECRET must be at least 32 characters long')
+        }
+        
+        initJWT(jwtSecret)
+        ;(globalThis as any).JWT_SECRET_INITIALIZED = true
+        ;(globalThis as any).JWT_SECRET_VALID = true
+        
+        logger.info('JWT initialized successfully')
+      })
+
+      // 等待初始化完成
+      // Wait for initialization to complete
+      await (globalThis as any).JWT_INIT_LOCK
+
     } catch (error: any) {
       logger.error('Failed to initialize JWT', error)
       ;(globalThis as any).JWT_SECRET_INITIALIZED = false
@@ -133,20 +161,57 @@ app.use('*', async (c, next) => {
       
         }
   
-  // 初始化数据库（仅在首次请求时）- 增强错误处理
-  if (c.env.DB && !(globalThis as any).DB_INITIALIZED) {
+  // 初始化令牌黑名单（仅在首次请求时）
+  // Initialize token blacklist (only on first request)
+  if (c.env.KV && !(globalThis as any).TOKEN_BLACKLIST_INITIALIZED) {
     try {
-      const { initializeDatabase } = await import('./utils/dbInitializer')
-      await initializeDatabase(c.env.DB)
-      ;(globalThis as any).DB_INITIALIZED = true
-      ;(globalThis as any).DB_AVAILABLE = true
-      logger.info('Database initialized')
+      ;(globalThis as any).tokenBlacklist = new TokenBlacklist(c.env.KV)
+      ;(globalThis as any).TOKEN_BLACKLIST_INITIALIZED = true
+      logger.info('Token blacklist initialized successfully')
+    } catch (error: any) {
+      logger.error('Failed to initialize token blacklist', error)
+      ;(globalThis as any).TOKEN_BLACKLIST_INITIALIZED = false
+      // 不抛出错误，允许请求继续进行
+    }
+  }
+
+  // 初始化数据库（仅在首次请求时）- 使用 Promise 锁防止竞争条件
+  // Initialize database (only on first request) with Promise lock to prevent race conditions
+  if (c.env.DB && !(globalThis as any).DB_INITIALIZED) {
+    // 获取或创建初始化锁
+    // Get or create initialization lock
+    if (!(globalThis as any).DB_INIT_LOCK) {
+      ;(globalThis as any).DB_INIT_LOCK = Promise.resolve()
+    }
+
+    try {
+      // 等待锁释放，然后执行初始化
+      // Wait for lock to release, then execute initialization
+      ;(globalThis as any).DB_INIT_LOCK = (globalThis as any).DB_INIT_LOCK.then(async () => {
+        // 再次检查是否已初始化（双重检查）
+        // Check again if already initialized (double-check)
+        if ((globalThis as any).DB_INITIALIZED) {
+          return
+        }
+
+        const { initializeDatabase } = await import('./utils/dbInitializer')
+        await initializeDatabase(c.env.DB)
+        ;(globalThis as any).DB_INITIALIZED = true
+        ;(globalThis as any).DB_AVAILABLE = true
+        logger.info('Database initialized successfully')
+      })
+
+      // 等待初始化完成
+      // Wait for initialization to complete
+      await (globalThis as any).DB_INIT_LOCK
+
     } catch (error: any) {
       logger.error('Failed to initialize database', error)
       ;(globalThis as any).DB_INITIALIZED = false
       ;(globalThis as any).DB_AVAILABLE = false
       ;(globalThis as any).DB_ERROR = error.message
-      // 不抛出错误，允许请求继续进行
+      // 不抛出错误，但标记数据库不可用
+      // Don't throw error, but mark database as unavailable
     }
   } else if (!c.env.DB) {
     logger.warn('Database is not configured')
@@ -161,6 +226,7 @@ app.use('*', async (c, next) => {
 app.use('*', normalRateLimit)
 app.use('*', corsMiddleware)
 app.use('*', diMiddleware)
+app.use('*', databaseAvailabilityMiddleware)
 app.use('*', auditLog)
 app.use('*', httpsRedirect)
 app.use('*', hsts)

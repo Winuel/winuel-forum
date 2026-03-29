@@ -296,10 +296,40 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import type { AppError } from '../../types/error'
+import { getErrorMessage } from '../../types/error'
 
-const logs = ref<any[]>([])
-const users = ref<any[]>([])
-const stats = ref<any>(null)
+interface AuditLog {
+  id: string
+  action: string
+  entityType: string
+  entityId: string
+  userId: string
+  username: string
+  userRole: string
+  ipAddress: string
+  userAgent: string
+  details: Record<string, unknown>
+  createdAt: string
+}
+
+interface User {
+  id: string
+  username: string
+  email: string
+  role: string
+}
+
+interface AuditStats {
+  total: number
+  byAction: Record<string, number>
+  byEntityType: Record<string, number>
+  byUser: Record<string, number>
+}
+
+const logs = ref<AuditLog[]>([])
+const users = ref<User[]>([])
+const stats = ref<AuditStats | null>(null)
 const loading = ref(false)
 const search = ref('')
 const selectedEntityType = ref('')
@@ -315,7 +345,7 @@ const pagination = ref({
 
 // Modals
 const showDetailModal = ref(false)
-const selectedLog = ref<any>(null)
+const selectedLog = ref<AuditLog | null>(null)
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('zh-CN', {
@@ -395,9 +425,9 @@ const fetchLogs = async () => {
       logs.value = response.data.data.logs
       pagination.value = response.data.data.pagination
     }
-  } catch (error: any) {
-    console.error('Failed to fetch logs:', error)
-    if (error.response?.status === 403) {
+  } catch (error: AppError) {
+    console.error('Failed to fetch logs:', getErrorMessage(error))
+    if ((error as any).response?.status === 403) {
       alert('权限不足')
     }
   } finally {
@@ -457,7 +487,7 @@ const getPageNumbers = () => {
   return pages
 }
 
-const showLogDetail = (log: any) => {
+const showLogDetail = (log: AuditLog) => {
   selectedLog.value = log
   showDetailModal.value = true
 }

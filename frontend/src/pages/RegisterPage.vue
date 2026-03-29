@@ -7,7 +7,7 @@
 
         <div class="relative">
           <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 via-primary-600 to secondary-600 rounded-2xl shadow-xl shadow-primary-500/30 mb-4 hover:scale-110 hover:rotate-6 transition-all duration-400 group">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-600 rounded-2xl shadow-xl shadow-primary-500/30 mb-4 hover:scale-110 hover:rotate-6 transition-all duration-400 group">
               <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
               <svg
                 class="w-8 h-8 text-white relative z-10 group-hover:animate-pulse-slow"
@@ -175,6 +175,8 @@ import { useUserStore } from '../stores/user'
 import { useUIStore } from '../stores/ui'
 import { apiClient } from '../api/client'
 import { sendVerificationCode } from '../api/verification'
+import type { AppError } from '../types/error'
+import { getErrorMessage } from '../types/error'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -255,11 +257,11 @@ async function handleSendCode() {
         countdownTimer = null
       }
     }, 1000)
-  } catch (error: any) {
+  } catch (error: AppError) {
     uiStore.addNotification({
       type: 'error',
       title: '发送失败',
-      message: error?.details || error?.message || '网络错误，请检查网络连接',
+      message: getErrorMessage(error) || '网络错误，请检查网络连接',
     })
   } finally {
     sendingCode.value = false
@@ -305,7 +307,7 @@ async function handleSubmit() {
       email: email.value,
       password: password.value,
       verificationCode: verificationCode.value,
-    }) as any
+    })
     userStore.setUser(data.user)
     userStore.setToken(data.token)
     uiStore.addNotification({
@@ -314,11 +316,12 @@ async function handleSubmit() {
       message: `欢迎加入云纽，${data.user.username}！`,
     })
     router.push('/')
-  } catch (error: any) {
+  } catch (error: AppError) {
+    const message = getErrorMessage(error)
     uiStore.addNotification({
       type: 'error',
       title: '注册失败',
-      message: error?.error?.details || error?.error?.message || error?.message || '注册失败，请稍后重试',
+      message: message || '注册失败，请稍后重试',
     })
   } finally {
     loading.value = false

@@ -110,6 +110,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUIStore } from '../stores/ui'
 import { apiClient } from '../api/client'
+import type { AppError } from '../types/error'
+import { getErrorMessage } from '../types/error'
 
 const route = useRoute()
 const router = useRouter()
@@ -128,9 +130,16 @@ const categories = ref([
   { id: '4', name: '资源分享' },
 ])
 
+interface Post {
+  title: string
+  categoryId: string
+  content: string
+  tags: string[]
+}
+
 onMounted(async () => {
   try {
-    const post = await apiClient.get(`/api/posts/${route.params.id}`) as any
+    const post = await apiClient.get(`/api/posts/${route.params.id}`) as Post
     title.value = post.title
     categoryId.value = post.categoryId
     content.value = post.content
@@ -165,11 +174,11 @@ async function handleSubmit() {
       message: '帖子已成功更新',
     })
     router.push(`/post/${route.params.id}`)
-  } catch (error: any) {
+  } catch (error: AppError) {
     uiStore.addNotification({
       type: 'error',
       title: '保存失败',
-      message: error?.message || '保存失败，请稍后重试',
+      message: getErrorMessage(error) || '保存失败，请稍后重试',
     })
   } finally {
     loading.value = false

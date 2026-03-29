@@ -181,7 +181,7 @@ export class PluginService {
    * @param config - 配置对象 / Configuration object
    * @throws 如果插件不存在 / Throws if plugin doesn't exist
    */
-  async updatePluginConfig(pluginId: string, config: Record<string, any>): Promise<void> {
+  async updatePluginConfig(pluginId: string, config: Record<string, unknown>): Promise<void> {
     const plugin = await this.getPlugin(pluginId)
     if (!plugin) {
       throw new Error(`Plugin ${pluginId} not found / 插件 ${pluginId} 未找到`)
@@ -206,14 +206,14 @@ export class PluginService {
    * @param pluginId - 插件 ID / Plugin ID
    * @returns 配置对象或 null / Configuration object or null
    */
-  async getPluginConfig(pluginId: string): Promise<Record<string, any> | null> {
+  async getPluginConfig(pluginId: string): Promise<Record<string, unknown> | null> {
     const plugin = await this.getPlugin(pluginId)
     if (!plugin) {
       return null
     }
 
     try {
-      return JSON.parse(plugin.config)
+      return JSON.parse(plugin.config) as Record<string, unknown>
     } catch (error) {
       // 记录错误并返回 null / Log error and return null
       logger.error('Failed to parse plugin config', error)

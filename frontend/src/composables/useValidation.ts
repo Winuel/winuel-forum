@@ -13,7 +13,7 @@ import { ref, computed, type Ref } from 'vue'
 /**
  * 验证规则接口
  * Validation Rule Interface
- * 
+ *
  * 定义单个字段的验证规则
  * Defines validation rules for a single field
  */
@@ -27,7 +27,7 @@ export interface ValidationRule {
   /** 正则表达式模式 / Regular expression pattern */
   pattern?: RegExp
   /** 自定义验证函数 / Custom validation function */
-  custom?: (value: any) => boolean | string
+  custom?: (value: unknown) => boolean | string
   /** 错误消息 / Error message */
   message?: string
 }
@@ -70,7 +70,7 @@ export interface ValidationRules {
  *   }
  * )
  */
-export function useValidation<T extends Record<string, any>>(initialData: T, rules: ValidationRules) {
+export function useValidation<T extends Record<string, unknown>>(initialData: T, rules: ValidationRules) {
   // 表单数据 / Form data
   const data = ref<T>({ ...initialData }) as Ref<T>
   // 验证错误 / Validation errors

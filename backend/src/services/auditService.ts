@@ -36,9 +36,9 @@ export interface CreateAuditLogInput {
   /** 实体 ID / Entity ID */
   entity_id: string
   /** 旧值（可选）/ Old values (optional) */
-  old_values?: Record<string, any>
+  old_values?: Record<string, unknown>
   /** 新值（可选）/ New values (optional) */
-  new_values?: Record<string, any>
+  new_values?: Record<string, unknown>
   /** IP 地址（可选）/ IP address (optional) */
   ip_address?: string
   /** 用户代理（可选）/ User agent (optional) */

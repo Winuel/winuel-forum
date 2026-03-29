@@ -11,11 +11,11 @@ export interface ValidationResult {
 /**
  * 验证分页参数
  */
-export function validatePagination(page?: any, pageSize?: any): ValidationResult {
+export function validatePagination(page?: unknown, pageSize?: unknown): ValidationResult {
   const errors: string[] = []
   
-  const pageNum = parseInt(page || '1')
-  const size = parseInt(pageSize || '20')
+  const pageNum = parseInt(String(page || '1'))
+  const size = parseInt(String(pageSize || '20'))
   
   if (isNaN(pageNum) || pageNum < 1) {
     errors.push('页码必须大于0')
@@ -34,7 +34,7 @@ export function validatePagination(page?: any, pageSize?: any): ValidationResult
 /**
  * 验证角色值
  */
-export function validateRole(role: any): ValidationResult {
+export function validateRole(role: unknown): ValidationResult {
   const errors: string[] = []
   const validRoles = ['user', 'moderator', 'admin']
   
@@ -53,7 +53,7 @@ export function validateRole(role: any): ValidationResult {
 /**
  * 验证封禁原因
  */
-export function validateBanReason(reason?: any): ValidationResult {
+export function validateBanReason(reason?: unknown): ValidationResult {
   const errors: string[] = []
   
   if (reason !== undefined && reason !== null) {
@@ -73,7 +73,7 @@ export function validateBanReason(reason?: any): ValidationResult {
 /**
  * 验证搜索关键词
  */
-export function validateSearchKeyword(keyword?: any): ValidationResult {
+export function validateSearchKeyword(keyword?: unknown): ValidationResult {
   const errors: string[] = []
   
   if (keyword !== undefined && keyword !== null) {
@@ -93,7 +93,7 @@ export function validateSearchKeyword(keyword?: any): ValidationResult {
 /**
  * 验证ID格式（UUID）
  */
-export function validateId(id: any): ValidationResult {
+export function validateId(id: unknown): ValidationResult {
   const errors: string[] = []
   
   if (!id || typeof id !== 'string') {
@@ -111,7 +111,7 @@ export function validateId(id: any): ValidationResult {
 /**
  * 验证状态过滤器
  */
-export function validateStatusFilter(status: any): ValidationResult {
+export function validateStatusFilter(status: unknown): ValidationResult {
   const errors: string[] = []
   const validStatuses = ['all', 'active', 'deleted']
   
@@ -132,7 +132,7 @@ export function validateStatusFilter(status: any): ValidationResult {
 /**
  * 验证日期范围
  */
-export function validateDateRange(startDate?: any, endDate?: any): ValidationResult {
+export function validateDateRange(startDate?: unknown, endDate?: unknown): ValidationResult {
   const errors: string[] = []
   
   if (startDate !== undefined && startDate !== null) {
@@ -153,8 +153,8 @@ export function validateDateRange(startDate?: any, endDate?: any): ValidationRes
   
   // 检查日期范围是否合理
   if (startDate && endDate && !errors.length) {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    const start = new Date(String(startDate))
+    const end = new Date(String(endDate))
     if (start > end) {
       errors.push('开始日期不能晚于结束日期')
     }
@@ -176,7 +176,7 @@ export function validateDateRange(startDate?: any, endDate?: any): ValidationRes
 /**
  * 验证批量操作ID列表
  */
-export function validateBatchIds(ids: any): ValidationResult {
+export function validateBatchIds(ids: unknown): ValidationResult {
   const errors: string[] = []
   
   if (!Array.isArray(ids)) {
@@ -204,7 +204,7 @@ export function validateBatchIds(ids: any): ValidationResult {
 /**
  * 验证置顶顺序
  */
-export function validatePinnedOrder(order: any): ValidationResult {
+export function validatePinnedOrder(order: unknown): ValidationResult {
   const errors: string[] = []
   
   if (!Array.isArray(order)) {
@@ -231,7 +231,7 @@ export function validatePinnedOrder(order: any): ValidationResult {
  * 验证和清理用户输入
  * 组合验证和清理功能
  */
-export function validateAndCleanUserInput(input: any, maxLength: number = 1000): ValidationResult {
+export function validateAndCleanUserInput(input: unknown, maxLength: number = 1000): ValidationResult {
   const errors: string[] = []
   
   if (input === undefined || input === null) {

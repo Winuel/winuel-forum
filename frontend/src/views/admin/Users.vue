@@ -361,8 +361,20 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import type { AppError } from '../../types/error'
+import { getErrorMessage } from '../../types/error'
 
-const users = ref<any[]>([])
+interface AdminUser {
+  id: string
+  username: string
+  email: string
+  role: 'admin' | 'moderator' | 'user'
+  status: 'active' | 'banned' | 'deleted'
+  createdAt: string
+  updatedAt: string
+}
+
+const users = ref<AdminUser[]>([])
 const loading = ref(false)
 const search = ref('')
 const selectedRole = ref('')
@@ -378,7 +390,7 @@ const pagination = ref({
 const showRoleModal = ref(false)
 const showBanModal = ref(false)
 const showDeleteModal = ref(false)
-const selectedUser = ref<any>(null)
+const selectedUser = ref<AdminUser | null>(null)
 const newRole = ref('user')
 const banAction = ref<'ban' | 'unban'>('ban')
 const banReason = ref('')
@@ -427,9 +439,9 @@ const fetchUsers = async () => {
       users.value = response.data.data.users
       pagination.value = response.data.data.pagination
     }
-  } catch (error: any) {
-    console.error('Failed to fetch users:', error)
-    if (error.response?.status === 403) {
+  } catch (error: AppError) {
+    console.error('Failed to fetch users:', getErrorMessage(error))
+    if ((error as any).response?.status === 403) {
       alert('权限不足')
     }
   } finally {
@@ -465,7 +477,7 @@ const getPageNumbers = () => {
   return pages
 }
 
-const openRoleModal = (user: any) => {
+const openRoleModal = (user: AdminUser) => {
   selectedUser.value = user
   newRole.value = user.role
   showRoleModal.value = true
@@ -481,20 +493,20 @@ const updateUserRole = async () => {
       showRoleModal.value = false
       fetchUsers()
     }
-  } catch (error: any) {
-    console.error('Failed to update user role:', error)
-    alert(error.response?.data?.error?.message || '修改失败')
+  } catch (error: AppError) {
+    console.error('Failed to update user role:', getErrorMessage(error))
+    alert((error as any).response?.data?.error?.message || '修改失败')
   }
 }
 
-const confirmBanUser = (user: any) => {
+const confirmBanUser = (user: AdminUser) => {
   selectedUser.value = user
   banAction.value = 'ban'
   banReason.value = ''
   showBanModal.value = true
 }
 
-const confirmUnbanUser = (user: any) => {
+const confirmUnbanUser = (user: AdminUser) => {
   selectedUser.value = user
   banAction.value = 'unban'
   showBanModal.value = true
@@ -505,21 +517,21 @@ const executeBanAction = async () => {
     const endpoint = banAction.value === 'ban'
       ? `/api/admin/users/${selectedUser.value.id}/ban`
       : `/api/admin/users/${selectedUser.value.id}/unban`
-    
+
     const response = await axios.post(endpoint, { reason: banReason.value })
-    
+
     if (response.data.success) {
       alert(banAction.value === 'ban' ? '用户已封禁' : '用户已解封')
       showBanModal.value = false
       fetchUsers()
     }
-  } catch (error: any) {
-    console.error('Failed to execute ban action:', error)
-    alert(error.response?.data?.error?.message || '操作失败')
+  } catch (error: AppError) {
+    console.error('Failed to execute ban action:', getErrorMessage(error))
+    alert((error as any).response?.data?.error?.message || '操作失败')
   }
 }
 
-const confirmDeleteUser = (user: any) => {
+const confirmDeleteUser = (user: AdminUser) => {
   selectedUser.value = user
   showDeleteModal.value = true
 }
@@ -527,15 +539,15 @@ const confirmDeleteUser = (user: any) => {
 const executeDeleteUser = async () => {
   try {
     const response = await axios.delete(`/api/admin/users/${selectedUser.value.id}`)
-    
+
     if (response.data.success) {
       alert('用户已永久删除')
       showDeleteModal.value = false
       fetchUsers()
     }
-  } catch (error: any) {
-    console.error('Failed to delete user:', error)
-    alert(error.response?.data?.error?.message || '删除失败')
+  } catch (error: AppError) {
+    console.error('Failed to delete user:', getErrorMessage(error))
+    alert((error as any).response?.data?.error?.message || '删除失败')
   }
 }
 

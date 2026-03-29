@@ -1,17 +1,25 @@
 /**
  * 安全日志工具
  * Secure Logger Utility
- * 
+ *
  * 提供安全的日志记录功能，在生产环境中自动过滤敏感信息
  * Provides secure logging functionality, automatically filters sensitive information in production
- * 
+ *
  * @package backend/src/utils
  */
 
 /**
+ * 全局对象接口
+ * Global Object Interface
+ */
+interface GlobalObject {
+  ENVIRONMENT?: 'development' | 'production' | 'test'
+}
+
+/**
  * 敏感字段列表
  * Sensitive Fields List
- * 
+ *
  * 这些字段在日志中应该被过滤或脱敏
  * These fields should be filtered or masked in logs
  */
@@ -78,7 +86,7 @@ export class Logger {
       level: LogLevel.INFO,
       enableConsole: true,
       enableFile: false,
-      environment: (globalThis as any).ENVIRONMENT || 'development',
+      environment: (globalThis as GlobalObject).ENVIRONMENT || 'development',
       ...config
     }
   }
@@ -86,14 +94,14 @@ export class Logger {
   /**
    * 脱敏对象
    * Sanitize Object
-   * 
+   *
    * 移除或脱敏敏感字段
    * Remove or mask sensitive fields
-   * 
+   *
    * @param obj - 待脱敏的对象 / Object to sanitize
    * @returns 脱敏后的对象 / Sanitized object
    */
-  private sanitizeObject(obj: any): any {
+  private sanitizeObject(obj: unknown): unknown {
     if (!obj || typeof obj !== 'object') {
       return obj
     }
@@ -102,11 +110,11 @@ export class Logger {
       return obj.map(item => this.sanitizeObject(item))
     }
 
-    const sanitized: any = {}
-    
-    for (const [key, value] of Object.entries(obj)) {
+    const sanitized: Record<string, unknown> = {}
+
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
       const keyLower = key.toLowerCase()
-      
+
       // 检查是否是敏感字段
       // Check if it's a sensitive field
       if (SENSITIVE_FIELDS.some(field => keyLower.includes(field))) {
@@ -115,7 +123,7 @@ export class Logger {
         if (this.config.environment === 'production') {
           continue
         }
-        
+
         // 在开发环境中显示部分信息
         // Show partial information in development
         if (typeof value === 'string') {
@@ -131,39 +139,39 @@ export class Logger {
         sanitized[key] = this.sanitizeObject(value)
       }
     }
-    
+
     return sanitized
   }
 
   /**
    * 格式化日志消息
    * Format Log Message
-   * 
+   *
    * @param level - 日志级别 / Log level
    * @param message - 日志消息 / Log message
    * @param data - 附加数据 / Additional data
    * @returns 格式化后的日志消息 / Formatted log message
    */
-  private formatMessage(level: LogLevel, message: string, data?: any): string {
+  private formatMessage(level: LogLevel, message: string, data?: unknown): string {
     const timestamp = new Date().toISOString()
     const sanitizedData = data ? this.sanitizeObject(data) : undefined
-    
+
     if (sanitizedData) {
       return `[${timestamp}] [${level.toUpperCase()}] ${message} ${JSON.stringify(sanitizedData)}`
     }
-    
+
     return `[${timestamp}] [${level.toUpperCase()}] ${message}`
   }
 
   /**
    * 记录日志
    * Log Message
-   * 
+   *
    * @param level - 日志级别 / Log level
    * @param message - 日志消息 / Log message
    * @param data - 附加数据 / Additional data
    */
-  private log(level: LogLevel, message: string, data?: any): void {
+  private log(level: LogLevel, message: string, data?: unknown): void {
     // 检查日志级别
     // Check log level
     const levelOrder = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL]
@@ -208,7 +216,7 @@ export class Logger {
    * 记录 DEBUG 级别日志
    * Log DEBUG level message
    */
-  debug(message: string, data?: any): void {
+  debug(message: string, data?: unknown): void {
     this.log(LogLevel.DEBUG, message, data)
   }
 
@@ -216,7 +224,7 @@ export class Logger {
    * 记录 INFO 级别日志
    * Log INFO level message
    */
-  info(message: string, data?: any): void {
+  info(message: string, data?: unknown): void {
     this.log(LogLevel.INFO, message, data)
   }
 
@@ -224,7 +232,7 @@ export class Logger {
    * 记录 WARN 级别日志
    * Log WARN level message
    */
-  warn(message: string, data?: any): void {
+  warn(message: string, data?: unknown): void {
     this.log(LogLevel.WARN, message, data)
   }
 
@@ -232,13 +240,13 @@ export class Logger {
    * 记录 ERROR 级别日志
    * Log ERROR level message
    */
-  error(message: string, error?: Error | any): void {
+  error(message: string, error?: Error | unknown): void {
     const errorData = error instanceof Error ? {
       name: error.name,
       message: error.message,
       stack: this.config.environment === 'development' ? error.stack : undefined
     } : error
-    
+
     this.log(LogLevel.ERROR, message, errorData)
   }
 
@@ -246,13 +254,13 @@ export class Logger {
    * 记录 FATAL 级别日志
    * Log FATAL level message
    */
-  fatal(message: string, error?: Error | any): void {
+  fatal(message: string, error?: Error | unknown): void {
     const errorData = error instanceof Error ? {
       name: error.name,
       message: error.message,
       stack: this.config.environment === 'development' ? error.stack : undefined
     } : error
-    
+
     this.log(LogLevel.FATAL, message, errorData)
   }
 
@@ -283,8 +291,8 @@ export const logger = new Logger()
  * 便捷函数
  * Convenience Functions
  */
-export const debug = (message: string, data?: any) => logger.debug(message, data)
-export const info = (message: string, data?: any) => logger.info(message, data)
-export const warn = (message: string, data?: any) => logger.warn(message, data)
-export const error = (message: string, error?: Error | any) => logger.error(message, error)
-export const fatal = (message: string, error?: Error | any) => logger.fatal(message, error)
+export const debug = (message: string, data?: unknown) => logger.debug(message, data)
+export const info = (message: string, data?: unknown) => logger.info(message, data)
+export const warn = (message: string, data?: unknown) => logger.warn(message, data)
+export const error = (message: string, error?: Error | unknown) => logger.error(message, error)
+export const fatal = (message: string, error?: Error | unknown) => logger.fatal(message, error)
