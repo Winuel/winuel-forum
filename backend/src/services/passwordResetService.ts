@@ -20,6 +20,7 @@
 import * as crypto from 'crypto'
 import { validatePassword } from '../utils/validation'
 import { logger } from '../utils/logger'
+import { hashPassword } from '../utils/crypto'
 
 /**
  * 密码重置令牌创建输入接口
@@ -197,10 +198,13 @@ export class PasswordResetService {
 
       const userId = verification.userId
 
+      // 哈希新密码 / Hash new password
+      const passwordHash = await hashPassword(input.newPassword)
+
       // 更新用户密码 / Update user password
       await this.db.prepare(`
-        UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-      `).bind(input.newPassword, userId).run()
+        UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+      `).bind(passwordHash, userId).run()
 
       // 标记令牌为已使用 / Mark token as used
       const tokenHash = crypto.createHash('sha256').update(input.token).digest('hex')

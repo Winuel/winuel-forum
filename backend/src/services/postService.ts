@@ -154,6 +154,11 @@ export class PostService {
       await this.addTagsToPost(id, input.tags)
     }
 
+    // 如果帖子被拒绝，返回错误信息而不是帖子对象 / If post is rejected, return error instead of post object
+    if (auditStatus === 'rejected') {
+      throw new Error(auditReason)
+    }
+
     return this.findById(id) as Promise<Post>
   }
 

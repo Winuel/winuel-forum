@@ -282,30 +282,48 @@ app.delete('/:id', authMiddleware, async (c) => {
   const service = container.resolve<CodeAttachmentService>(DEPENDENCY_TOKENS.CODE_ATTACHMENT_SERVICE)
   const { id } = c.req.param()
   const userId = c.get('user')?.userId
+  const user = c.get('user')
 
   if (!userId) {
     return c.json({
       success: false,
-      error: { code: 'UNAUTHORIZED', message: '需要登录' }
+      error: { code: 'UNAUTHORIZED', message: '需要登录 / Login required' }
     }, 401)
   }
 
-  // 验证权限（附件的作者或管理员才能删除）
+  // 验证权限（帖子的作者或管理员才能删除）
+  // Verify permission (post author or admin can delete)
   const attachment = await service.getAttachment(id)
-  if (attachment.success && attachment.attachment) {
-    const user = c.get('user')
-    
-    // 检查用户是否是帖子的作者或管理员
-    // 由于 CodeAttachment 没有 author_id，我们需要通过 post_id 来验证
-    // 这里暂时只检查管理员权限，未来可以通过查询帖子来验证作者
-    const isAdmin = user?.role === 'admin'
-    
-    if (!isAdmin) {
-      return c.json({
-        success: false,
-        error: { code: 'FORBIDDEN', message: '只有管理员可以删除此附件' }
-      }, 403)
-    }
+  if (!attachment.success || !attachment.attachment) {
+    return c.json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: '附件不存在 / Attachment not found' }
+    }, 404)
+  }
+
+  // 查询帖子信息以验证作者身份
+  // Query post info to verify author identity
+  const post = await c.env.DB.prepare(
+    'SELECT id, author_id FROM posts WHERE id = ? AND deleted_at IS NULL'
+  ).bind(attachment.attachment.post_id).first<{ id: string; author_id: string }>()
+
+  if (!post) {
+    return c.json({
+      success: false,
+      error: { code: 'POST_NOT_FOUND', message: '关联的帖子不存在 / Associated post not found' }
+    }, 404)
+  }
+
+  // 检查权限：帖子作者或管理员可以删除
+  // Check permission: post author or admin can delete
+  const isAdmin = user?.role === 'admin'
+  const isAuthor = post.author_id === userId
+
+  if (!isAdmin && !isAuthor) {
+    return c.json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: '只有帖子的作者或管理员可以删除此附件 / Only post author or admin can delete this attachment' }
+    }, 403)
   }
 
   const result = await service.deleteAttachment(id)
@@ -319,7 +337,7 @@ app.delete('/:id', authMiddleware, async (c) => {
 
   return c.json({
     success: true,
-    message: '附件已删除'
+    message: '附件已删除 / Attachment deleted successfully'
   })
 })
 

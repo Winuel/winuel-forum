@@ -76,6 +76,24 @@ export class AuditService {
     const id = generateId()
     const now = new Date().toISOString()
 
+    // 确保操作者和用户信息一致 / Ensure actor and user info are consistent
+    // 如果提供了 user_id 但没有提供操作者信息，尝试从用户信息中获取
+    // If user_id is provided but actor info is not, try to get from user info
+    let actorInfo: any = null
+    if (input.user_id) {
+      const user = await this.db.prepare(
+        'SELECT id, username, role FROM users WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.user_id).first<{ id: string; username: string; role: string }>()
+      
+      if (user) {
+        actorInfo = {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        }
+      }
+    }
+
     // 插入审核日志数据 / Insert audit log data
     await this.db
       .prepare(
@@ -89,7 +107,11 @@ export class AuditService {
         input.entity_type,
         input.entity_id,
         input.old_values ? JSON.stringify(input.old_values) : null,
-        input.new_values ? JSON.stringify(input.new_values) : null,
+        input.new_values ? JSON.stringify({
+          ...input.new_values,
+          actor: actorInfo,
+          timestamp: now
+        }) : null,
         input.ip_address || null,
         input.user_agent || null,
         input.status || 'success',

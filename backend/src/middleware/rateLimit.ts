@@ -68,7 +68,11 @@ export function createRateLimit(config: RateLimitConfig = DEFAULT_CONFIG) {
   return async (c: Context, next: Next) => {
     // 获取客户端 IP 地址 / Get client IP address
     const ip = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
-    const key = `rate_limit:${ip}`
+    
+    // 对于已登录用户，使用用户ID；否则使用IP地址
+    // For logged-in users, use user ID; otherwise use IP address
+    const user = c.get('user')
+    const key = user?.userId ? `rate_limit:user:${user.userId}` : `rate_limit:ip:${ip}`
 
     try {
       // 从 KV 获取当前的速率限制信息 / Get current rate limit info from KV
