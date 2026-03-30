@@ -16,7 +16,7 @@
  */
 
 import { Resend } from 'resend'
-import { generateVerificationEmailTemplate, generateNotificationEmailTemplate } from '../templates/emailTemplates'
+import { generateVerificationEmailTemplate, generateNotificationEmailTemplate, generatePasswordResetEmailTemplate } from '../templates/emailTemplates'
 import { logger } from '../utils/logger'
 
 /**
@@ -242,6 +242,68 @@ export class EmailService {
       }
     } catch (error: any) {
       logger.error('Error sending email / 发送邮件时出错', error)
+      return {
+        success: false,
+        error: error.message || '发送失败 / Send failed'
+      }
+    }
+  }
+
+  /**
+   * 发送密码重置邮件
+   * Send Password Reset Email
+   * 
+   * 向用户发送包含密码重置链接的邮件
+   * Sends an email containing password reset link to the user
+   * 
+   * @param to - 收件人邮箱 / Recipient email
+   * @param resetLink - 密码重置链接 / Password reset link
+   * @param appName - 应用名称 / Application name
+   * @returns 发送结果 / Send result
+   */
+  async sendPasswordResetEmail(
+    to: string,
+    resetLink: string,
+    appName: string = '云纽论坛'
+  ): Promise<{
+    success: boolean
+    messageId?: string
+    error?: string
+  }> {
+    if (!this.isAvailable()) {
+      return {
+        success: false,
+        error: '邮件服务不可用 / Email service not available'
+      }
+    }
+
+    try {
+      // 生成密码重置邮件模板 / Generate password reset email template
+      const html = generatePasswordResetEmailTemplate(resetLink, appName)
+      const from = `${this.fromName} <${this.fromEmail}>`
+
+      const { data, error } = await this.resend!.emails.send({
+        from,
+        to,
+        subject: '密码重置请求 / Password Reset Request',
+        html
+      })
+
+      if (error) {
+        logger.error('Failed to send password reset email / 发送密码重置邮件失败', error)
+        return {
+          success: false,
+          error: error.message || '发送失败 / Send failed'
+        }
+      }
+
+      logger.info(`Password reset email sent to ${to}, message ID: ${data?.id} / 密码重置邮件已发送至 ${to}，消息 ID: ${data?.id}`)
+      return {
+        success: true,
+        messageId: data?.id
+      }
+    } catch (error: any) {
+      logger.error('Error sending password reset email / 发送密码重置邮件时出错', error)
       return {
         success: false,
         error: error.message || '发送失败 / Send failed'

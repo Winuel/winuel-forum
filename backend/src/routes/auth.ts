@@ -368,18 +368,26 @@ authRouter.post('/request-password-reset', strictAuthRateLimit, async (c) => {
     // 发送重置邮件
     const emailService = (globalThis as any).emailService
     if (!emailService || !emailService.isAvailable()) {
-      throw createError.internalError('邮件服务不可用')
+      throw createError.internalError('邮件服务不可用 / Email service not available')
     }
 
     // 生成重置链接（前端需要实现重置页面）
-    const resetLink = `${(globalThis as any).ENV?.API_URL || 'https://api.winuel.com'}/api/auth/reset-password?token=${result.token}`
+    // Generate reset link (frontend needs to implement reset page)
+    const resetLink = `${(globalThis as any).ENV?.API_URL || 'https://api.winuel.com'}/reset-password?token=${result.token}`
     
-    // 这里应该使用邮件服务发送邮件
-    // 由于邮件服务实现可能不同，这里只是记录
-    logger.info('Password reset email should be sent', { email, resetLink: resetLink.substring(0, 50) + '...' })
+    // 使用邮件服务发送密码重置邮件
+    // Use email service to send password reset email
+    const emailResult = await emailService.sendPasswordResetEmail(email, resetLink)
+    
+    if (!emailResult.success) {
+      logger.error('Failed to send password reset email / 发送密码重置邮件失败', { 
+        email, 
+        error: emailResult.error 
+      })
+      throw createError.internalError(`发送密码重置邮件失败 / Failed to send password reset email: ${emailResult.error}`)
+    }
 
-    // 实际项目中，这里应该调用emailService发送邮件
-    // await emailService.sendPasswordResetEmail(email, resetLink)
+    logger.info('Password reset email sent successfully', { email, messageId: emailResult.messageId })
 
     return c.json({
       success: true,
