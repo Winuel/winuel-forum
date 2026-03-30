@@ -159,6 +159,26 @@ export class PostService {
       throw new Error(auditReason)
     }
 
+    // 清除帖子列表缓存（因为有了新帖子）
+    // Clear post list cache (because there's a new post)
+    if (this.cache) {
+      // 清除通用的帖子列表缓存
+      // Clear generic post list cache
+      await this.cache.delete('posts:list:all')
+      
+      // 清除分类列表缓存
+      // Clear category list cache
+      if (input.category_id) {
+        await this.cache.delete(`posts:list:category:${input.category_id}`)
+      }
+      
+      // 清除作者列表缓存
+      // Clear author list cache
+      if (input.author_id) {
+        await this.cache.delete(`posts:list:author:${input.author_id}`)
+      }
+    }
+
     return this.findById(id) as Promise<Post>
   }
 
@@ -532,10 +552,15 @@ export class PostService {
 
     await this.db.prepare(`UPDATE posts SET ${updates.join(', ')} WHERE id = ?`).bind(...params).run()
 
-    // 清除相关缓存 / Clear related caches
+    // 清除所有相关缓存
+    // Clear all related caches
     if (this.cache) {
       await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:details`)
       await this.cache.delete(`post:${id}:comments`)
+      await this.cache.delete('posts:list:all')
+      await this.cache.delete('posts:list:category:*')
+      await this.cache.delete('posts:list:author:*')
     }
 
     if (input.tags) {
@@ -553,6 +578,17 @@ export class PostService {
    */
   async delete(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?').bind(id).run()
+    
+    // 清除所有相关缓存
+    // Clear all related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:details`)
+      await this.cache.delete(`post:${id}:comments`)
+      await this.cache.delete('posts:list:all')
+      await this.cache.delete('posts:list:category:*')
+      await this.cache.delete('posts:list:author:*')
+    }
   }
 
   /**
@@ -563,6 +599,13 @@ export class PostService {
    */
   async incrementViewCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET view_count = view_count + 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
+    
+    // 清除相关缓存
+    // Clear related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:details`)
+    }
   }
 
   /**
@@ -573,6 +616,13 @@ export class PostService {
    */
   async incrementLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET like_count = like_count + 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
+    
+    // 清除相关缓存
+    // Clear related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:details`)
+    }
   }
 
   /**
@@ -583,6 +633,13 @@ export class PostService {
    */
   async decrementLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET like_count = like_count - 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
+    
+    // 清除相关缓存
+    // Clear related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:details`)
+    }
   }
 
   /**
@@ -593,6 +650,13 @@ export class PostService {
    */
   async incrementCommentCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET comment_count = comment_count + 1 WHERE id = ?').bind(id).run()
+    
+    // 清除相关缓存
+    // Clear related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:details`)
+    }
   }
 
   /**
@@ -603,6 +667,13 @@ export class PostService {
    */
   async decrementCommentCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE posts SET comment_count = comment_count - 1 WHERE id = ?').bind(id).run()
+    
+    // 清除相关缓存
+    // Clear related caches
+    if (this.cache) {
+      await this.cache.delete(`post:${id}`)
+      await this.cache.delete(`post:${id}:details`)
+    }
   }
 
   /**
@@ -788,6 +859,19 @@ export class PostService {
    */
   async incrementCommentLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE comments SET like_count = like_count + 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
+    
+    // 清除相关缓存
+    // Clear related caches
+    if (this.cache) {
+      const comment = await this.db.prepare(
+        'SELECT post_id FROM comments WHERE id = ?'
+      ).bind(id).first<{ post_id: string }>()
+      
+      if (comment) {
+        await this.cache.delete(`post:${comment.post_id}:comments`)
+        await this.cache.delete(`post:${comment.post_id}`)
+      }
+    }
   }
 
   /**
@@ -798,6 +882,19 @@ export class PostService {
    */
   async decrementCommentLikeCount(id: string): Promise<void> {
     await this.db.prepare('UPDATE comments SET like_count = like_count - 1 WHERE id = ? AND deleted_at IS NULL').bind(id).run()
+    
+    // 清除相关缓存
+    // Clear related caches
+    if (this.cache) {
+      const comment = await this.db.prepare(
+        'SELECT post_id FROM comments WHERE id = ?'
+      ).bind(id).first<{ post_id: string }>()
+      
+      if (comment) {
+        await this.cache.delete(`post:${comment.post_id}:comments`)
+        await this.cache.delete(`post:${comment.post_id}`)
+      }
+    }
   }
 
   /**
